@@ -132,8 +132,9 @@ main { max-width: 820px; margin: 2rem auto; padding: 0 1rem; display: grid; gap:
   border-radius: 1rem;
   padding: 1.35rem 1.5rem;
   box-shadow: var(--shadow);
-  transition: box-shadow .2s, background .2s, border-color .2s;
+  transition: box-shadow .2s, background .2s, border-color .2s, padding .3s;
 }
+#settings-card.card-collapsed { padding-top: .6rem; padding-bottom: .6rem; }
 .card:hover { box-shadow: var(--shadow-hover); }
 .card-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -648,6 +649,7 @@ function toggleDark() {
   else if (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches) applyDark(true);
   if (localStorage.getItem('labelprinter-settings-open') === '0') {
     document.getElementById('settings-body').classList.add('collapsed');
+    document.getElementById('settings-card').classList.add('card-collapsed');
     document.getElementById('settings-chevron').style.transform = 'rotate(180deg)';
     document.getElementById('settings-summary').style.opacity = '1';
     setTimeout(updateSettingsSummary, 0);
@@ -694,9 +696,11 @@ function updateSettingsSummary() {
 
 function toggleSettings() {
   const body     = document.getElementById('settings-body');
+  const card     = document.getElementById('settings-card');
   const chevron  = document.getElementById('settings-chevron');
   const summary  = document.getElementById('settings-summary');
   const collapsed = body.classList.toggle('collapsed');
+  card.classList.toggle('card-collapsed', collapsed);
   chevron.style.transform  = collapsed ? 'rotate(180deg)' : '';
   summary.style.opacity    = collapsed ? '1' : '0';
   if (collapsed) updateSettingsSummary();
