@@ -1651,7 +1651,7 @@ def _apply_case(text: str, case: str) -> str:
 
 def _render_price_tag(text: str, w_px: int, h_px: int, dpi: int,
                       text_case: str, font_weight: str = "bold") -> Image.Image:
-    """Classic retail price-tag style: rounded border, eyelet hole at top, text below."""
+    """Classic retail price-tag style: eyelet hole on the LEFT, text fills the right."""
     img  = Image.new("RGB", (w_px, h_px), "white")
     draw = ImageDraw.Draw(img)
 
@@ -1660,24 +1660,25 @@ def _render_price_tag(text: str, w_px: int, h_px: int, dpi: int,
     draw.rounded_rectangle([bw//2, bw//2, w_px - bw//2 - 1, h_px - bw//2 - 1],
                             radius=r, outline="black", width=bw)
 
-    # Eyelet hole — centred near the top
-    hole_r  = max(7, round(min(w_px, h_px) * 0.07))
-    hole_cx = w_px // 2
-    hole_cy = bw + hole_r + max(3, round(h_px * 0.03))
+    # Eyelet column — narrow strip on the left
+    eyelet_w = max(round(w_px * 0.14), round(0.22 * dpi))
+    hole_r   = max(7, round(min(eyelet_w, h_px) * 0.28))
+    hole_cx  = eyelet_w // 2
+    hole_cy  = h_px // 2
     draw.ellipse([hole_cx - hole_r, hole_cy - hole_r,
                   hole_cx + hole_r, hole_cy + hole_r],
                  fill="white", outline="black", width=max(2, bw - 1))
 
-    # Thin dividing line below the hole
-    line_y = hole_cy + hole_r + max(4, round(h_px * 0.05))
-    draw.line([(bw + r//2, line_y), (w_px - bw - r//2, line_y)],
+    # Vertical divider line between eyelet and text area
+    div_x = eyelet_w + max(3, round(w_px * 0.02))
+    draw.line([(div_x, bw + r//2), (div_x, h_px - bw - r//2)],
               fill="black", width=max(1, bw // 2))
 
-    # Text area beneath the line
-    pad          = bw + max(4, round(min(w_px, h_px) * 0.05))
-    text_y0      = line_y + max(4, round(h_px * 0.04))
-    text_area_w  = w_px - pad * 2
-    text_area_h  = h_px - text_y0 - pad
+    # Text area to the right of the divider
+    pad         = max(4, round(min(w_px, h_px) * 0.06))
+    text_x0     = div_x + pad
+    text_area_w = w_px - text_x0 - pad
+    text_area_h = h_px - pad * 2
 
     display_text = _apply_case(text, text_case)
     font_path    = _find_font_path("standard", font_weight)
@@ -1694,8 +1695,8 @@ def _render_price_tag(text: str, w_px: int, h_px: int, dpi: int,
     joined = "\n".join(best_lines)
     stroke = 1 if font_weight in ("bold", "bold_italic") else 0
     bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center", stroke_width=stroke)
-    x  = pad + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-    y  = text_y0 + (text_area_h - (bb[3] - bb[1])) / 2 - bb[1]
+    x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+    y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
     draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center",
                         stroke_width=stroke, stroke_fill="black")
     return img
@@ -1716,11 +1717,12 @@ def _render_cassette(text: str, w_px: int, h_px: int, dpi: int,
     draw.rectangle([0, 0, end_w,          h_px - 1], fill="black")
     draw.rectangle([w_px - end_w, 0, w_px - 1, h_px - 1], fill="black")
 
-    # Subtle horizontal white lines inside each block (classic cassette detail)
-    for frac in (0.33, 0.67):
+    # Horizontal white detail lines inside each block — 2px so they print visibly
+    detail_lw = max(2, round(dpi / 120))
+    for frac in (0.30, 0.55, 0.80):
         y = round(h_px * frac)
-        draw.line([(3, y), (end_w - 4, y)],            fill="white", width=1)
-        draw.line([(w_px - end_w + 3, y), (w_px - 4, y)], fill="white", width=1)
+        draw.line([(4, y), (end_w - 5, y)],                fill="white", width=detail_lw)
+        draw.line([(w_px - end_w + 4, y), (w_px - 5, y)], fill="white", width=detail_lw)
 
     # Thin vertical divider lines between blocks and text area
     lw = max(1, round(dpi / 150))
@@ -1761,20 +1763,20 @@ def _render_cassette(text: str, w_px: int, h_px: int, dpi: int,
 def _render_blueprint(text: str, w_px: int, h_px: int, dpi: int,
                       text_case: str, icons: bool = True,
                       font_weight: str = "bold") -> Image.Image:
-    """Engineering blueprint style: dark background, white text, grid lines, corner marks."""
-    BG    = (12, 22, 48)        # deep navy — prints as near-black on thermal
-    FG    = (210, 225, 255)     # blue-tinted white
-    GRID  = (30, 50, 90)        # subtle grid
+    """Engineering blueprint style: black background, white text/grid, corner marks."""
+    BG   = (0,   0,   0)    # pure black
+    FG   = (255, 255, 255)  # pure white — text, border, corner marks
+    GRID = (90,  90,  90)   # mid-gray grid — prints as a lighter area in the black field
 
     img  = Image.new("RGB", (w_px, h_px), BG)
     draw = ImageDraw.Draw(img)
 
-    # Grid
-    step = max(round(dpi * 0.18), 12)
-    for gx in range(0, w_px, step):
-        draw.line([(gx, 0), (gx, h_px)], fill=GRID, width=1)
-    for gy in range(0, h_px, step):
-        draw.line([(0, gy), (w_px, gy)], fill=GRID, width=1)
+    # Grid — 2px so lines actually show up on thermal print
+    step = max(round(dpi * 0.20), 14)
+    for gx in range(step, w_px, step):
+        draw.line([(gx, 0), (gx, h_px)], fill=GRID, width=2)
+    for gy in range(step, h_px, step):
+        draw.line([(0, gy), (w_px, gy)], fill=GRID, width=2)
 
     # Border
     bw = max(2, round(dpi / 80))
