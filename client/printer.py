@@ -43,6 +43,10 @@ STYLE_PRESETS = {
     "elegant":    {"label": "Elegant",          "font_style": "serif",    "border": "double"},
     "retro":      {"label": "Retro Typewriter", "font_style": "mono",     "border": "dashed"},
     "minimal":    {"label": "Minimal",          "font_style": "enhanced", "border": "thin"},
+    "price_tag":  {"label": "🏷 Price Tag"},
+    "cassette":   {"label": "📼 Cassette"},
+    "blueprint":  {"label": "📐 Blueprint"},
+    "qr_code":    {"label": "⬛ QR Code"},
 }
 
 # Fonts for the Windows 95 style (regular weight, not bold)
@@ -1214,6 +1218,14 @@ def render_label(
             return _render_warning(text, w_px, h_px, dpi, text_case, icons)
         if style_preset == "address":
             return _render_address(text, w_px, h_px, dpi, font_style, border, font_weight)
+        if style_preset == "price_tag":
+            return _render_price_tag(text, w_px, h_px, dpi, text_case, font_weight)
+        if style_preset == "cassette":
+            return _render_cassette(text, w_px, h_px, dpi, text_case, font_weight)
+        if style_preset == "blueprint":
+            return _render_blueprint(text, w_px, h_px, dpi, text_case, icons, font_weight)
+        if style_preset == "qr_code":
+            return _render_qr_code(text, w_px, h_px, dpi, text_case, font_weight)
         preset = STYLE_PRESETS.get(style_preset, {})
         font_style = preset.get("font_style", font_style)
         border     = preset.get("border",     border)
@@ -1634,6 +1646,273 @@ def _apply_case(text: str, case: str) -> str:
         # abbreviations mid-sentence (e.g. "check USB port") are preserved
         return text[0].upper() + text[1:] if text else text
     return text  # "none" — leave as typed
+
+# ── Price Tag renderer ───────────────────────────────────────────────────────
+
+def _render_price_tag(text: str, w_px: int, h_px: int, dpi: int,
+                      text_case: str, font_weight: str = "bold") -> Image.Image:
+    """Classic retail price-tag style: rounded border, eyelet hole at top, text below."""
+    img  = Image.new("RGB", (w_px, h_px), "white")
+    draw = ImageDraw.Draw(img)
+
+    bw = max(3, round(dpi / 65))
+    r  = max(10, round(min(w_px, h_px) * 0.14))
+    draw.rounded_rectangle([bw//2, bw//2, w_px - bw//2 - 1, h_px - bw//2 - 1],
+                            radius=r, outline="black", width=bw)
+
+    # Eyelet hole — centred near the top
+    hole_r  = max(7, round(min(w_px, h_px) * 0.07))
+    hole_cx = w_px // 2
+    hole_cy = bw + hole_r + max(3, round(h_px * 0.03))
+    draw.ellipse([hole_cx - hole_r, hole_cy - hole_r,
+                  hole_cx + hole_r, hole_cy + hole_r],
+                 fill="white", outline="black", width=max(2, bw - 1))
+
+    # Thin dividing line below the hole
+    line_y = hole_cy + hole_r + max(4, round(h_px * 0.05))
+    draw.line([(bw + r//2, line_y), (w_px - bw - r//2, line_y)],
+              fill="black", width=max(1, bw // 2))
+
+    # Text area beneath the line
+    pad          = bw + max(4, round(min(w_px, h_px) * 0.05))
+    text_y0      = line_y + max(4, round(h_px * 0.04))
+    text_area_w  = w_px - pad * 2
+    text_area_h  = h_px - text_y0 - pad
+
+    display_text = _apply_case(text, text_case)
+    font_path    = _find_font_path("standard", font_weight)
+
+    words = display_text.split()
+    max_n = max(1, (len(words) + 2) // 3)
+    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+    for n in range(1, min(max_n, 5) + 1):
+        lines = _split_words(words, n)
+        font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
+        if size > best_size:
+            best_size, best_font, best_lines = size, font, lines
+
+    joined = "\n".join(best_lines)
+    stroke = 1 if font_weight in ("bold", "bold_italic") else 0
+    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center", stroke_width=stroke)
+    x  = pad + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+    y  = text_y0 + (text_area_h - (bb[3] - bb[1])) / 2 - bb[1]
+    draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center",
+                        stroke_width=stroke, stroke_fill="black")
+    return img
+
+
+# ── Cassette Spine renderer ───────────────────────────────────────────────────
+
+def _render_cassette(text: str, w_px: int, h_px: int, dpi: int,
+                     text_case: str, font_weight: str = "bold") -> Image.Image:
+    """Cassette/VHS spine style: solid black end-blocks, white text area in the centre."""
+    img  = Image.new("RGB", (w_px, h_px), "white")
+    draw = ImageDraw.Draw(img)
+
+    # End blocks — scale with label width but cap at 25 %
+    end_w = min(round(w_px * 0.22), round(0.35 * dpi))
+    end_w = max(end_w, round(0.15 * dpi))
+
+    draw.rectangle([0, 0, end_w,          h_px - 1], fill="black")
+    draw.rectangle([w_px - end_w, 0, w_px - 1, h_px - 1], fill="black")
+
+    # Subtle horizontal white lines inside each block (classic cassette detail)
+    for frac in (0.33, 0.67):
+        y = round(h_px * frac)
+        draw.line([(3, y), (end_w - 4, y)],            fill="white", width=1)
+        draw.line([(w_px - end_w + 3, y), (w_px - 4, y)], fill="white", width=1)
+
+    # Thin vertical divider lines between blocks and text area
+    lw = max(1, round(dpi / 150))
+    draw.line([(end_w, 0), (end_w, h_px)],            fill="black", width=lw)
+    draw.line([(w_px - end_w, 0), (w_px - end_w, h_px)], fill="black", width=lw)
+
+    # Text — narrow/condensed font fits the spine aesthetic
+    pad         = max(4, round(h_px * 0.08))
+    text_x0     = end_w + pad
+    text_area_w = w_px - 2 * (end_w + pad)
+    text_area_h = h_px - pad * 2
+
+    display_text = _apply_case(text, text_case)
+    font_path    = _find_font_path("narrow", font_weight)
+
+    words = display_text.split()
+    max_n = max(1, (len(words) + 2) // 3)
+    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+    for n in range(1, min(max_n, 5) + 1):
+        lines = _split_words(words, n)
+        font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.90)
+        if size > best_size:
+            best_size, best_font, best_lines = size, font, lines
+
+    joined = "\n".join(best_lines)
+    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
+    x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+    y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
+    draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center")
+
+    # Outer border
+    draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=max(2, lw))
+    return img
+
+
+# ── Blueprint renderer ────────────────────────────────────────────────────────
+
+def _render_blueprint(text: str, w_px: int, h_px: int, dpi: int,
+                      text_case: str, icons: bool = True,
+                      font_weight: str = "bold") -> Image.Image:
+    """Engineering blueprint style: dark background, white text, grid lines, corner marks."""
+    BG    = (12, 22, 48)        # deep navy — prints as near-black on thermal
+    FG    = (210, 225, 255)     # blue-tinted white
+    GRID  = (30, 50, 90)        # subtle grid
+
+    img  = Image.new("RGB", (w_px, h_px), BG)
+    draw = ImageDraw.Draw(img)
+
+    # Grid
+    step = max(round(dpi * 0.18), 12)
+    for gx in range(0, w_px, step):
+        draw.line([(gx, 0), (gx, h_px)], fill=GRID, width=1)
+    for gy in range(0, h_px, step):
+        draw.line([(0, gy), (w_px, gy)], fill=GRID, width=1)
+
+    # Border
+    bw = max(2, round(dpi / 80))
+    draw.rectangle([bw//2, bw//2, w_px - bw//2 - 1, h_px - bw//2 - 1],
+                   outline=FG, width=bw)
+
+    # Corner tick marks (engineering-drawing style)
+    cm = max(8, round(min(w_px, h_px) * 0.13))
+    lw = max(2, round(dpi / 80))
+    for cx, cy in [(0,0), (w_px-1,0), (0,h_px-1), (w_px-1,h_px-1)]:
+        sx = 1 if cx == 0 else -1
+        sy = 1 if cy == 0 else -1
+        draw.line([(cx, cy), (cx + sx*cm, cy)],  fill=FG, width=lw)
+        draw.line([(cx, cy), (cx, cy + sy*cm)],  fill=FG, width=lw)
+
+    # Icon
+    pad  = max(8, round(min(w_px, h_px) * 0.09))
+    icon = _detect_icon(text) if (icons and len(text) <= 60) else None
+    if icon:
+        icon_size = int(h_px * 0.55)
+        icon_x    = pad
+        icon_y    = (h_px - icon_size) // 2
+        text_x0   = icon_x + icon_size + pad
+    else:
+        text_x0   = pad
+
+    text_area_w = w_px - text_x0 - pad
+    text_area_h = h_px - pad * 2
+
+    display_text = _apply_case(text, text_case)
+    font_path    = _find_font_path("mono", font_weight)
+
+    words = display_text.split()
+    max_n = max(1, (len(words) + 2) // 3)
+    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+    for n in range(1, min(max_n, 5) + 1):
+        lines = _split_words(words, n)
+        font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
+        if size > best_size:
+            best_size, best_font, best_lines = size, font, lines
+
+    joined = "\n".join(best_lines)
+    stroke = 1 if font_weight in ("bold", "bold_italic") else 0
+    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center", stroke_width=stroke)
+    x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+    y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
+    draw.multiline_text((x, y), joined, fill=FG, font=best_font, align="center",
+                        stroke_width=stroke, stroke_fill=FG)
+
+    if icon:
+        _draw_icon(img, icon, icon_x, icon_y, icon_size, color=FG)
+
+    return img
+
+
+# ── QR Code renderer ──────────────────────────────────────────────────────────
+
+def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
+                    text_case: str, font_weight: str = "bold") -> Image.Image:
+    """QR code label: scannable QR code with the text as caption."""
+    try:
+        import qrcode as _qrcode
+    except ImportError:
+        # qrcode not installed — fall back to standard render with a note
+        img  = Image.new("RGB", (w_px, h_px), "white")
+        draw = ImageDraw.Draw(img)
+        f    = ImageFont.load_default()
+        draw.multiline_text((4, 4), "Install qrcode:\npip install qrcode[pil]",
+                            fill="black", font=f)
+        return img
+
+    img  = Image.new("RGB", (w_px, h_px), "white")
+    draw = ImageDraw.Draw(img)
+    pad  = max(4, round(min(w_px, h_px) * 0.04))
+
+    # Generate QR
+    qr = _qrcode.QRCode(version=None,
+                        error_correction=_qrcode.constants.ERROR_CORRECT_M,
+                        box_size=4, border=1)
+    qr.add_data(text)
+    qr.make(fit=True)
+    qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+
+    if w_px > h_px * 1.5:
+        # Landscape — QR on left, text on right
+        qr_size = min(h_px - pad * 2, round(w_px * 0.45))
+        qr_img  = qr_img.resize((qr_size, qr_size), Image.NEAREST)
+        img.paste(qr_img, (pad, (h_px - qr_size) // 2))
+
+        text_x0     = pad + qr_size + pad
+        text_area_w = w_px - text_x0 - pad
+        text_area_h = h_px - pad * 2
+        align       = "left"
+    else:
+        # Portrait / square — QR on top, text below
+        caption_h   = max(round(h_px * 0.22), round(0.18 * dpi))
+        qr_size     = min(w_px - pad * 2, h_px - caption_h - pad * 2)
+        qr_img      = qr_img.resize((qr_size, qr_size), Image.NEAREST)
+        img.paste(qr_img, ((w_px - qr_size) // 2, pad))
+
+        text_x0     = pad
+        text_area_w = w_px - pad * 2
+        text_area_h = caption_h - pad
+        align       = "center"
+        # shift text_y0 below the QR
+        text_y0_offset = pad + qr_size + pad // 2
+        draw = ImageDraw.Draw(img)  # refresh after paste
+
+    display_text = _apply_case(text, text_case)
+    font_path    = _find_font_path("enhanced", font_weight)
+
+    words = display_text.split()
+    max_n = max(1, (len(words) + 1) // 2)
+    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+    for n in range(1, min(max_n, 4) + 1):
+        lines = _split_words(words, n)
+        font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
+        if size > best_size:
+            best_size, best_font, best_lines = size, font, lines
+
+    joined = "\n".join(best_lines)
+    bb     = draw.multiline_textbbox((0, 0), joined, font=best_font, align=align)
+    tw, th = bb[2] - bb[0], bb[3] - bb[1]
+
+    if w_px > h_px * 1.5:
+        x = text_x0
+        y = (h_px - th) / 2 - bb[1]
+    else:
+        x = text_x0 + (text_area_w - tw) / 2 - bb[0]
+        y = text_y0_offset
+
+    draw.multiline_text((x, y), joined, fill="black", font=best_font, align=align)
+
+    # Border
+    draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black",
+                   width=max(1, round(dpi / 150)))
+    return img
+
 
 # ── Text fitting ──────────────────────────────────────────────────────────────
 

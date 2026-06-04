@@ -3,3 +3,4 @@ requests>=2.31
 pillow>=10.0
 pywin32>=306
 pystray>=0.19
+qrcode[pil]>=7.4
