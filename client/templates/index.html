@@ -411,6 +411,8 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
       <span id="settings-chevron" style="font-size:.85rem; color:var(--text3); transition:transform .25s">▲</span>
     </div>
 
+    <div id="settings-summary" style="display:none; font-size:.78rem; color:var(--text2); padding:.35rem 0 .1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+
     <div id="settings-body">
       <p class="section-desc">Changes apply immediately — including labels sent by voice.</p>
 
@@ -648,15 +650,58 @@ function toggleDark() {
   if (localStorage.getItem('labelprinter-settings-open') === '0') {
     document.getElementById('settings-body').classList.add('collapsed');
     document.getElementById('settings-chevron').style.transform = 'rotate(180deg)';
+    document.getElementById('settings-summary').style.display = 'block';
+    // Summary text is populated after DOM is ready
+    setTimeout(updateSettingsSummary, 0);
   }
 })();
 
 /* ── Collapsible settings ─────────────────────────────────────────────── */
+function updateSettingsSummary() {
+  const parts = [];
+
+  const printerEl = document.getElementById('sel-printer');
+  if (printerEl?.value) {
+    // Shorten long printer names to first two words
+    parts.push(printerEl.value.split(' ').slice(0, 2).join(' '));
+  }
+
+  const size = document.getElementById('sel-size')?.value;
+  if (size) parts.push(size);
+
+  const presetSel = document.getElementById('sel-style-preset');
+  const preset    = presetSel?.value;
+  if (preset && preset !== 'none') {
+    parts.push(presetSel.options[presetSel.selectedIndex].text.trim());
+  } else {
+    const font = document.getElementById('sel-font-style')?.value;
+    if (font) parts.push(font.charAt(0).toUpperCase() + font.slice(1));
+  }
+
+  const border = document.getElementById('sel-border')?.value;
+  if (border && border !== 'none') parts.push(border + ' border');
+
+  const tcSel = document.getElementById('sel-text-case');
+  const tc    = tcSel?.value;
+  if (tc && tc !== 'none') {
+    const lbl = {uppercase:'ALL CAPS', lowercase:'lowercase', title:'Title Case', sentence:'Sentence'};
+    parts.push(lbl[tc] || tc);
+  }
+
+  const icons = document.getElementById('chk-icons')?.checked;
+  if (icons) parts.push('icons on');
+
+  document.getElementById('settings-summary').textContent = parts.join(' · ');
+}
+
 function toggleSettings() {
   const body     = document.getElementById('settings-body');
   const chevron  = document.getElementById('settings-chevron');
+  const summary  = document.getElementById('settings-summary');
   const collapsed = body.classList.toggle('collapsed');
   chevron.style.transform = collapsed ? 'rotate(180deg)' : '';
+  summary.style.display   = collapsed ? 'block' : 'none';
+  if (collapsed) updateSettingsSummary();
   localStorage.setItem('labelprinter-settings-open', collapsed ? '0' : '1');
 }
 
@@ -783,6 +828,7 @@ function refreshPreview() {
 }
 
 function saveConfig() {
+  updateSettingsSummary();
   fetch('/config', {
     method:  'POST',
     headers: {'Content-Type': 'application/json'},
