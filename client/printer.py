@@ -1439,7 +1439,7 @@ def _render_win95(text: str, w_px: int, h_px: int, dpi: int, text_case: str,
     font_path    = next((p for p in _WIN95_FONTS if os.path.exists(p)), None)
 
     words = display_text.split()
-    max_n = max(1, (len(words) + 2) // 3)
+    max_n = min(len(words), 5)
     best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
     for n in range(1, min(max_n, 5) + 1):
         lines = _split_words(words, n)
@@ -1649,7 +1649,7 @@ def _render_warning(text: str, w_px: int, h_px: int, dpi: int, text_case: str,
 
     text_area_w = ix2 - text_x0 - pad
     words = display_text.split()
-    max_n = max(1, (len(words) + 2) // 3)
+    max_n = min(len(words), 5)
     best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
     for n in range(1, min(max_n, 5) + 1):
         lines = _split_words(words, n)
@@ -1740,7 +1740,7 @@ def _render_price_tag(text: str, w_px: int, h_px: int, dpi: int,
     font_path    = _find_font_path("standard", font_weight)
 
     words = display_text.split()
-    max_n = max(1, (len(words) + 2) // 3)
+    max_n = min(len(words), 5)
     best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
     for n in range(1, min(max_n, 5) + 1):
         lines = _split_words(words, n)
@@ -1795,7 +1795,7 @@ def _render_cassette(text: str, w_px: int, h_px: int, dpi: int,
     font_path    = _find_font_path("narrow", font_weight)
 
     words = display_text.split()
-    max_n = max(1, (len(words) + 2) // 3)
+    max_n = min(len(words), 5)
     best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
     for n in range(1, min(max_n, 5) + 1):
         lines = _split_words(words, n)
@@ -1866,7 +1866,7 @@ def _render_blueprint(text: str, w_px: int, h_px: int, dpi: int,
     font_path    = _find_font_path("mono", font_weight)
 
     words = display_text.split()
-    max_n = max(1, (len(words) + 2) // 3)
+    max_n = min(len(words), 5)
     best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
     for n in range(1, min(max_n, 5) + 1):
         lines = _split_words(words, n)
@@ -1952,7 +1952,7 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
     display_text = _apply_case(text, text_case)
     font_path    = _find_font_path("enhanced", font_weight)
     words        = display_text.split()
-    max_n        = max(1, (len(words) + 1) // 2)
+    max_n        = min(len(words), 5)
     best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
     for n in range(1, min(max_n, 4) + 1):
         lines = _split_words(words, n)
@@ -1976,10 +1976,8 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
 def _fit_text(text, max_w, max_h, font_style="standard", fill=0.85, font_weight="bold"):
     font_path = _find_font_path(font_style, font_weight)
     words     = text.split()
-    # Aim for at least ~3 words per line — stops single-word lines winning the
-    # "biggest font" contest just because one short word fits a huge size.
-    # (len+2)//3 is ceiling(len/3): 1-3 words→1 line, 4-6→2, 7-9→3, etc.
-    max_n      = max(1, (len(words) + 2) // 3)
+    # Try every split from 1 line up to one-word-per-line; pick the biggest font.
+    max_n      = min(len(words), 5)
     best_font  = ImageFont.load_default()
     best_size  = 0
     best_lines = [text]
