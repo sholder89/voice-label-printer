@@ -147,7 +147,9 @@ def post_setting():
         "font_style":   {"standard", "enhanced", "impact", "serif", "narrow", "mono", "burbank"},
         "border":       {"none", "thin", "thick", "double", "dashed", "rounded", "corners"},
         "text_case":    {"none", "uppercase", "lowercase", "title", "sentence"},
-        "style_preset": {"none", "bold", "elegant", "retro", "minimal", "warning", "address", "windows95"},
+        "style_preset": {"none", "bold", "elegant", "retro", "minimal", "warning",
+                          "address", "windows95", "price_tag", "cassette", "blueprint", "qr_code"},
+        "font_weight":  {"normal", "bold", "italic", "bold_italic"},
         "icons":        {"true", "false"},
         "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5"},
     }
