@@ -231,6 +231,65 @@ _ICON_KEYWORDS = {
     "magician":         "magic_wand",
     "abracadabra":      "magic_wand",
 
+    # ── Professions ──────────────────────────────────────────────────────────
+    "judge":            "judge",
+    "justice":          "judge",
+    "magistrate":       "judge",
+    "jury":             "judge",
+    "courtroom":        "judge",
+    "chef":             "chef",
+    "cook":             "chef",
+    "baker":            "chef",
+    "pastry chef":      "chef",
+    "sous chef":        "chef",
+    "culinary":         "chef",
+    "student":          "graduation",
+    "pupil":            "graduation",
+    "learner":          "graduation",
+    "undergraduate":    "graduation",
+    "scholar":          "graduation",
+    "academic":         "graduation",
+    "professor":        "graduation",
+    "teacher":          "graduation",
+    "tutor":            "graduation",
+    "lecturer":         "graduation",
+    "educator":         "graduation",
+    "instructor":       "graduation",
+    "farmer":           "tractor",
+    "rancher":          "tractor",
+    "agriculture":      "tractor",
+    "farming":          "tractor",
+    "livestock":        "tractor",
+    "gardener":         "herb",
+    "gardening":        "herb",
+    "horticulture":     "herb",
+    "botanist":         "herb",
+    "nurse":            "medicine",
+    "nursing":          "medicine",
+    "paramedic":        "firstaid",
+    "emt":              "firstaid",
+    "firefighter":      "fire_truck",
+    "fireman":          "fire_truck",
+    "pilot":            "airplane",
+    "aviator":          "airplane",
+    "flight crew":      "airplane",
+    "mechanic":         "tools",
+    "plumber":          "tools",
+    "electrician":      "lightning",
+    "programmer":       "computer",
+    "developer":        "computer",
+    "coder":            "computer",
+    "software":         "computer",
+    "writer":           "pencil",
+    "author":           "pencil",
+    "journalist":       "pencil",
+    "blogger":          "pencil",
+    "novelist":         "pencil",
+    "scientist":        "science",
+    "researcher":       "science",
+    "photographer":     "camera",
+    "videographer":     "camera",
+
     # ── People / Gestures ────────────────────────────────────────────────────
     "thumbs up":        "thumbsup",
     "approved":         "thumbsup",
@@ -600,7 +659,7 @@ _ICON_KEYWORDS = {
     "wave":             "wave_water",
     "ocean":            "wave_water",
     "sea":              "wave_water",
-    "surfing":          "wave_water",
+    "surfing":          "surfer",
     "mountain":         "mountain",
     "mountains":        "mountain",
     "hiking":           "mountain",
@@ -1041,6 +1100,13 @@ _ICON_KEYWORDS = {
     "skiing":           "skiing",
     "snowboarding":     "skiing",
     "swimming":         "swimming",
+    "swimmer":          "swimming",
+    "swim":             "swimming",
+    "lifeguard":        "swimming",
+    "surfing":          "surfer",
+    "surfer":           "surfer",
+    "surf":             "surfer",
+    "surfs":            "surfer",
     "cycling":          "cycling",
     "biking":           "cycling",
     "boxing":           "boxing",
@@ -1049,6 +1115,7 @@ _ICON_KEYWORDS = {
     "sumo":             "wrestling",
     "grappling":        "wrestling",
     "gymnastics":       "gymnastics",
+    "gymnast":          "gymnastics",
     "tumbling":         "gymnastics",
     "acrobatics":       "gymnastics",
     "fencing":          "fencing",
@@ -1059,8 +1126,23 @@ _ICON_KEYWORDS = {
     "badminton":        "badminton",
     "shuttlecock":      "badminton",
     "running":          "running",
+    "runner":           "running",
     "jogging":          "running",
+    "jogger":           "running",
     "marathon":         "running",
+    "athlete":          "running",
+    "athletics":        "running",
+    "hiker":            "climbing",
+    "hiking":           "climbing",
+    "trekking":         "climbing",
+    "trekker":          "climbing",
+    "mountaineer":      "climbing",
+    "dance":            "dancer",
+    "dancer":           "dancer",
+    "dancing":          "dancer",
+    "ballet":           "dancer",
+    "ballroom":         "dancer",
+    "salsa":            "dancer",
     "yoga":             "yoga",
     "pilates":          "yoga",
     "camping":          "camping",
@@ -2049,6 +2131,8 @@ _ICON_EMOJIS = {
     "superhero":        "\U0001F9B8",       # 🦸
     "tuxedo":           "\U0001F935",       # 🤵
     "worker":           "\U0001F477",       # 👷
+    "judge":            "\U00002696",       # ⚖
+    "chef":             "\U0001F9D1‍\U0001F373",  # 🧑‍🍳 (ZWJ)
     "skull":            "\U0001F480",       # 💀
     "ghost":            "\U0001F47B",       # 👻
     "robot":            "\U0001F916",       # 🤖
@@ -2327,6 +2411,8 @@ _ICON_EMOJIS = {
     "volleyball":       "\U0001F3D0",       # 🏐
     "skiing":           "\U0001F3BF",       # 🎿
     "swimming":         "\U0001F3CA",       # 🏊
+    "surfer":           "\U0001F3C4",       # 🏄
+    "dancer":           "\U0001F483",       # 💃
     "cycling":          "\U0001F6B4",       # 🚴
     "boxing":           "\U0001F94A",       # 🥊
     "wrestling":        "\U0001F93C",       # 🤼
