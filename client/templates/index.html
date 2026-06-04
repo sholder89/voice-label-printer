@@ -407,11 +407,10 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
   <!-- ── Printer Settings ──────────────────────────────────────────── -->
   <div class="card" id="settings-card">
     <div class="card-header" onclick="toggleSettings()" style="cursor:pointer; user-select:none">
-      <h2><span class="card-icon">⚙</span>Settings</h2>
-      <span id="settings-chevron" style="font-size:.85rem; color:var(--text3); transition:transform .25s">▲</span>
+      <h2 style="white-space:nowrap"><span class="card-icon">⚙</span>Settings</h2>
+      <span id="settings-summary" style="flex:1; margin:0 .75rem; font-size:.75rem; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:0; transition:opacity .2s;"></span>
+      <span id="settings-chevron" style="font-size:.85rem; color:var(--text3); transition:transform .25s; flex-shrink:0">▲</span>
     </div>
-
-    <div id="settings-summary" style="display:none; font-size:.78rem; color:var(--text2); padding:.35rem 0 .1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
 
     <div id="settings-body">
       <p class="section-desc">Changes apply immediately — including labels sent by voice.</p>
@@ -650,8 +649,7 @@ function toggleDark() {
   if (localStorage.getItem('labelprinter-settings-open') === '0') {
     document.getElementById('settings-body').classList.add('collapsed');
     document.getElementById('settings-chevron').style.transform = 'rotate(180deg)';
-    document.getElementById('settings-summary').style.display = 'block';
-    // Summary text is populated after DOM is ready
+    document.getElementById('settings-summary').style.opacity = '1';
     setTimeout(updateSettingsSummary, 0);
   }
 })();
@@ -699,8 +697,8 @@ function toggleSettings() {
   const chevron  = document.getElementById('settings-chevron');
   const summary  = document.getElementById('settings-summary');
   const collapsed = body.classList.toggle('collapsed');
-  chevron.style.transform = collapsed ? 'rotate(180deg)' : '';
-  summary.style.display   = collapsed ? 'block' : 'none';
+  chevron.style.transform  = collapsed ? 'rotate(180deg)' : '';
+  summary.style.opacity    = collapsed ? '1' : '0';
   if (collapsed) updateSettingsSummary();
   localStorage.setItem('labelprinter-settings-open', collapsed ? '0' : '1');
 }
