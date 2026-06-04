@@ -574,6 +574,8 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
   <div class="card">
     <div class="card-header">
       <h2><span class="card-icon">📋</span>History</h2>
+      <button class="btn-icon" onclick="clearHistory()" title="Clear all history"
+              style="font-size:.75rem; padding:.3rem .65rem; color:#ef4444; border-color:#fca5a5">✕ Clear All</button>
     </div>
     <table>
       <thead>
@@ -583,6 +585,11 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
         <tr><td colspan="5" class="empty-row">No prints yet</td></tr>
       </tbody>
     </table>
+    <div id="hist-pagination" style="display:none; margin-top:.75rem; display:flex; align-items:center; gap:.5rem; justify-content:center;">
+      <button class="btn-icon" id="hist-prev" onclick="histPage(-1)">← Prev</button>
+      <span id="hist-page-label" style="font-size:.8rem; color:var(--text2); min-width:80px; text-align:center"></span>
+      <button class="btn-icon" id="hist-next" onclick="histPage(1)">Next →</button>
+    </div>
   </div>
 </main>
 
@@ -595,9 +602,11 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
 <div class="toast" id="toast"></div>
 
 <script>
-const MAX_CHARS = 200;
+const MAX_CHARS   = 200;
+const HIST_PER_PAGE = 10;
 let previewTimer    = null;
 let _histRows       = [];
+let _histPage       = 0;
 let _tooltipTimer   = null;
 let _tooltipVisible = false;
 
@@ -924,15 +933,24 @@ function toast(msg, isError = false) {
 }
 
 /* ── History ──────────────────────────────────────────────────────────── */
-function loadHistory() {
-  fetch('/history').then(r => r.json()).then(rows => {
-    _histRows = rows;
-    const tbody = document.getElementById('history-body');
-    if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No prints yet</td></tr>';
-      return;
-    }
-    tbody.innerHTML = rows.map((r, i) => `
+function renderHistPage() {
+  const tbody    = document.getElementById('history-body');
+  const pgDiv    = document.getElementById('hist-pagination');
+  const totalPages = Math.ceil(_histRows.length / HIST_PER_PAGE);
+
+  if (!_histRows.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No prints yet</td></tr>';
+    pgDiv.style.display = 'none';
+    return;
+  }
+
+  _histPage = Math.max(0, Math.min(_histPage, totalPages - 1));
+  const start = _histPage * HIST_PER_PAGE;
+  const page  = _histRows.slice(start, start + HIST_PER_PAGE);
+
+  tbody.innerHTML = page.map((r, pi) => {
+    const i = start + pi;   // global index into _histRows
+    return `
       <tr class="hist-row"
           onmouseenter="showHistoryPreview(${i}, this)"
           onmouseleave="hideHistoryPreview()">
@@ -946,7 +964,41 @@ function loadHistory() {
           <button class="btn-icon" onclick="loadFromHistory(${i})" title="Load into editor" style="font-size:.75rem; padding:.3rem .55rem">↩ Load</button>
           <button class="btn-icon" onclick="deleteHistory(_histRows[${i}].ts)" title="Delete" style="margin-left:.6rem; color:#ef4444; border-color:#fca5a5; font-size:.7rem; font-weight:700; padding:.3rem .5rem">✕</button>
         </td>
-      </tr>`).join('');
+      </tr>`;
+  }).join('');
+
+  if (totalPages > 1) {
+    pgDiv.style.display = 'flex';
+    document.getElementById('hist-page-label').textContent =
+      `Page ${_histPage + 1} of ${totalPages}`;
+    document.getElementById('hist-prev').disabled = _histPage === 0;
+    document.getElementById('hist-next').disabled = _histPage >= totalPages - 1;
+  } else {
+    pgDiv.style.display = 'none';
+  }
+}
+
+function histPage(dir) {
+  hideHistoryPreview();
+  _histPage += dir;
+  renderHistPage();
+}
+
+function clearHistory() {
+  if (!_histRows.length) return;
+  if (!confirm('Clear all print history?')) return;
+  fetch('/history/clear', { method: 'POST' }).then(() => {
+    _histRows = [];
+    _histPage = 0;
+    renderHistPage();
+    toast('History cleared');
+  });
+}
+
+function loadHistory() {
+  fetch('/history').then(r => r.json()).then(rows => {
+    _histRows = rows;
+    renderHistPage();
   });
 }
 

@@ -287,6 +287,13 @@ def delete_history():
     return jsonify({"ok": True})
 
 
+@app.route("/history/clear", methods=["POST"])
+def clear_history():
+    state["history"] = []
+    _save_history()
+    return jsonify({"ok": True})
+
+
 @app.route("/status")
 def status():
     return jsonify({
