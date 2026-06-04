@@ -148,6 +148,20 @@ _PRESET_MAP = {
     "windows ninety five":   "windows95",
     "windows95":             "windows95",
     "ninety five":           "windows95",
+    "price tag":             "price_tag",
+    "price label":           "price_tag",
+    "tag":                   "price_tag",
+    "cassette":              "cassette",
+    "cassette spine":        "cassette",
+    "tape":                  "cassette",
+    "blueprint":             "blueprint",
+    "blue print":            "blueprint",
+    "technical":             "blueprint",
+    "qr code":               "qr_code",
+    "qr":                    "qr_code",
+    "q r code":              "qr_code",
+    "barcode":               "qr_code",
+    "scan code":             "qr_code",
 }
 
 _SIZE_MAP = {
@@ -194,14 +208,37 @@ _CASE_LABELS = {
     "sentence": "sentence case",
 }
 _PRESET_LABELS = {
-    "none":      "no style",
-    "bold":      "bold",
-    "elegant":   "elegant",
-    "retro":     "retro typewriter",
-    "minimal":   "minimal",
-    "warning":   "warning",
-    "address":   "address label",
-    "windows95": "Windows 95",
+    "none":       "no style",
+    "bold":       "bold",
+    "elegant":    "elegant",
+    "retro":      "retro typewriter",
+    "minimal":    "minimal",
+    "warning":    "warning",
+    "address":    "address label",
+    "windows95":  "Windows 95",
+    "price_tag":  "price tag",
+    "cassette":   "cassette",
+    "blueprint":  "blueprint",
+    "qr_code":    "QR code",
+}
+
+_WEIGHT_MAP = {
+    "normal":      "normal",
+    "regular":     "normal",
+    "light":       "normal",
+    "bold":        "bold",
+    "italic":      "italic",
+    "italics":     "italic",
+    "bold italic":  "bold_italic",
+    "bold italics": "bold_italic",
+    "bold and italic": "bold_italic",
+}
+
+_WEIGHT_LABELS = {
+    "normal":     "normal",
+    "bold":       "bold",
+    "italic":     "italic",
+    "bold_italic": "bold italic",
 }
 _SIZE_LABELS = {
     "2x1":   "two by one",
@@ -306,6 +343,23 @@ def _handle_intent(intent):
             logger.error("Settings failed: %s", e)
             return _respond("Sorry, I couldn't update the setting. Please try again.")
 
+    # ── Font weight ────────────────────────────────────────────────────────────
+    if name == "ChangeFontWeightIntent":
+        raw = _slot_value(intent, "fontWeight")
+        val = _WEIGHT_MAP.get(raw.lower()) if raw else None
+        if not val:
+            return _respond(
+                "I didn't recognise that font weight. Options are: "
+                "normal, bold, italic, and bold italic.",
+                end=False,
+            )
+        try:
+            _post_setting("font_weight", val)
+            return _respond(f"Font weight set to {_WEIGHT_LABELS[val]}.")
+        except Exception as e:
+            logger.error("Settings failed: %s", e)
+            return _respond("Sorry, I couldn't update the setting. Please try again.")
+
     # ── Style preset ───────────────────────────────────────────────────────────
     if name == "ChangeStylePresetIntent":
         raw = _slot_value(intent, "presetName")
@@ -313,7 +367,8 @@ def _handle_intent(intent):
         if val is None:
             return _respond(
                 "I didn't recognise that style. Available styles are: "
-                "bold, elegant, retro, minimal, warning, address label, Windows 95, or none to clear.",
+                "bold, elegant, retro, minimal, warning, address label, "
+                "price tag, cassette, blueprint, QR code, Windows 95, or none to clear.",
                 end=False,
             )
         try:
@@ -360,8 +415,8 @@ def _handle_intent(intent):
         return _respond(
             "You can say: print Hello World. "
             "Or change settings: set style to bold, set font to impact, "
-            "set border to thick, set text case to all caps, "
-            "set size to four by two, or turn icons off.",
+            "set font weight to italic, set border to thick, "
+            "set text case to all caps, set size to four by two, or turn icons off.",
             end=False,
         )
 

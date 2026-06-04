@@ -108,6 +108,24 @@
           ]
         },
         {
+          "name": "ChangeFontWeightIntent",
+          "slots": [
+            {
+              "name": "fontWeight",
+              "type": "FontWeight"
+            }
+          ],
+          "samples": [
+            "set font weight to {fontWeight}",
+            "change font weight to {fontWeight}",
+            "set the font weight to {fontWeight}",
+            "change the font weight to {fontWeight}",
+            "set weight to {fontWeight}",
+            "use {fontWeight} weight",
+            "make the font {fontWeight}"
+          ]
+        },
+        {
           "name": "ToggleIconsIntent",
           "slots": [
             {
@@ -184,7 +202,20 @@
             { "name": { "value": "minimal" } },
             { "name": { "value": "warning", "synonyms": ["caution", "warning label"] } },
             { "name": { "value": "address", "synonyms": ["address label", "mailing label", "mailing"] } },
-            { "name": { "value": "windows95", "synonyms": ["windows 95", "windows ninety five", "ninety five"] } }
+            { "name": { "value": "windows95", "synonyms": ["windows 95", "windows ninety five", "ninety five"] } },
+            { "name": { "value": "price tag", "synonyms": ["price label", "tag"] } },
+            { "name": { "value": "cassette", "synonyms": ["cassette spine", "tape"] } },
+            { "name": { "value": "blueprint", "synonyms": ["blue print", "technical"] } },
+            { "name": { "value": "qr code", "synonyms": ["qr", "q r code", "barcode", "scan code"] } }
+          ]
+        },
+        {
+          "name": "FontWeight",
+          "values": [
+            { "name": { "value": "normal", "synonyms": ["regular", "light"] } },
+            { "name": { "value": "bold" } },
+            { "name": { "value": "italic", "synonyms": ["italics"] } },
+            { "name": { "value": "bold italic", "synonyms": ["bold italics", "bold and italic"] } }
           ]
         },
         {
