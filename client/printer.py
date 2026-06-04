@@ -1,5 +1,6 @@
 """Label rendering and printing via Windows GDI."""
 import ctypes
+import glob
 import os
 import re
 import struct
@@ -29,7 +30,19 @@ DEFAULT_DPI = 203
 
 FONT_STYLES   = ["standard", "enhanced", "impact", "serif", "narrow", "mono", "burbank"]
 FONT_WEIGHTS  = ["normal", "bold", "italic", "bold_italic"]
-BORDER_STYLES = ["none", "thin", "thick", "double", "dashed", "rounded", "corners"]
+# ── Image-based borders ───────────────────────────────────────────────────────
+# Any file named  client/images/border_<name>.png  is auto-detected and added
+# as a border option.  Drop a new file in and restart the app.
+
+_IMAGES_DIR   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images")
+os.makedirs(_IMAGES_DIR, exist_ok=True)
+
+_IMAGE_BORDERS = [
+    os.path.splitext(os.path.basename(f))[0][len("border_"):]
+    for f in sorted(glob.glob(os.path.join(_IMAGES_DIR, "border_*.png")))
+]
+
+BORDER_STYLES = ["none", "thin", "thick", "double", "dashed", "rounded", "corners"] + _IMAGE_BORDERS
 TEXT_CASES    = ["none", "uppercase", "lowercase", "title", "sentence"]
 
 # Style presets — each overrides individual settings when active.
@@ -1292,6 +1305,8 @@ def render_label(
         _draw_icon(img, icon, icon_x, icon_y, icon_size)
 
     _draw_border(draw, w_px, h_px, pad, border, dpi)
+    if border in _IMAGE_BORDERS:
+        img = _overlay_image_border(img, border, w_px, h_px)
 
     return img
 
@@ -1500,6 +1515,8 @@ def _render_address(text: str, w_px: int, h_px: int, dpi: int,
     # Draw border using the shared renderer — same pad formula as render_label
     border_pad = max(4, int(min(w_px, h_px) * 0.05))
     _draw_border(draw, w_px, h_px, border_pad, border, dpi)
+    if border in _IMAGE_BORDERS:
+        img = _overlay_image_border(img, border, w_px, h_px)
 
     return img
 
@@ -2215,6 +2232,25 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0)):
     img.paste(color_img, (paste_x, paste_y), mask=mask)
 
 # ── Border drawing ────────────────────────────────────────────────────────────
+
+def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int) -> Image.Image:
+    """Scale border_<name>.png to the label size, recolour to pure black, and composite."""
+    path = os.path.join(_IMAGES_DIR, f"border_{name}.png")
+    if not os.path.exists(path):
+        return img
+    border = Image.open(path).convert("RGBA")
+    border = border.resize((w_px, h_px), Image.LANCZOS)
+    # Keep the alpha channel but force all RGB to black so the design prints black
+    _, _, _, a = border.split()
+    black_border = Image.merge("RGBA", [
+        Image.new("L", border.size, 0),
+        Image.new("L", border.size, 0),
+        Image.new("L", border.size, 0),
+        a,
+    ])
+    result = Image.alpha_composite(img.convert("RGBA"), black_border)
+    return result.convert("RGB")
+
 
 def _draw_border(draw, w, h, pad, style, dpi=203):
     if style == "none":
