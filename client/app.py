@@ -133,11 +133,9 @@ def _notify(text, size, source="manual", error=None):
     """Fire-and-forget Telegram message. Silently skipped if not configured."""
     if not (_TG_TOKEN and _TG_CHAT):
         return
-    source_label = "🎙️ Voice" if source == "voice" else "🖥️ Manual"
-    if error:
-        msg = f'❌ Print failed\n{source_label} · {size}\n\n"{text}"\n\n{error}'
-    else:
-        msg = f'\U0001f5a8 Label printed\n{source_label} · {size}\n\n"{text}"'
+    icon   = "🎙" if source == "voice" else "🖥"
+    prefix = "❌" if error else "🖨"
+    msg    = f'{prefix} {icon} {size} · "{text}"' + (f' · {error}' if error else '')
     try:
         requests.post(
             f"https://api.telegram.org/bot{_TG_TOKEN}/sendMessage",
