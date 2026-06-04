@@ -433,9 +433,12 @@ def _run_tray():
         pythonw = os.path.join(py_dir, "pythonw.exe")
         if not os.path.exists(pythonw):
             pythonw = sys.executable          # fallback: regular python
+        env = os.environ.copy()
+        env["LABEL_PRINTER_RESTART"] = "1"   # skip browser auto-open on restart
         subprocess.Popen(
             [pythonw, os.path.join(_APP_DIR, "app.py")],
             cwd=_APP_DIR,
+            env=env,
         )
         icon.stop()
         os._exit(0)
@@ -480,7 +483,8 @@ if __name__ == "__main__":
         )
         flask_thread.start()
         time.sleep(0.8)  # let Flask bind before opening the browser
-        webbrowser.open("http://localhost:5000")
+        if not os.environ.get("LABEL_PRINTER_RESTART"):
+            webbrowser.open("http://localhost:5000")
         _run_tray()      # blocks here until the user clicks Quit
 
     except ImportError:
