@@ -98,6 +98,7 @@ telegram://<bot_token>@telegram?chats=<chat_id>
 | *"Alexa, ask label printer to set size to four by two"* | Changes label size |
 | *"Alexa, ask label printer to set font to burbank"* | Changes font style |
 | *"Alexa, ask label printer to set border to double"* | Changes border style |
+| *"Alexa, ask label printer to set font weight to italic"* | Changes font weight |
 | *"Alexa, ask label printer to turn icons off"* | Disables emoji icons |
 | *"Alexa, ask label printer to set text to uppercase"* | Changes text case |
 
