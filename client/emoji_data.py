@@ -271,6 +271,61 @@ _ICON_KEYWORDS = {
     "footsteps":        "footprints",
     "tracks":           "footprints",
 
+    # ── Emotions / Faces ─────────────────────────────────────────────────────
+    "cry":              "face_cry",
+    "crying":           "face_cry",
+    "tears":            "face_cry",
+    "sob":              "face_cry",
+    "weeping":          "face_cry",
+    "laugh":            "face_laugh",
+    "laughing":         "face_laugh",
+    "lol":              "face_laugh",
+    "funny":            "face_laugh",
+    "hilarious":        "face_laugh",
+    "smile":            "face_smile",
+    "smiling":          "face_smile",
+    "grin":             "face_smile",
+    "grinning":         "face_smile",
+    "cheerful":         "face_smile",
+    "sad":              "face_sad",
+    "unhappy":          "face_sad",
+    "frown":            "face_sad",
+    "frowning":         "face_sad",
+    "depressed":        "face_sad",
+    "miserable":        "face_sad",
+    "happy":            "face_happy",
+    "happiness":        "face_happy",
+    "joy":              "face_happy",
+    "joyful":           "face_happy",
+    "excited":          "face_happy",
+    "delighted":        "face_happy",
+    "angry":            "face_angry",
+    "anger":            "face_angry",
+    "furious":          "face_angry",
+    "rage":             "face_angry",
+    "mad":              "face_angry",
+    "frustrated":       "face_angry",
+    "bored":            "face_bored",
+    "boring":           "face_bored",
+    "boredom":          "face_bored",
+    "expressionless":   "face_bored",
+    "shocked":          "face_shocked",
+    "shock":            "face_shocked",
+    "surprised":        "face_shocked",
+    "surprise":         "face_shocked",
+    "astonished":       "face_shocked",
+    "horrified":        "face_shocked",
+    "lips":             "lips",
+    "mouth":            "lips",
+    "kiss":             "kiss",
+    "kissing":          "kiss",
+    "smooch":           "kiss",
+    "xoxo":             "kiss",
+    "hug":              "hug",
+    "hugging":          "hug",
+    "embrace":          "hug",
+    "cuddle":           "hug",
+
     # ── Animals — Pets ───────────────────────────────────────────────────────
     "dog":              "dog",
     "puppy":            "dog",
@@ -463,7 +518,7 @@ _ICON_KEYWORDS = {
     "summer":           "summer",
     "sunny":            "summer",
     "sunshine":         "summer",
-    "beach":            "summer",
+    "beach":            "beach",
     "pool":             "summer",
     "june":             "summer",
     "july":             "summer",
@@ -1960,6 +2015,7 @@ _ICON_EMOJIS = {
 
     # Seasons / weather
     "summer":           "\U00002600",       # ☀
+    "beach":            "\U0001F3D6",       # 🏖
     "autumn":           "\U0001F342",       # 🍂
     "spring":           "\U0001F338",       # 🌸
     "rainbow":          "\U0001F308",       # 🌈
@@ -2014,6 +2070,17 @@ _ICON_EMOJIS = {
     "crown":            "\U0001F451",       # 👑
     "heart":            "\U00002764",       # ❤
     "broken_heart":     "\U0001F494",       # 💔
+    "face_cry":         "\U0001F62D",       # 😭
+    "face_laugh":       "\U0001F602",       # 😂
+    "face_smile":       "\U0001F60A",       # 😊
+    "face_sad":         "\U0001F614",       # 😔
+    "face_happy":       "\U0001F604",       # 😄
+    "face_angry":       "\U0001F621",       # 😡
+    "face_bored":       "\U0001F611",       # 😑
+    "face_shocked":     "\U0001F631",       # 😱
+    "lips":             "\U0001F444",       # 👄
+    "kiss":             "\U0001F48B",       # 💋
+    "hug":              "\U0001F917",       # 🤗
     "eyes":             "\U0001F440",       # 👀
     "footprints":       "\U0001F463",       # 👣
 
@@ -2349,7 +2416,7 @@ _ICON_EMOJIS = {
     "printer_3d":       "\U0001F5A8",       # 🖨
     "diamond":          "\U0001F48E",       # 💎
     "wood":             "\U0001FAB5",       # 🪵
-    "rock":             "\U0001FAB8",       # 🪨
+    "rock":             "\U0001FAA8",       # 🪨  (U+1FAA8 — U+1FAB8 is coral)
     "crystal_glass":    "\U0001F52E",       # 🔮
     "metal":            "\U00002699",       # ⚙  (gear = best available for raw metal)
     "clay":             "\U0001F3FA",       # 🏺
