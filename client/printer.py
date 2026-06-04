@@ -2254,8 +2254,10 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0)):
 
 # ── Border drawing ────────────────────────────────────────────────────────────
 
-def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int) -> Image.Image:
-    """Resize border_<name>.* to the label size, recolour to black, and composite."""
+def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int,
+                          margin: int = 4) -> Image.Image:
+    """Resize border_<name>.* slightly inset from the label edges, recolour to black,
+    and composite.  The margin keeps the design clear of the printer's edge limits."""
     path = next(
         (f for ext in (".png", ".webp", ".jpg", ".jpeg")
          for f in [os.path.join(_IMAGES_DIR, f"border_{name}{ext}")]
@@ -2264,7 +2266,9 @@ def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int) -> 
     )
     if not path:
         return img
-    border = Image.open(path).convert("RGBA").resize((w_px, h_px), Image.LANCZOS)
+    bw = w_px - margin * 2
+    bh = h_px - margin * 2
+    border = Image.open(path).convert("RGBA").resize((bw, bh), Image.LANCZOS)
     # Force all non-transparent pixels to pure black
     _, _, _, a = border.split()
     black_border = Image.merge("RGBA", [
@@ -2273,8 +2277,9 @@ def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int) -> 
         Image.new("L", border.size, 0),
         a,
     ])
-    result = Image.alpha_composite(img.convert("RGBA"), black_border)
-    return result.convert("RGB")
+    base = img.convert("RGBA")
+    base.alpha_composite(black_border, dest=(margin, margin))
+    return base.convert("RGB")
 
 
 def _draw_border(draw, w, h, pad, style, dpi=203):
