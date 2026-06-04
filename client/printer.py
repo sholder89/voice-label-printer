@@ -37,10 +37,24 @@ FONT_WEIGHTS  = ["normal", "bold", "italic", "bold_italic"]
 _IMAGES_DIR   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images")
 os.makedirs(_IMAGES_DIR, exist_ok=True)
 
-_IMAGE_BORDERS = [
-    os.path.splitext(os.path.basename(f))[0][len("border_"):]
-    for f in sorted(glob.glob(os.path.join(_IMAGES_DIR, "border_*.png")))
-]
+def _scan_image_borders():
+    """Return list of (key, label) tuples for every border_*.png/webp/jpg in images/."""
+    results = []
+    seen = set()
+    for ext in (".png", ".webp", ".jpg", ".jpeg"):
+        for f in sorted(glob.glob(os.path.join(_IMAGES_DIR, f"border_*{ext}"))):
+            stem  = os.path.splitext(os.path.basename(f))[0]   # e.g. "border_ornate"
+            key   = stem[len("border_"):]                       # e.g. "ornate"
+            if key in seen:
+                continue
+            seen.add(key)
+            # Build a human-readable label: replace hyphens/underscores, title-case
+            label = key.replace("-", " ").replace("_", " ").title()
+            results.append((key, label))
+    return results
+
+_IMAGE_BORDER_ENTRIES = _scan_image_borders()          # [(key, label), ...]
+_IMAGE_BORDERS        = [k for k, _ in _IMAGE_BORDER_ENTRIES]
 
 BORDER_STYLES = ["none", "thin", "thick", "double", "dashed", "rounded", "corners"] + _IMAGE_BORDERS
 TEXT_CASES    = ["none", "uppercase", "lowercase", "title", "sentence"]
@@ -2234,9 +2248,14 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0)):
 # ── Border drawing ────────────────────────────────────────────────────────────
 
 def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int) -> Image.Image:
-    """Scale border_<name>.png to the label size, recolour to pure black, and composite."""
-    path = os.path.join(_IMAGES_DIR, f"border_{name}.png")
-    if not os.path.exists(path):
+    """Scale border_<name>.* to the label size, recolour to pure black, and composite."""
+    path = next(
+        (f for ext in (".png", ".webp", ".jpg", ".jpeg")
+         for f in [os.path.join(_IMAGES_DIR, f"border_{name}{ext}")]
+         if os.path.exists(f)),
+        None,
+    )
+    if not path:
         return img
     border = Image.open(path).convert("RGBA")
     border = border.resize((w_px, h_px), Image.LANCZOS)

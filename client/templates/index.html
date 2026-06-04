@@ -447,11 +447,19 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
           <div>
             <label>Border</label>
             <select id="sel-border" onchange="saveConfig()">
-              {% for b in border_styles %}
-              <option value="{{ b }}" {% if b == state.border %}selected{% endif %}>
-                {{ b | capitalize }}
-              </option>
+              {% set image_keys = image_border_entries | map(attribute=0) | list %}
+              <optgroup label="Standard">
+              {% for b in ['none','thin','thick','double','dashed','rounded','corners'] %}
+              <option value="{{ b }}" {% if b == state.border %}selected{% endif %}>{{ b | capitalize }}</option>
               {% endfor %}
+              </optgroup>
+              {% if image_border_entries %}
+              <optgroup label="Custom">
+              {% for key, label in image_border_entries %}
+              <option value="{{ key }}" {% if key == state.border %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+              </optgroup>
+              {% endif %}
             </select>
           </div>
         </div>

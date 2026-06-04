@@ -14,6 +14,7 @@ from printer import (
     print_label, list_printers, render_label,
     LABEL_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
+    _IMAGE_BORDER_ENTRIES,
 )
 
 app = Flask(__name__)
@@ -158,6 +159,7 @@ def index():
         font_styles=FONT_STYLES,
         font_weights=FONT_WEIGHTS,
         border_styles=BORDER_STYLES,
+        image_border_entries=_IMAGE_BORDER_ENTRIES,
         text_cases=TEXT_CASES,
         style_presets=STYLE_PRESETS,
         style_preset_groups=STYLE_PRESET_GROUPS,
