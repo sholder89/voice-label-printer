@@ -35,18 +35,25 @@ TEXT_CASES    = ["none", "uppercase", "lowercase", "title", "sentence"]
 # Style presets — each overrides individual settings when active.
 # "windows95" uses a fully custom renderer; others map to existing options.
 STYLE_PRESETS = {
-    "none":       {"label": "None (use current settings)"},
-    "windows95":  {"label": "Windows 95"},
-    "warning":    {"label": "⚠ Warning"},
+    # ── Default ───────────────────────────────────────────────────────────────
+    "none":       {"label": "— None (use current settings)"},
+
+    # ── Typography ────────────────────────────────────────────────────────────
+    "minimal":    {"label": "○ Minimal",          "font_style": "enhanced", "border": "thin"},
+    "bold":       {"label": "◼ Bold",              "font_style": "impact",   "border": "thick"},
+    "elegant":    {"label": "✒ Elegant",            "font_style": "serif",    "border": "double"},
+    "retro":      {"label": "⌨ Retro Typewriter",  "font_style": "mono",     "border": "dashed"},
+
+    # ── Layouts ───────────────────────────────────────────────────────────────
     "address":    {"label": "📬 Address Label"},
-    "bold":       {"label": "Bold",            "font_style": "impact",   "border": "thick"},
-    "elegant":    {"label": "Elegant",          "font_style": "serif",    "border": "double"},
-    "retro":      {"label": "Retro Typewriter", "font_style": "mono",     "border": "dashed"},
-    "minimal":    {"label": "Minimal",          "font_style": "enhanced", "border": "thin"},
     "price_tag":  {"label": "🏷 Price Tag"},
     "cassette":   {"label": "📼 Cassette"},
-    "blueprint":  {"label": "📐 Blueprint"},
     "qr_code":    {"label": "⬛ QR Code"},
+
+    # ── Themed ────────────────────────────────────────────────────────────────
+    "windows95":  {"label": "🖥 Windows 95"},
+    "blueprint":  {"label": "📐 Blueprint"},
+    "warning":    {"label": "⚠ Warning"},
 }
 
 # Fonts for the Windows 95 style (regular weight, not bold)
