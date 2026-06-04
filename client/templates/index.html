@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Label Printer</title>
+<style>
+/* ── Theme variables ───────────────────────────────────────────────────── */
+:root {
+  --bg:          #f1f5f9;
+  --surface:     #ffffff;
+  --surface2:    #f8fafc;
+  --border:      #e2e8f0;
+  --border2:     #cbd5e1;
+  --text:        #0f172a;
+  --text2:       #475569;
+  --text3:       #94a3b8;
+  --accent:      #3b82f6;
+  --accent-dark: #2563eb;
+  --success:     #16a34a;
+  --error:       #dc2626;
+  --warn-bg:     #fef3c7;
+  --warn-border: #fbbf24;
+  --warn-text:   #92400e;
+  --shadow:      0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-hover:0 4px 12px rgba(0,0,0,.1);
+  --header-bg:   #0f172a;
+  --header-border: #1e293b;
+  --input-bg:    #ffffff;
+  --btn-sec-bg:  #e2e8f0;
+  --btn-sec-txt: #334155;
+  --btn-icon-bg: #f1f5f9;
+  --btn-icon-border: #e2e8f0;
+  --btn-icon-txt: #475569;
+  --toast-bg:    #0f172a;
+  --preview-border: #cbd5e1;
+  --tr-alt:      #f8fafc;
+}
+
+html.dark {
+  --bg:          #0b1120;
+  --surface:     #1e293b;
+  --surface2:    #162032;
+  --border:      #334155;
+  --border2:     #475569;
+  --text:        #f1f5f9;
+  --text2:       #94a3b8;
+  --text3:       #64748b;
+  --accent:      #60a5fa;
+  --accent-dark: #3b82f6;
+  --success:     #4ade80;
+  --error:       #f87171;
+  --warn-bg:     #422006;
+  --warn-border: #92400e;
+  --warn-text:   #fde68a;
+  --shadow:      0 1px 3px rgba(0,0,0,.3);
+  --shadow-hover:0 4px 12px rgba(0,0,0,.4);
+  --header-bg:   #060d1a;
+  --header-border: #1e293b;
+  --input-bg:    #0f172a;
+  --btn-sec-bg:  #334155;
+  --btn-sec-txt: #e2e8f0;
+  --btn-icon-bg: #1e293b;
+  --btn-icon-border: #334155;
+  --btn-icon-txt: #94a3b8;
+  --toast-bg:    #1e293b;
+  --preview-border: #475569;
+  --tr-alt:      #162032;
+}
+
+/* ── Reset / base ──────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { transition: background .2s; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background .2s, color .2s;
+  min-height: 100vh;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+header {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+  padding: .85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-title { display: flex; align-items: center; gap: .6rem; flex: 1; }
+.header-title h1 { font-size: 1.1rem; font-weight: 700; color: #f1f5f9; letter-spacing: -.01em; }
+.header-icon { font-size: 1.35rem; line-height: 1; }
+.status-pill {
+  display: flex; align-items: center; gap: .4rem;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 999px;
+  padding: .2rem .65rem;
+  font-size: .72rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.status-pill.online { color: #4ade80; border-color: rgba(74,222,128,.25); background: rgba(74,222,128,.07); }
+.status-pill.offline { color: #f87171; border-color: rgba(248,113,113,.25); background: rgba(248,113,113,.07); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* Dark mode toggle */
+#dark-toggle {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #cbd5e1;
+  border-radius: .5rem;
+  padding: .35rem .6rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  transition: background .15s;
+}
+#dark-toggle:hover { background: rgba(255,255,255,.14); }
+
+/* ── Layout ───────────────────────────────────────────────────────────── */
+main { max-width: 820px; margin: 2rem auto; padding: 0 1rem; display: grid; gap: 1.25rem; }
+
+/* ── Cards ────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.35rem 1.5rem;
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s, background .2s, border-color .2s;
+}
+.card:hover { box-shadow: var(--shadow-hover); }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.card h2 {
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text3);
+}
+.card-icon { font-size: 1rem; margin-right: .4rem; vertical-align: -.1em; }
+
+/* ── Form elements ────────────────────────────────────────────────────── */
+label {
+  display: block;
+  font-size: .8rem;
+  font-weight: 600;
+  margin-bottom: .3rem;
+  color: var(--text2);
+  letter-spacing: .01em;
+}
+select, input[type=text], input[type=number] {
+  width: 100%;
+  padding: .55rem .8rem;
+  border: 1px solid var(--border2);
+  border-radius: .6rem;
+  font-size: .875rem;
+  margin-bottom: .85rem;
+  background: var(--input-bg);
+  color: var(--text);
+  transition: border-color .15s, box-shadow .15s, background .2s, color .2s;
+  appearance: auto;
+}
+input[type=number] { width: 4.5rem; text-align: center; margin-bottom: 0; }
+select:focus, input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+button {
+  padding: .6rem 1.25rem;
+  border: none;
+  border-radius: .6rem;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s, box-shadow .15s;
+}
+button:active { transform: scale(.97); }
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  padding: .7rem 1.75rem;
+  font-size: .95rem;
+  box-shadow: 0 2px 8px rgba(59,130,246,.3);
+}
+.btn-primary:hover { background: var(--accent-dark); box-shadow: 0 4px 12px rgba(59,130,246,.35); }
+.btn-secondary {
+  background: var(--btn-sec-bg);
+  color: var(--btn-sec-txt);
+}
+.btn-secondary:hover { opacity: .85; }
+.btn-icon {
+  padding: .3rem .55rem;
+  font-size: .8rem;
+  background: var(--btn-icon-bg);
+  color: var(--btn-icon-txt);
+  border: 1px solid var(--btn-icon-border);
+  border-radius: .4rem;
+  transition: background .15s, border-color .15s;
+}
+.btn-icon:hover { background: var(--border2); border-color: var(--text3); }
+
+/* ── Preview ──────────────────────────────────────────────────────────── */
+#preview-wrap {
+  margin-top: 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--preview-border);
+  border-radius: .75rem;
+  padding: 1rem;
+  text-align: center;
+  transition: background .2s, border-color .2s;
+}
+#preview-label {
+  font-size: .7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text3);
+  margin-bottom: .6rem;
+}
+#preview-img {
+  max-width: 100%;
+  border-radius: .375rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  image-rendering: pixelated;
+}
+
+/* ── Misc text helpers ────────────────────────────────────────────────── */
+.hint {
+  font-size: .75rem;
+  color: var(--text3);
+  margin-top: -.4rem;
+  margin-bottom: .85rem;
+  line-height: 1.5;
+}
+.char-count { font-size: .72rem; color: var(--text3); text-align: right; margin-top: -.7rem; margin-bottom: .85rem; }
+.char-count.warn { color: #f59e0b; }
+.char-count.over { color: var(--error); font-weight: 600; }
+.save-note { font-size: .78rem; color: var(--text3); margin-top: .6rem; }
+.save-note.saved { color: var(--success); }
+.section-desc { font-size: .8rem; color: var(--text2); margin-bottom: 1rem; line-height: 1.5; }
+
+/* ── Copies row ───────────────────────────────────────────────────────── */
+.copies-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+.copies-row label { margin: 0; font-size: .8rem; font-weight: 600; color: var(--text2); white-space: nowrap; }
+
+/* ── Checkbox ─────────────────────────────────────────────────────────── */
+.check-row {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .6rem .75rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: .6rem;
+  margin-bottom: .85rem;
+  cursor: pointer;
+  transition: background .15s;
+}
+.check-row:hover { background: var(--border); }
+.check-row input[type=checkbox] {
+  width: 1rem; height: 1rem;
+  margin: 0; cursor: pointer;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.check-row span { font-size: .85rem; font-weight: 500; color: var(--text); cursor: pointer; }
+.check-row input[type=checkbox] { margin-bottom: 0; }
+
+/* ── Toast ────────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  background: var(--toast-bg); color: #f1f5f9;
+  padding: .7rem 1.25rem;
+  border-radius: .6rem;
+  font-size: .85rem;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(.5rem);
+  transition: opacity .25s, transform .25s;
+  pointer-events: none;
+  z-index: 999;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  max-width: 20rem;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── Table ────────────────────────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+th {
+  text-align: left;
+  padding: .45rem .65rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text3);
+  font-weight: 700;
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+td {
+  padding: .45rem .65rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--text);
+}
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--tr-alt); }
+.status-ok { color: var(--success); font-weight: 600; }
+.status-err { color: var(--error); font-weight: 600; }
+.empty-row { color: var(--text3); padding: 1rem 0; }
+
+/* ── Banner ───────────────────────────────────────────────────────────── */
+.banner {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  color: var(--warn-text);
+  padding: .75rem 1rem;
+  border-radius: .75rem;
+  font-size: .875rem;
+}
+.banner strong { display: block; margin-bottom: .2rem; }
+
+/* ── Divider ──────────────────────────────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: .85rem 0; }
+
+/* ── History preview tooltip ─────────────────────────────────────────── */
+#hist-preview {
+  position: fixed;
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: .85rem;
+  padding: .75rem;
+  box-shadow: 0 8px 28px rgba(0,0,0,.22);
+  z-index: 500;
+  width: 260px;
+  pointer-events: none;
+  transition: opacity .12s;
+}
+#hist-preview img {
+  width: 100%;
+  border-radius: .375rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,.15);
+  display: block;
+}
+#hist-preview-meta {
+  margin-top: .5rem;
+  font-size: .7rem;
+  color: var(--text3);
+  line-height: 1.55;
+}
+#hist-preview-meta strong { color: var(--text2); font-weight: 600; }
+tr.hist-row { cursor: default; }
+tr.hist-row:hover td { background: var(--surface2) !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">
+    <span class="header-icon">🏷</span>
+    <h1>Label Printer</h1>
+  </div>
+  <div class="status-pill online" id="status-pill">
+    <span class="dot"></span>
+    <span id="status-text">Online</span>
+  </div>
+  <button id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+</header>
+
+<main>
+  <div class="banner" id="win32-banner" style="display:none">
+    <strong>⚠ pywin32 not detected</strong>
+    Printer listing and printing won't work until you run <code>pip install pywin32</code> and restart the app.
+  </div>
+
+  <!-- ── Printer Settings ──────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-header">
+      <h2><span class="card-icon">⚙</span>Settings</h2>
+    </div>
+    <p class="section-desc">Changes apply immediately — including labels sent by voice.</p>
+
+    <label>Style Preset</label>
+    <select id="sel-style-preset" onchange="onPresetChange()">
+      {% for key, preset in style_presets.items() %}
+      <option value="{{ key }}" {% if key == state.style_preset %}selected{% endif %}>
+        {{ preset.label }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <div id="individual-settings">
+      <div class="grid-2">
+        <div>
+          <label>Printer</label>
+          <select id="sel-printer" onchange="saveConfig()">
+            {% for p in printers %}
+            <option value="{{ p }}" {% if p == state.printer %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Label Size</label>
+          <select id="sel-size" onchange="saveConfig()">
+            {% for s in sizes %}
+            <option value="{{ s }}" {% if s == state.size %}selected{% endif %}>{{ s }} inches</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Font + Border dimmed when a style preset overrides them -->
+      <div id="style-overrides" style="transition: opacity .2s;">
+        <div class="grid-2">
+          <div>
+            <label>Font Style</label>
+            <select id="sel-font-style" onchange="saveConfig()">
+              {% for fs in font_styles %}
+              <option value="{{ fs }}" {% if fs == state.font_style %}selected{% endif %}>
+                {% if fs == "burbank" %}Burbank Big Condensed
+                {% else %}{{ fs | capitalize }}{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label>Border</label>
+            <select id="sel-border" onchange="saveConfig()">
+              {% for b in border_styles %}
+              <option value="{{ b }}" {% if b == state.border %}selected{% endif %}>
+                {{ b | capitalize }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div><!-- end #style-overrides -->
+
+      <!-- Text Case + Font Weight always available regardless of preset -->
+      <div class="grid-2">
+        <div>
+          <label>Text Case</label>
+          <select id="sel-text-case" onchange="saveConfig()">
+            {% for tc in text_cases %}
+            <option value="{{ tc }}" {% if tc == state.text_case %}selected{% endif %}>
+              {% if tc == "none" %}None (as typed)
+              {% elif tc == "uppercase" %}ALL CAPS
+              {% elif tc == "lowercase" %}all lowercase
+              {% elif tc == "title" %}Title Case
+              {% elif tc == "sentence" %}Sentence case
+              {% else %}{{ tc | capitalize }}{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Font Weight</label>
+          <select id="sel-font-weight" onchange="saveConfig()">
+            {% for fw in font_weights %}
+            <option value="{{ fw }}" {% if fw == state.font_weight %}selected{% endif %}>
+              {% if fw == "normal" %}Normal
+              {% elif fw == "bold" %}Bold
+              {% elif fw == "italic" %}Italic
+              {% elif fw == "bold_italic" %}Bold Italic
+              {% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <label class="check-row" for="chk-icons">
+        <input type="checkbox" id="chk-icons" {% if state.icons %}checked{% endif %} onchange="saveConfig()">
+        <span>🎨 Auto icons — detect keywords &amp; add emoji</span>
+      </label>
+    </div><!-- end #individual-settings -->
+
+    <div id="save-note" class="save-note"></div>
+  </div>
+
+  <!-- ── Print Label ───────────────────────────────────────────────── -->
+  <div class="card" id="print-card">
+    <div class="card-header">
+      <h2><span class="card-icon">🖨</span>Print Label</h2>
+    </div>
+
+    <!-- Normal single-line input -->
+    <div id="normal-text-wrap">
+      <label>Label Text</label>
+      <input type="text" id="print-text" placeholder="Type your label…"
+             oninput="schedulePreview(); updateCharCount()"
+             onkeydown="if(event.key==='Enter') doPrint()" />
+      <div class="char-count" id="char-count">0 / 200</div>
+      <p class="hint">💡 Mention keywords like <em>kitchen, tools, travel, music, fragile, warning</em> to auto-add an emoji.</p>
+    </div>
+
+    <!-- Address fields -->
+    <div id="address-fields" style="display:none">
+      <label>Saved Addresses</label>
+      <div style="display:flex; gap:.5rem; align-items:center; margin-bottom:.85rem">
+        <select id="sel-saved-address" style="flex:1; margin:0" onchange="loadSavedAddress()">
+          <option value="">— select a saved address —</option>
+        </select>
+        <button class="btn-icon" onclick="deleteSavedAddress()" title="Delete selected address">🗑</button>
+      </div>
+
+      <p class="hint" style="margin-bottom:.85rem">Fill in the fields below — leave any line blank to skip it.</p>
+      <label>Name</label>
+      <input type="text" id="addr-name" placeholder="John Smith" oninput="schedulePreview()">
+      <label>Street Address</label>
+      <input type="text" id="addr-line1" placeholder="123 Main Street" oninput="schedulePreview()">
+      <label>Line 2 <span style="font-weight:400; color:var(--text3); font-size:.75rem">(optional — apt, suite…)</span></label>
+      <input type="text" id="addr-line2" placeholder="Apt 4B" oninput="schedulePreview()">
+      <label>City, State &amp; ZIP</label>
+      <input type="text" id="addr-csz" placeholder="Springfield, IL 62701" oninput="schedulePreview()">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:.25rem; margin-bottom:.85rem">
+        <p class="hint" style="margin:0">Tip: a 4×2 or larger label gives the most room for a full address.</p>
+        <button class="btn-secondary" style="white-space:nowrap; margin-left:.75rem" onclick="saveCurrentAddress()">💾 Save Address</button>
+      </div>
+    </div>
+
+    <div id="preview-wrap">
+      <div id="preview-label">Preview</div>
+      <img id="preview-img" src="/preview?text=Label+Printer" alt="label preview" />
+    </div>
+
+    <div class="copies-row">
+      <button class="btn-primary" onclick="doPrint()">🖨 Print</button>
+      <label>Copies</label>
+      <input type="number" id="num-copies" value="1" min="1" max="10" />
+      <button class="btn-secondary" onclick="refreshPreview()">↺ Refresh</button>
+    </div>
+  </div>
+
+  <!-- ── Print History ─────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-header">
+      <h2><span class="card-icon">📋</span>History</h2>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Time</th><th>Text</th><th>Size</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+      </thead>
+      <tbody id="history-body">
+        <tr><td colspan="5" class="empty-row">No prints yet</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- History hover preview -->
+<div id="hist-preview">
+  <img id="hist-preview-img" alt="label preview" src="">
+  <div id="hist-preview-meta"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MAX_CHARS = 200;
+let previewTimer    = null;
+let _histRows       = [];
+let _tooltipTimer   = null;
+let _tooltipVisible = false;
+
+/* ── Dark mode ────────────────────────────────────────────────────────── */
+function applyDark(dark) {
+  document.documentElement.classList.toggle('dark', dark);
+  document.getElementById('dark-toggle').textContent = dark ? '☀️' : '🌙';
+}
+function toggleDark() {
+  const dark = !document.documentElement.classList.contains('dark');
+  localStorage.setItem('labelprinter-dark', dark ? '1' : '0');
+  applyDark(dark);
+}
+// Restore on load
+(function() {
+  const saved = localStorage.getItem('labelprinter-dark');
+  if (saved === '1') applyDark(true);
+  else if (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches) applyDark(true);
+})();
+
+/* ── Preview ──────────────────────────────────────────────────────────── */
+function schedulePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(refreshPreview, 500);
+}
+
+function updateCharCount() {
+  const len = document.getElementById('print-text').value.length;
+  const el  = document.getElementById('char-count');
+  el.textContent = `${len} / ${MAX_CHARS}`;
+  el.className = 'char-count' + (len > MAX_CHARS ? ' over' : len > MAX_CHARS * 0.85 ? ' warn' : '');
+}
+
+/* ── Settings ─────────────────────────────────────────────────────────── */
+function getSettings() {
+  return {
+    printer:      document.getElementById('sel-printer').value,
+    size:         document.getElementById('sel-size').value,
+    font_style:   document.getElementById('sel-font-style').value,
+    font_weight:  document.getElementById('sel-font-weight').value,
+    border:       document.getElementById('sel-border').value,
+    text_case:    document.getElementById('sel-text-case').value,
+    style_preset: document.getElementById('sel-style-preset').value,
+    icons:        document.getElementById('chk-icons').checked,
+  };
+}
+
+function onPresetChange() {
+  const preset    = document.getElementById('sel-style-preset').value;
+  const isAddress = preset === 'address';
+  const dim       = preset !== 'none' && !isAddress;
+  // Only dim Font + Border — Text Case and Icons stay usable with any preset
+  document.getElementById('style-overrides').style.opacity      = dim ? '0.35' : '1';
+  document.getElementById('style-overrides').style.pointerEvents = dim ? 'none' : '';
+  document.getElementById('normal-text-wrap').style.display = isAddress ? 'none'  : 'block';
+  document.getElementById('address-fields').style.display   = isAddress ? 'block' : 'none';
+  if (isAddress) loadSavedAddresses();
+  saveConfig();
+  refreshPreview();
+}
+
+/* ── Saved addresses ──────────────────────────────────────────────────── */
+let _savedAddrs = [];
+
+function loadSavedAddresses() {
+  fetch('/addresses').then(r => r.json()).then(addrs => {
+    _savedAddrs = addrs;
+    const sel = document.getElementById('sel-saved-address');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— select a saved address —</option>' +
+      addrs.map(a => `<option value="${a.id}">${a.label}</option>`).join('');
+    if (cur) sel.value = cur;
+  });
+}
+
+function loadSavedAddress() {
+  const id   = document.getElementById('sel-saved-address').value;
+  const addr = _savedAddrs.find(a => a.id === id);
+  if (!addr) return;
+  document.getElementById('addr-name').value  = addr.name  || '';
+  document.getElementById('addr-line1').value = addr.line1 || '';
+  document.getElementById('addr-line2').value = addr.line2 || '';
+  document.getElementById('addr-csz').value   = addr.csz   || '';
+  schedulePreview();
+}
+
+function saveCurrentAddress() {
+  const defaultLabel = document.getElementById('addr-name').value.trim() || 'Address';
+  const label = window.prompt('Save address as:', defaultLabel);
+  if (!label) return;
+  fetch('/addresses', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      label,
+      name:  document.getElementById('addr-name').value.trim(),
+      line1: document.getElementById('addr-line1').value.trim(),
+      line2: document.getElementById('addr-line2').value.trim(),
+      csz:   document.getElementById('addr-csz').value.trim(),
+    }),
+  }).then(r => r.json()).then(d => {
+    loadSavedAddresses();
+    setTimeout(() => { document.getElementById('sel-saved-address').value = d.id; }, 100);
+    toast('Address saved!');
+  });
+}
+
+function deleteSavedAddress() {
+  const id = document.getElementById('sel-saved-address').value;
+  if (!id) { toast('Select an address to delete first', true); return; }
+  const addr = _savedAddrs.find(a => a.id === id);
+  if (!confirm(`Delete "${addr ? addr.label : 'this address'}"?`)) return;
+  fetch('/addresses/delete', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ id }),
+  }).then(() => { loadSavedAddresses(); toast('Address deleted'); });
+}
+
+/* ── Print helpers ────────────────────────────────────────────────────── */
+function getAddressText() {
+  const name  = document.getElementById('addr-name').value.trim();
+  const line1 = document.getElementById('addr-line1').value.trim();
+  const line2 = document.getElementById('addr-line2').value.trim();
+  const csz   = document.getElementById('addr-csz').value.trim();
+  return [name, line1, line2, csz].filter(Boolean).join('\n') || 'Name\n123 Street\nCity, ST 00000';
+}
+
+function getPrintText() {
+  if (document.getElementById('sel-style-preset').value === 'address') return getAddressText();
+  return document.getElementById('print-text').value.trim() || 'Label Printer';
+}
+
+function refreshPreview() {
+  const s    = getSettings();
+  const text = getPrintText();
+  document.getElementById('preview-img').src =
+    `/preview?text=${encodeURIComponent(text)}&size=${s.size}&font_style=${s.font_style}&font_weight=${s.font_weight}&border=${s.border}&text_case=${s.text_case}&style_preset=${s.style_preset}&icons=${s.icons}&t=${Date.now()}`;
+}
+
+function saveConfig() {
+  fetch('/config', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify(getSettings()),
+  }).then(() => {
+    const note = document.getElementById('save-note');
+    const now  = new Date().toLocaleTimeString();
+    note.textContent = `✓ Saved at ${now} — applies to voice prints too`;
+    note.classList.add('saved');
+    setTimeout(() => { note.classList.remove('saved'); note.textContent = ''; }, 5000);
+  });
+  refreshPreview();
+}
+
+function doPrint(overrideText) {
+  const text   = overrideText || getPrintText();
+  const copies = parseInt(document.getElementById('num-copies').value) || 1;
+  const s      = getSettings();
+  fetch('/print', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({ text, copies, ...s }),
+  }).then(r => r.json()).then(d => {
+    if (d.ok) toast(copies > 1 ? `✓ Printed ${copies} copies` : '✓ Printed!');
+    else      toast('Error: ' + d.error, true);
+    loadHistory();
+  });
+}
+
+function deleteHistory(ts) {
+  fetch('/history/delete', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({ ts }),
+  }).then(() => loadHistory());
+}
+
+/* Build a preview URL from a history entry, falling back to current form settings */
+function buildHistPreviewUrl(r) {
+  return `/preview?text=${encodeURIComponent(r.text)}`
+    + `&size=${r.size          || '2x1'}`
+    + `&font_style=${r.font_style    || 'enhanced'}`
+    + `&font_weight=${r.font_weight  || 'bold'}`
+    + `&border=${r.border        || 'none'}`
+    + `&text_case=${r.text_case     || 'none'}`
+    + `&style_preset=${r.style_preset || 'none'}`
+    + `&icons=${r.icons !== undefined ? r.icons : true}`;
+}
+
+/* ── History hover preview ────────────────────────────────────────────── */
+function showHistoryPreview(i, rowEl) {
+  clearTimeout(_tooltipTimer);
+  _tooltipTimer = setTimeout(() => {
+    const r = _histRows[i];
+    if (!r) return;
+    const tip = document.getElementById('hist-preview');
+    const img = document.getElementById('hist-preview-img');
+    const meta = document.getElementById('hist-preview-meta');
+
+    img.src = buildHistPreviewUrl(r) + '&t=' + Date.now();
+
+    const preset = r.style_preset && r.style_preset !== 'none' ? r.style_preset : null;
+    const parts = [
+      `<strong>${r.size || '?'}</strong>`,
+      preset ? preset : (r.font_style || 'enhanced'),
+      r.border && r.border !== 'none' ? r.border + ' border' : null,
+      r.text_case && r.text_case !== 'none' ? r.text_case : null,
+    ].filter(Boolean);
+    meta.innerHTML = parts.join(' · ');
+
+    // Position: right of the row if space, else left
+    const rect = tip.getBoundingClientRect(); // get size before showing
+    tip.style.display = 'block';
+    const tipW  = 260;
+    const tipH  = tip.offsetHeight || 200;
+    const rowR  = rowEl.getBoundingClientRect();
+    const pad   = 14;
+
+    let left, top;
+    if (rowR.right + tipW + pad < window.innerWidth) {
+      left = rowR.right + pad;
+    } else {
+      left = Math.max(pad, rowR.left - tipW - pad);
+    }
+    top = Math.min(rowR.top, window.innerHeight - tipH - pad);
+    top = Math.max(pad, top);
+
+    tip.style.left = left + 'px';
+    tip.style.top  = top  + 'px';
+    _tooltipVisible = true;
+  }, 180);
+}
+
+function hideHistoryPreview() {
+  clearTimeout(_tooltipTimer);
+  if (_tooltipVisible) {
+    document.getElementById('hist-preview').style.display = 'none';
+    _tooltipVisible = false;
+  }
+}
+
+/* ── Reprint — uses stored settings from that history entry ───────────── */
+function reprintLabel(i) {
+  const r = _histRows[i];
+  if (!r) return;
+  const copies = parseInt(document.getElementById('num-copies').value) || 1;
+  fetch('/print', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      text:         r.text,
+      copies,
+      printer:      document.getElementById('sel-printer').value,
+      size:         r.size         || document.getElementById('sel-size').value,
+      font_style:   r.font_style   || 'enhanced',
+      font_weight:  r.font_weight  || 'bold',
+      border:       r.border       || 'none',
+      text_case:    r.text_case    || 'none',
+      style_preset: r.style_preset || 'none',
+      icons:        r.icons !== undefined ? r.icons : true,
+    }),
+  }).then(res => res.json()).then(d => {
+    if (d.ok) toast(copies > 1 ? `✓ Reprinted ${copies} copies` : '✓ Reprinted!');
+    else      toast('Error: ' + d.error, true);
+    loadHistory();
+  });
+}
+
+/* ── Load — populates the form with history entry settings ─────────────── */
+function loadFromHistory(i) {
+  const r = _histRows[i];
+  if (!r) return;
+  hideHistoryPreview();
+
+  const preset = r.style_preset || 'none';
+
+  // Set dropdowns/checkbox (without triggering saveConfig via onchange)
+  document.getElementById('sel-style-preset').value = preset;
+  document.getElementById('sel-font-style').value   = r.font_style   || 'enhanced';
+  document.getElementById('sel-font-weight').value  = r.font_weight  || 'bold';
+  document.getElementById('sel-border').value       = r.border       || 'none';
+  document.getElementById('sel-text-case').value    = r.text_case    || 'none';
+  if (r.size) document.getElementById('sel-size').value = r.size;
+  document.getElementById('chk-icons').checked = r.icons !== undefined ? r.icons : true;
+
+  if (preset === 'address') {
+    // Parse multiline text back into address fields
+    const lines = r.text.split('\n');
+    document.getElementById('addr-name').value  = lines[0] || '';
+    document.getElementById('addr-line1').value = lines[1] || '';
+    if (lines.length > 3) {
+      document.getElementById('addr-line2').value = lines[2] || '';
+      document.getElementById('addr-csz').value   = lines[3] || '';
+    } else {
+      document.getElementById('addr-line2').value = '';
+      document.getElementById('addr-csz').value   = lines[2] || '';
+    }
+  } else {
+    document.getElementById('print-text').value = r.text;
+    updateCharCount();
+  }
+
+  // Update UI visibility + save + refresh preview
+  onPresetChange();
+
+  // Scroll to the print card
+  document.getElementById('print-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  toast('Loaded — edit and print when ready');
+}
+
+/* ── Toast ────────────────────────────────────────────────────────────── */
+function toast(msg, isError = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = isError ? '#dc2626' : '';
+  el.classList.remove('show');
+  void el.offsetWidth; // force reflow for re-trigger
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+/* ── History ──────────────────────────────────────────────────────────── */
+function loadHistory() {
+  fetch('/history').then(r => r.json()).then(rows => {
+    _histRows = rows;
+    const tbody = document.getElementById('history-body');
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No prints yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map((r, i) => `
+      <tr class="hist-row"
+          onmouseenter="showHistoryPreview(${i}, this)"
+          onmouseleave="hideHistoryPreview()">
+        <td style="white-space:nowrap; color:var(--text2); font-size:.78rem">${r.ts}</td>
+        <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap"
+            title="${r.text.replace(/"/g,'&quot;')}">${r.text.replace(/\n/g, ' · ')}</td>
+        <td style="color:var(--text2); white-space:nowrap">${r.size || '—'}</td>
+        <td class="${r.status && r.status.startsWith('ok') ? 'status-ok' : 'status-err'}">${r.status}</td>
+        <td style="white-space:nowrap; display:flex; gap:.3rem; align-items:center">
+          <button class="btn-icon" onclick="reprintLabel(${i})" title="Reprint with original settings">🖨</button>
+          <button class="btn-icon" onclick="loadFromHistory(${i})" title="Load into editor" style="font-size:.75rem; padding:.3rem .55rem">↩ Load</button>
+          <button class="btn-icon" onclick="deleteHistory(_histRows[${i}].ts)" title="Delete" style="margin-left:.6rem; color:#ef4444; border-color:#fca5a5; font-size:.7rem; font-weight:700; padding:.3rem .5rem">✕</button>
+        </td>
+      </tr>`).join('');
+  });
+}
+
+/* ── Status poll ──────────────────────────────────────────────────────── */
+function syncSelect(id, value) {
+  const el = document.getElementById(id);
+  if (el && value != null && el.value !== String(value)) { el.value = value; return true; }
+  return false;
+}
+
+function checkStatus() {
+  fetch('/status').then(r => r.json()).then(d => {
+    const pill = document.getElementById('status-pill');
+    const txt  = document.getElementById('status-text');
+    pill.className = 'status-pill online';
+    txt.textContent = 'Online';
+    document.getElementById('win32-banner').style.display = d.win32 ? 'none' : 'block';
+    let changed = false;
+    changed |= syncSelect('sel-printer',      d.printer);
+    changed |= syncSelect('sel-size',         d.size);
+    changed |= syncSelect('sel-font-style',   d.font_style);
+    changed |= syncSelect('sel-font-weight',  d.font_weight);
+    changed |= syncSelect('sel-border',       d.border);
+    changed |= syncSelect('sel-text-case',    d.text_case);
+    changed |= syncSelect('sel-style-preset', d.style_preset);
+    if (d.icons != null) {
+      const chk = document.getElementById('chk-icons');
+      if (chk.checked !== d.icons) { chk.checked = d.icons; changed = true; }
+    }
+    if (d.style_preset != null) {
+      const isAddress = d.style_preset === 'address';
+      const dim = d.style_preset !== 'none' && !isAddress;
+      document.getElementById('style-overrides').style.opacity      = dim ? '0.35' : '1';
+      document.getElementById('style-overrides').style.pointerEvents = dim ? 'none' : '';
+      document.getElementById('normal-text-wrap').style.display = isAddress ? 'none'  : 'block';
+      document.getElementById('address-fields').style.display   = isAddress ? 'block' : 'none';
+    }
+    if (changed) refreshPreview();
+  }).catch(() => {
+    const pill = document.getElementById('status-pill');
+    const txt  = document.getElementById('status-text');
+    pill.className = 'status-pill offline';
+    txt.textContent = 'Offline';
+  });
+  loadHistory();
+}
+
+setInterval(checkStatus, 5000);
+checkStatus();
+</script>
+</body>
+</html>

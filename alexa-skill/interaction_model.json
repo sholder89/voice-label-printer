@@ -1,0 +1,210 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "label printer",
+      "intents": [
+        {
+          "name": "PrintLabelIntent",
+          "slots": [
+            {
+              "name": "labelText",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "print {labelText}",
+            "print a label that says {labelText}",
+            "print a label with {labelText}",
+            "make a label that says {labelText}",
+            "label {labelText}",
+            "create a label that says {labelText}"
+          ]
+        },
+        {
+          "name": "ChangeFontIntent",
+          "slots": [
+            {
+              "name": "fontStyle",
+              "type": "FontStyle"
+            }
+          ],
+          "samples": [
+            "set font to {fontStyle}",
+            "change font to {fontStyle}",
+            "use {fontStyle} font",
+            "switch to {fontStyle} font",
+            "set the font to {fontStyle}",
+            "change the font to {fontStyle}",
+            "use {fontStyle}"
+          ]
+        },
+        {
+          "name": "ChangeBorderIntent",
+          "slots": [
+            {
+              "name": "borderStyle",
+              "type": "BorderStyle"
+            }
+          ],
+          "samples": [
+            "set border to {borderStyle}",
+            "change border to {borderStyle}",
+            "use {borderStyle} border",
+            "set the border to {borderStyle}",
+            "change the border to {borderStyle}",
+            "turn border off",
+            "remove the border",
+            "no border"
+          ]
+        },
+        {
+          "name": "ChangeTextCaseIntent",
+          "slots": [
+            {
+              "name": "textCase",
+              "type": "TextCase"
+            }
+          ],
+          "samples": [
+            "set text case to {textCase}",
+            "change text case to {textCase}",
+            "use {textCase}",
+            "set text to {textCase}",
+            "change text to {textCase}",
+            "set case to {textCase}"
+          ]
+        },
+        {
+          "name": "ChangeStylePresetIntent",
+          "slots": [
+            {
+              "name": "presetName",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "set style to {presetName}",
+            "change style to {presetName}",
+            "set the style to {presetName}",
+            "change the style to {presetName}",
+            "switch to {presetName}",
+            "apply {presetName}"
+          ]
+        },
+        {
+          "name": "ChangeSizeIntent",
+          "slots": [
+            {
+              "name": "labelSize",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "set size to {labelSize}",
+            "change size to {labelSize}",
+            "set the size to {labelSize}",
+            "change the label size to {labelSize}",
+            "switch to {labelSize}"
+          ]
+        },
+        {
+          "name": "ToggleIconsIntent",
+          "slots": [
+            {
+              "name": "onOff",
+              "type": "OnOff"
+            }
+          ],
+          "samples": [
+            "turn icons {onOff}",
+            "turn {onOff} icons",
+            "set icons {onOff}",
+            "icons {onOff}",
+            "turn emoji {onOff}",
+            "turn {onOff} emoji",
+            "auto icons {onOff}",
+            "set auto icons {onOff}"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        }
+      ],
+      "types": [
+        {
+          "name": "FontStyle",
+          "values": [
+            { "name": { "value": "standard" } },
+            { "name": { "value": "enhanced" } },
+            { "name": { "value": "impact" } },
+            { "name": { "value": "serif" } },
+            { "name": { "value": "narrow" } },
+            { "name": { "value": "mono", "synonyms": ["monospace", "courier", "fixed width"] } },
+            { "name": { "value": "burbank", "synonyms": ["burbank big", "burbank big condensed", "big condensed"] } }
+          ]
+        },
+        {
+          "name": "BorderStyle",
+          "values": [
+            { "name": { "value": "none", "synonyms": ["off", "no border", "remove"] } },
+            { "name": { "value": "thin" } },
+            { "name": { "value": "thick" } },
+            { "name": { "value": "double" } },
+            { "name": { "value": "dashed" } },
+            { "name": { "value": "rounded" } },
+            { "name": { "value": "corners", "synonyms": ["corner"] } }
+          ]
+        },
+        {
+          "name": "TextCase",
+          "values": [
+            { "name": { "value": "none", "synonyms": ["normal", "default", "as typed"] } },
+            { "name": { "value": "uppercase", "synonyms": ["all caps", "caps", "upper case", "capital", "all uppercase"] } },
+            { "name": { "value": "lowercase", "synonyms": ["all lowercase", "lower case", "lower"] } },
+            { "name": { "value": "title", "synonyms": ["title case", "capitalize each word", "every word"] } },
+            { "name": { "value": "sentence", "synonyms": ["sentence case", "capitalize first", "first letter"] } }
+          ]
+        },
+        {
+          "name": "StylePreset",
+          "values": [
+            { "name": { "value": "none", "synonyms": ["off", "no style", "normal", "default", "clear", "clear style"] } },
+            { "name": { "value": "bold" } },
+            { "name": { "value": "elegant" } },
+            { "name": { "value": "retro", "synonyms": ["retro typewriter", "typewriter"] } },
+            { "name": { "value": "minimal" } },
+            { "name": { "value": "warning", "synonyms": ["caution", "warning label"] } },
+            { "name": { "value": "address", "synonyms": ["address label", "mailing label", "mailing"] } },
+            { "name": { "value": "windows95", "synonyms": ["windows 95", "windows ninety five", "ninety five"] } }
+          ]
+        },
+        {
+          "name": "OnOff",
+          "values": [
+            { "name": { "value": "on",  "synonyms": ["enable", "enabled", "yes", "activate"] } },
+            { "name": { "value": "off", "synonyms": ["disable", "disabled", "no", "deactivate"] } }
+          ]
+        },
+        {
+          "name": "LabelSize",
+          "values": [
+            { "name": { "value": "2x1", "synonyms": ["two by one", "two by one inch", "small label"] } },
+            { "name": { "value": "4x2", "synonyms": ["four by two", "four by two inch", "large label"] } },
+            { "name": { "value": "4x6", "synonyms": ["four by six", "four by six inch", "shipping label"] } },
+            { "name": { "value": "3x2", "synonyms": ["three by two", "three by two inch"] } },
+            { "name": { "value": "2x0.5", "synonyms": ["two by half", "two by half inch", "tiny label", "two by point five"] } }
+          ]
+        }
+      ]
+    }
+  }
+}

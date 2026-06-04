@@ -1,0 +1,40 @@
+services:
+  label-relay:
+    build: .
+    container_name: label-relay
+    restart: unless-stopped
+    volumes:
+      - label-data:/data
+    environment:
+      - LABEL_TOKEN=${LABEL_TOKEN:-REMOVED}
+      - DB_PATH=/data/jobs.db
+    ports:
+      - "127.0.0.1:5001:5001"
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.label-relay.entrypoints=http"
+      - "traefik.http.routers.label-relay.rule=Host(`your-domain.com`)"
+      - "traefik.http.middlewares.label-relay-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.label-relay.middlewares=label-relay-https-redirect"
+      - "traefik.http.routers.label-relay-secure.entrypoints=https"
+      - "traefik.http.routers.label-relay-secure.rule=Host(`your-domain.com`)"
+      - "traefik.http.routers.label-relay-secure.tls=true"
+      - "traefik.http.routers.label-relay-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.label-relay-secure.service=label-relay"
+      - "traefik.http.services.label-relay.loadbalancer.server.port=5001"
+      - "traefik.docker.network=proxy"
+      - "com.centurylinklabs.watchtower.enable=false"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  label-data:
+
+networks:
+  proxy:
+    external: true
