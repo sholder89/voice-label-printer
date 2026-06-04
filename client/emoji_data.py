@@ -493,6 +493,15 @@ _ICON_KEYWORDS = {
     "storm":            "storm",
     "thunderstorm":     "storm",
     "lightning storm":  "storm",
+    "wind":             "wind",
+    "windy":            "wind",
+    "breeze":           "wind",
+    "breezy":           "wind",
+    "gust":             "wind",
+    "gusty":            "wind",
+    "snowman":          "snowman",
+    "snowmen":          "snowman",
+    "frosty":           "snowman",
     "rain":             "umbrella",
     "rainy":            "umbrella",
     "raining":          "umbrella",
@@ -588,6 +597,9 @@ _ICON_KEYWORDS = {
     "iss":              "satellite",
 
     # ── Electric / Power ─────────────────────────────────────────────────────
+    "lightning":        "lightning",
+    "thunder":          "lightning",
+    "thunderbolt":      "lightning",
     "electric":         "lightning",
     "electronics":      "lightning",
     "battery":          "lightning",
@@ -730,6 +742,8 @@ _ICON_KEYWORDS = {
     "spaghetti":        "noodles",
     "sushi":            "sushi",
     "japanese food":    "sushi",
+    "chopsticks":       "chopsticks",
+    "chopstick":        "chopsticks",
     "rice":             "rice",
     "fried rice":       "rice",
     "curry":            "curry",
@@ -1011,6 +1025,7 @@ _ICON_KEYWORDS = {
     "taekwondo":        "martial_arts",
     "hockey":           "hockey",
     "ice hockey":       "hockey",
+    "ice":              "ice",       # after "ice cream", "ice hockey" so compounds match first
     "archery":          "archery",
     "bow and arrow":    "archery",
     "sports":           "sports",
@@ -1052,6 +1067,13 @@ _ICON_KEYWORDS = {
     "tabletop":         "dice_icon",
     "poker":            "gaming",
     "lego":             "gaming",
+    "playing cards":    "card_spade",
+    "card deck":        "card_spade",
+    "card game":        "card_spade",
+    "spades":           "card_spade",
+    "clubs":            "card_club",
+    "diamonds":         "card_diamond",
+    "hearts card":      "card_heart",
     "puzzle":           "puzzle_icon",
     "jigsaw":           "puzzle_icon",
     "brainteaser":      "puzzle_icon",
@@ -1217,6 +1239,13 @@ _ICON_KEYWORDS = {
     "axe":              "axe",
     "hatchet":          "axe",
     "chisel":           "axe",
+    "clamp":            "clamp",
+    "c-clamp":          "clamp",
+    "vise":             "clamp",
+    "vice":             "clamp",
+    "vice grip":        "clamp",
+    "vise grip":        "clamp",
+    "workbench clamp":  "clamp",
     "brick":            "bricks",
     "bricks":           "bricks",
     "masonry":          "bricks",
@@ -1577,6 +1606,25 @@ _ICON_KEYWORDS = {
     "lung":             "lungs",
     "respiratory":      "lungs",
     "breathing":        "lungs",
+    "arm":              "muscle",
+    "arms":             "muscle",
+    "bicep":            "muscle",
+    "biceps":           "muscle",
+    "forearm":          "muscle",
+    "tricep":           "muscle",
+    "triceps":          "muscle",
+    "leg":              "leg",
+    "legs":             "leg",
+    "thigh":            "leg",
+    "shin":             "leg",
+    "calf":             "leg",
+    "knee":             "leg",
+    "blood":            "blood",
+    "bleeding":         "blood",
+    "bloody":           "blood",
+    "hemorrhage":       "blood",
+    "plasma":           "blood",
+    "transfusion":      "blood",
     "microscope":       "microscope",
     "lab":              "microscope",
     "laboratory":       "microscope",
@@ -1918,6 +1966,8 @@ _ICON_EMOJIS = {
     "tornado":          "\U0001F32A",       # 🌪
     "storm":            "⛈",           # ⛈
     "umbrella":         "☔",           # ☔
+    "wind":             "\U0001F4A8",       # 💨
+    "snowman":          "\U000026C4",       # ⛄
 
     # People
     "person":           "\U0001F9D1",       # 🧑
@@ -2184,6 +2234,7 @@ _ICON_EMOJIS = {
     "bubbles":          "\U0001FAB7",       # 🫧
     "falafel":          "\U0001F9C6",       # 🧆
     "dumpling":         "\U0001F95F",       # 🥟
+    "chopsticks":       "\U0001F962",       # 🥢
 
     # Music
     "music":            "\U0001F3B5",       # 🎵
@@ -2289,6 +2340,7 @@ _ICON_EMOJIS = {
     "screwdriver":      "\U0001FA9B",       # 🪛
     "saw_tool":         "\U0001FA9A",       # 🪚
     "axe":              "\U0001FA93",       # 🪓
+    "clamp":            "\U0001F5DC",       # 🗜
     "bricks":           "\U0001F9F1",       # 🧱
     "thread":           "\U0001F9F5",       # 🧵
     "knot":             "\U0001FA22",       # 🪢
@@ -2337,6 +2389,9 @@ _ICON_EMOJIS = {
     "eye_body":         "\U0001F441",       # 👁
     "lungs":            "\U0001FAC1",       # 🫁
     "anatomical_heart": "\U0001FAC0",       # 🫀
+    "leg":              "\U0001F9B5",       # 🦵
+    "blood":            "\U0001FA78",       # 🩸
+    "ice":              "\U0001F9CA",       # 🧊
 
     # Finance
     "money":            "\U0001F4B0",       # 💰
@@ -2386,6 +2441,10 @@ _ICON_EMOJIS = {
     "art":              "\U0001F3A8",       # 🎨
     "gaming":           "\U0001F3AE",       # 🎮
     "chess":            "\U0000265F",       # ♟
+    "card_spade":       "\U00002660",       # ♠
+    "card_club":        "\U00002663",       # ♣
+    "card_diamond":     "\U00002666",       # ♦
+    "card_heart":       "\U00002665",       # ♥
     "star":             "\U00002B50",       # ⭐
     "time":             "\U000023F0",       # ⏰
     "dice_icon":        "\U0001F3B2",       # 🎲
