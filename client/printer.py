@@ -2157,34 +2157,41 @@ _EMOJI_FONT_PATHS = [
 
 def _detect_icon(text: str):
     lower = text.lower()
+
+    # Phase 1: direct word-boundary matches — collect ALL matches and return
+    # the one with the LONGEST keyword so "polar bear" beats "bear", etc.
+    best_len  = -1
+    best_icon = None
     for keyword, icon in _ICON_KEYWORDS.items():
         k = re.escape(keyword)
-        # 1. Exact word-boundary match  ("wrench", "sharks")
         if re.search(r'\b' + k + r'\b', lower):
+            if len(keyword) > best_len:
+                best_len  = len(keyword)
+                best_icon = icon
+    if best_icon:
+        return best_icon
+
+    # Phase 2: inflection rules (first match wins — compound forms handled above)
+    for keyword, icon in _ICON_KEYWORDS.items():
+        if ' ' in keyword:
+            continue  # multi-word keywords already handled in phase 1
+        k = re.escape(keyword)
+        # Forward: singular keyword → plural text
+        if re.search(r'\b' + k + r'e?s\b', lower):
             return icon
-        if ' ' not in keyword:
-            # 2. Forward — singular keyword, plural text
-            #    -s / -es:  shark→sharks, wrench→wrenches, tomato→tomatoes
-            if re.search(r'\b' + k + r'e?s\b', lower):
-                return icon
-            #    -y → -ies:  butterfly→butterflies
-            if keyword.endswith('y') and re.search(
-                    r'\b' + re.escape(keyword[:-1]) + r'ies\b', lower):
-                return icon
-            #    -fe → -ves:  knife→knives
-            if keyword.endswith('fe') and re.search(
-                    r'\b' + re.escape(keyword[:-2]) + r'ves\b', lower):
-                return icon
-            #    -f → -ves:  leaf→leaves, wolf→wolves
-            elif keyword.endswith('f') and re.search(
-                    r'\b' + re.escape(keyword[:-1]) + r'ves\b', lower):
-                return icon
-            # 3. Reverse — plural keyword, singular text
-            #    -s:   "screws" keyword matches "screw" in text
-            #    also handles "bees"→"bee", "nails"→"nail", "tools"→"tool", etc.
-            if keyword.endswith('s') and len(keyword) > 3 and re.search(
-                    r'\b' + re.escape(keyword[:-1]) + r'\b', lower):
-                return icon
+        if keyword.endswith('y') and re.search(
+                r'\b' + re.escape(keyword[:-1]) + r'ies\b', lower):
+            return icon
+        if keyword.endswith('fe') and re.search(
+                r'\b' + re.escape(keyword[:-2]) + r'ves\b', lower):
+            return icon
+        elif keyword.endswith('f') and re.search(
+                r'\b' + re.escape(keyword[:-1]) + r'ves\b', lower):
+            return icon
+        # Reverse: plural keyword → singular text
+        if keyword.endswith('s') and len(keyword) > 3 and re.search(
+                r'\b' + re.escape(keyword[:-1]) + r'\b', lower):
+            return icon
     return None
 
 

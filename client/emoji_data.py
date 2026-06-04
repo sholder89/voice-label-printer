@@ -340,6 +340,53 @@ _ICON_KEYWORDS = {
     "footsteps":        "footprints",
     "tracks":           "footprints",
 
+    # ── Gestures ─────────────────────────────────────────────────────────────
+    "shrug":            "shrug",
+    "shrugging":        "shrug",
+    "whatever":         "shrug",
+    "facepalm":         "facepalm",
+    "doh":              "facepalm",
+    "crossed fingers":  "crossed_fingers",
+    "fingers crossed":  "crossed_fingers",
+    "good luck":        "crossed_fingers",
+    "peace":            "peace_sign",
+    "peace sign":       "peace_sign",
+    "victory sign":     "peace_sign",
+    "hang loose":       "hang_loose",
+    "call me":          "hang_loose",
+    "rock on":          "rock_on",
+    "metal":            "rock_on",
+    "horns":            "rock_on",
+    "fist bump":        "fist_bump",
+    "raised fist":      "fist_bump",
+
+    # ── Hazard / Safety ──────────────────────────────────────────────────────
+    "radioactive":      "radioactive",
+    "nuclear":          "radioactive",
+    "radiation":        "radioactive",
+    "atomic":           "radioactive",
+    "biohazard":        "biohazard",
+    "biological hazard":"biohazard",
+    "hazmat":           "biohazard",
+    "contaminated":     "biohazard",
+    "prohibited":       "prohibited",
+    "forbidden":        "prohibited",
+    "no entry":         "prohibited",
+    "not allowed":      "prohibited",
+    "banned":           "prohibited",
+    "restricted":       "prohibited",
+    "off limits":       "prohibited",
+    "shield":           "shield",
+    "protection":       "shield",
+    "armor":            "shield",
+    "secure":           "shield",
+    "sword":            "sword",
+    "swords":           "sword",
+    "blade":            "sword",
+    "medieval":         "sword",
+    "knight":           "sword",
+    "dagger":           "sword",
+
     # ── Emotions / Faces ─────────────────────────────────────────────────────
     "cry":              "face_cry",
     "crying":           "face_cry",
@@ -479,6 +526,12 @@ _ICON_KEYWORDS = {
     "cricket":          "cricket",
     "mosquito":         "mosquito",
     "snail":            "snail",
+    "beetle":           "beetle",
+    "scarab":           "beetle",
+    "bug":              "beetle",
+    "crow":             "crow",
+    "raven":            "crow",
+    "blackbird":        "crow",
 
     # ── Animals — Farm / Wild ────────────────────────────────────────────────
     "horse":            "horse",
@@ -659,6 +712,12 @@ _ICON_KEYWORDS = {
     "seedling":         "seedling",
     "sprout":           "seedling",
     "growing":          "seedling",
+    "potted plant":     "potted_plant",
+    "houseplant":       "potted_plant",
+    "indoor plant":     "potted_plant",
+    "plant pot":        "potted_plant",
+    "hibiscus":         "hibiscus",
+    "tropical flower":  "hibiscus",
     "mushroom":         "mushroom",
     "fungi":            "mushroom",
     "clover":           "clover",
@@ -841,7 +900,24 @@ _ICON_KEYWORDS = {
     "pepper":           "pepper",
     "chili":            "pepper",
     "hot pepper":       "pepper",
+    "eggplant":         "eggplant",
+    "aubergine":        "eggplant",
+    "cucumber":         "cucumber",
+    "gherkin":          "cucumber",
+    "pickle":           "cucumber",
+    "bell pepper":      "bell_pepper",
+    "capsicum":         "bell_pepper",
+    "green pepper":     "bell_pepper",
+    "sweet potato":     "sweet_potato",
+    "yam":              "sweet_potato",
+    "chestnut":         "chestnut",
+    "acorn":            "chestnut",
     "leafy greens":     "salad",
+    "lettuce":          "leafy_greens",
+    "spinach":          "leafy_greens",
+    "bok choy":         "leafy_greens",
+    "kale":             "leafy_greens",
+    "cabbage":          "leafy_greens",
     "salad":            "salad",
 
     # ── Food — Meals / Savoury ───────────────────────────────────────────────
@@ -924,6 +1000,11 @@ _ICON_KEYWORDS = {
     "syrup":            "honey",
     "croissant":        "croissant",
     "pretzel":          "pretzel",
+    "bagel":            "bagel",
+    "hotpot":           "hotpot",
+    "hot pot":          "hotpot",
+    "fondue":           "hotpot",
+    "stew pot":         "hotpot",
     "pie":              "pie",
     "custard":          "pie",
     "pudding":          "pie",
@@ -1649,6 +1730,13 @@ _ICON_KEYWORDS = {
     "ambulance":        "ambulance",
     "fire truck":       "fire_truck",
     "fire engine":      "fire_truck",
+    "pickup truck":     "pickup_truck",
+    "pickup":           "pickup_truck",
+    "flatbed":          "pickup_truck",
+    "truck bed":        "pickup_truck",
+    "ute":              "pickup_truck",
+    "minivan":          "minivan",
+    "people carrier":   "minivan",
 
     # ── Travel / Transport ───────────────────────────────────────────────────
     "travel":           "travel",
@@ -2087,10 +2175,28 @@ _ICON_KEYWORDS = {
     "theatre":          "theater",
     "cinema":           "theater",
     "movies":           "theater",
-    "film":             "theater",
     "broadway":         "theater",
     "opera":            "theater",
     "performance":      "theater",
+    "film":             "clapperboard",
+    "movie set":        "clapperboard",
+    "clapperboard":     "clapperboard",
+    "movie clapper":    "clapperboard",
+    "megaphone":        "megaphone",
+    "loudspeaker":      "megaphone",
+    "announcement":     "megaphone",
+    "cheer":            "megaphone",
+    "bell":             "bell",
+    "doorbell":         "bell",
+    "notification bell":"bell",
+    "alarm bell":       "bell",
+    "polar bear":       "polar_bear",
+    "arctic bear":      "polar_bear",
+    "heart on fire":    "heart_fire",
+    "burning heart":    "heart_fire",
+    "passionate":       "heart_fire",
+    "mending heart":    "heart_mend",
+    "healing heart":    "heart_mend",
     "museum":           "museum",
     "gallery":          "museum",
     "bank building":    "bank",
@@ -2180,6 +2286,8 @@ _ICON_EMOJIS = {
     "crown":            "\U0001F451",       # 👑
     "heart":            "\U00002764",       # ❤
     "broken_heart":     "\U0001F494",       # 💔
+    "heart_fire":       "\U00002764‍\U0001F525",  # ❤️‍🔥 (ZWJ)
+    "heart_mend":       "\U00002764‍\U0001FA79",  # ❤️‍🩹 (ZWJ)
     "face_cry":         "\U0001F62D",       # 😭
     "face_laugh":       "\U0001F602",       # 😂
     "face_smile":       "\U0001F60A",       # 😊
@@ -2193,6 +2301,14 @@ _ICON_EMOJIS = {
     "hug":              "\U0001F917",       # 🤗
     "eyes":             "\U0001F440",       # 👀
     "footprints":       "\U0001F463",       # 👣
+    # Gestures
+    "shrug":            "\U0001F937",       # 🤷
+    "facepalm":         "\U0001F926",       # 🤦
+    "crossed_fingers":  "\U0001F91E",       # 🤞
+    "peace_sign":       "\U0000270C",       # ✌
+    "hang_loose":       "\U0001F919",       # 🤙
+    "rock_on":          "\U0001F918",       # 🤘
+    "fist_bump":        "\U0001F91B",       # 🤛
 
     # Animals — pets
     "pet":              "\U0001F43E",       # 🐾
@@ -2614,8 +2730,36 @@ _ICON_EMOJIS = {
     "mailbox":          "\U0001F4EC",       # 📬
     # Entertainment
     "theater":          "\U0001F3AD",       # 🎭
+    "clapperboard":     "\U0001F3AC",       # 🎬
+    "megaphone":        "\U0001F4E3",       # 📣
+    "bell":             "\U0001F514",       # 🔔
     "cleaning":         "\U0001F9F9",       # 🧹
     "recycle":          "\U0000267B",       # ♻
+    # Hazard / Safety
+    "radioactive":      "\U00002622",       # ☢
+    "biohazard":        "\U00002623",       # ☣
+    "prohibited":       "\U0001F6AB",       # 🚫
+    "shield":           "\U0001F6E1",       # 🛡
+    "sword":            "\U00002694",       # ⚔
+    # Vehicles
+    "pickup_truck":     "\U0001F6FB",       # 🛻
+    "minivan":          "\U0001F690",       # 🚐
+    # Food / Veg
+    "eggplant":         "\U0001F346",       # 🍆
+    "cucumber":         "\U0001F952",       # 🥒
+    "bell_pepper":      "\U0001FAD1",       # 🫑
+    "sweet_potato":     "\U0001F360",       # 🍠
+    "chestnut":         "\U0001F330",       # 🌰
+    "leafy_greens":     "\U0001F96C",       # 🥬
+    "bagel":            "\U0001F96F",       # 🥯
+    "hotpot":           "\U0001FAD5",       # 🫕
+    # Plants
+    "potted_plant":     "\U0001FAB4",       # 🪴
+    "hibiscus":         "\U0001F33A",       # 🌺
+    # Animals
+    "beetle":           "\U0001FAB2",       # 🪲
+    "crow":             "\U0001F426‍\U00002B1B",  # 🐦‍⬛ (ZWJ — black bird)
+    "polar_bear":       "\U0001F43B‍\U00002744",  # 🐻‍❄️ (ZWJ)
     "baby":             "\U0001F476",       # 👶
     "art":              "\U0001F3A8",       # 🎨
     "gaming":           "\U0001F3AE",       # 🎮
