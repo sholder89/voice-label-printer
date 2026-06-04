@@ -31,7 +31,7 @@ if _m:
     _TG_TOKEN, _TG_CHAT = _m.group(1), _m.group(2)
 
 # Keys persisted to / loaded from settings.json
-_SETTINGS_KEYS = ("printer", "size", "font_style", "font_weight", "border", "text_case", "icons", "style_preset")
+_SETTINGS_KEYS = ("printer", "size", "font_style", "font_weight", "border", "text_case", "icons", "style_preset", "qr_show_text")
 _APP_DIR       = os.path.dirname(os.path.abspath(__file__))
 
 # Store data in %APPDATA%\LabelPrinter — avoids OneDrive sync interference
@@ -63,6 +63,7 @@ state = {
     "text_case":    os.environ.get("DEFAULT_TEXT_CASE", "none"),
     "style_preset": "none",
     "icons":        True,
+    "qr_show_text": True,
     "history":    [],
     "polling":    True,
 }
@@ -172,6 +173,8 @@ def set_config():
             state[key] = data[key]
     if "icons" in data:
         state["icons"] = bool(data["icons"])
+    if "qr_show_text" in data:
+        state["qr_show_text"] = bool(data["qr_show_text"])
     _save_settings()
     return jsonify({"ok": True})
 
@@ -186,12 +189,13 @@ def preview():
     text_case    = request.args.get("text_case",    state["text_case"])
     style_preset = request.args.get("style_preset", state["style_preset"])
     icons        = request.args.get("icons", str(state["icons"])).lower() not in ("false", "0")
+    qr_show_text = request.args.get("qr_show_text", str(state["qr_show_text"])).lower() not in ("false", "0")
     if size not in LABEL_SIZES:
         size = "2x1"
     w, h = LABEL_SIZES[size]
     img  = render_label(text, w, h, dpi=203, font_style=font_style, border=border,
                         icons=icons, text_case=text_case, style_preset=style_preset,
-                        font_weight=font_weight)
+                        font_weight=font_weight, qr_show_text=qr_show_text)
     buf  = io.BytesIO()
     img.save(buf, format="PNG")
     buf.seek(0)
@@ -210,6 +214,7 @@ def manual_print():
     text_case    = data.get("text_case",    state["text_case"])
     style_preset = data.get("style_preset", state["style_preset"])
     icons        = data.get("icons",        state["icons"])
+    qr_show_text = data.get("qr_show_text", state["qr_show_text"])
     copies       = max(1, min(10, int(data.get("copies", 1))))
 
     if not text:
@@ -221,7 +226,8 @@ def manual_print():
             if i > 0:
                 time.sleep(0.5)
             print_label(text, printer, size, font_style=font_style, font_weight=font_weight,
-                        border=border, icons=icons, text_case=text_case, style_preset=style_preset)
+                        border=border, icons=icons, text_case=text_case, style_preset=style_preset,
+                        qr_show_text=qr_show_text)
         status_label = "ok" if copies == 1 else f"ok ×{copies}"
         _record(text, size, status_label, font_style=font_style, font_weight=font_weight,
                 border=border, text_case=text_case, style_preset=style_preset, icons=icons)
@@ -290,6 +296,7 @@ def status():
         "text_case":    state["text_case"],
         "style_preset": state["style_preset"],
         "icons":        state["icons"],
+        "qr_show_text": state["qr_show_text"],
         "polling":    state["polling"],
         "relay":      RELAY_URL,
         "win32":      WIN32_AVAILABLE,

@@ -512,6 +512,14 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
       <p class="hint">💡 Mention keywords like <em>kitchen, tools, travel, music, fragile, warning</em> to auto-add an emoji.</p>
     </div>
 
+    <!-- QR-specific option — shown only when QR Code preset is active -->
+    <div id="qr-options" style="display:none; margin-bottom:.85rem">
+      <label class="check-row" for="chk-qr-text">
+        <input type="checkbox" id="chk-qr-text" checked onchange="saveConfig()">
+        <span>📝 Show text label alongside QR code</span>
+      </label>
+    </div>
+
     <!-- Address fields -->
     <div id="address-fields" style="display:none">
       <label>Saved Addresses</label>
@@ -623,6 +631,7 @@ function getSettings() {
     text_case:    document.getElementById('sel-text-case').value,
     style_preset: document.getElementById('sel-style-preset').value,
     icons:        document.getElementById('chk-icons').checked,
+    qr_show_text: document.getElementById('chk-qr-text').checked,
   };
 }
 
@@ -635,6 +644,7 @@ function onPresetChange() {
   document.getElementById('style-overrides').style.pointerEvents = dim ? 'none' : '';
   document.getElementById('normal-text-wrap').style.display = isAddress ? 'none'  : 'block';
   document.getElementById('address-fields').style.display   = isAddress ? 'block' : 'none';
+  document.getElementById('qr-options').style.display       = (preset === 'qr_code') ? 'block' : 'none';
   if (isAddress) loadSavedAddresses();
   saveConfig();
   refreshPreview();
@@ -716,7 +726,7 @@ function refreshPreview() {
   const s    = getSettings();
   const text = getPrintText();
   document.getElementById('preview-img').src =
-    `/preview?text=${encodeURIComponent(text)}&size=${s.size}&font_style=${s.font_style}&font_weight=${s.font_weight}&border=${s.border}&text_case=${s.text_case}&style_preset=${s.style_preset}&icons=${s.icons}&t=${Date.now()}`;
+    `/preview?text=${encodeURIComponent(text)}&size=${s.size}&font_style=${s.font_style}&font_weight=${s.font_weight}&border=${s.border}&text_case=${s.text_case}&style_preset=${s.style_preset}&icons=${s.icons}&qr_show_text=${s.qr_show_text}&t=${Date.now()}`;
 }
 
 function saveConfig() {
@@ -766,7 +776,8 @@ function buildHistPreviewUrl(r) {
     + `&border=${r.border        || 'none'}`
     + `&text_case=${r.text_case     || 'none'}`
     + `&style_preset=${r.style_preset || 'none'}`
-    + `&icons=${r.icons !== undefined ? r.icons : true}`;
+    + `&icons=${r.icons !== undefined ? r.icons : true}`
+    + `&qr_show_text=${r.qr_show_text !== undefined ? r.qr_show_text : true}`;
 }
 
 /* ── History hover preview ────────────────────────────────────────────── */
@@ -961,6 +972,11 @@ function checkStatus() {
       document.getElementById('style-overrides').style.pointerEvents = dim ? 'none' : '';
       document.getElementById('normal-text-wrap').style.display = isAddress ? 'none'  : 'block';
       document.getElementById('address-fields').style.display   = isAddress ? 'block' : 'none';
+      document.getElementById('qr-options').style.display       = (d.style_preset === 'qr_code') ? 'block' : 'none';
+    }
+    if (d.qr_show_text != null) {
+      const chk = document.getElementById('chk-qr-text');
+      if (chk.checked !== d.qr_show_text) { chk.checked = d.qr_show_text; changed = true; }
     }
     if (changed) refreshPreview();
   }).catch(() => {

@@ -1206,6 +1206,7 @@ def render_label(
     text_case: str = "none",
     style_preset: str = "none",
     font_weight: str = "bold",
+    qr_show_text: bool = True,
 ) -> Image.Image:
     w_px = int(width_in * dpi)
     h_px = int(height_in * dpi)
@@ -1225,7 +1226,7 @@ def render_label(
         if style_preset == "blueprint":
             return _render_blueprint(text, w_px, h_px, dpi, text_case, icons, font_weight)
         if style_preset == "qr_code":
-            return _render_qr_code(text, w_px, h_px, dpi, text_case, font_weight)
+            return _render_qr_code(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text)
         preset = STYLE_PRESETS.get(style_preset, {})
         font_style = preset.get("font_style", font_style)
         border     = preset.get("border",     border)
@@ -1290,6 +1291,7 @@ def print_label(
     text_case: str = "none",
     style_preset: str = "none",
     font_weight: str = "bold",
+    qr_show_text: bool = True,
 ):
     if not WIN32_AVAILABLE:
         raise RuntimeError("pywin32 is not installed — cannot print")
@@ -1304,7 +1306,7 @@ def print_label(
         pass
 
     width_in, height_in = LABEL_SIZES[size_key]
-    img = render_label(text, width_in, height_in, dpi, font_style, border, icons, text_case, style_preset, font_weight)
+    img = render_label(text, width_in, height_in, dpi, font_style, border, icons, text_case, style_preset, font_weight, qr_show_text)
 
     dm_buf  = _get_devmode_buf(printer_name, width_in, height_in)
 
@@ -1766,13 +1768,13 @@ def _render_blueprint(text: str, w_px: int, h_px: int, dpi: int,
     """Engineering blueprint style: black background, white text/grid, corner marks."""
     BG   = (0,   0,   0)    # pure black
     FG   = (255, 255, 255)  # pure white — text, border, corner marks
-    GRID = (90,  90,  90)   # mid-gray grid — prints as a lighter area in the black field
+    GRID = (255, 255, 255)  # pure white — guaranteed uninked lines on thermal
 
     img  = Image.new("RGB", (w_px, h_px), BG)
     draw = ImageDraw.Draw(img)
 
-    # Grid — 2px so lines actually show up on thermal print
-    step = max(round(dpi * 0.20), 14)
+    # Grid — pure white 2px lines so they print as definite uninked stripes
+    step = max(round(dpi * 0.22), 16)
     for gx in range(step, w_px, step):
         draw.line([(gx, 0), (gx, h_px)], fill=GRID, width=2)
     for gy in range(step, h_px, step):
@@ -1835,24 +1837,24 @@ def _render_blueprint(text: str, w_px: int, h_px: int, dpi: int,
 # ── QR Code renderer ──────────────────────────────────────────────────────────
 
 def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
-                    text_case: str, font_weight: str = "bold") -> Image.Image:
-    """QR code label: scannable QR code with the text as caption."""
+                    text_case: str, font_weight: str = "bold",
+                    show_text: bool = True) -> Image.Image:
+    """QR code label. show_text=False centres the QR and omits the caption."""
     try:
         import qrcode as _qrcode
     except ImportError:
-        # qrcode not installed — fall back to standard render with a note
         img  = Image.new("RGB", (w_px, h_px), "white")
         draw = ImageDraw.Draw(img)
-        f    = ImageFont.load_default()
         draw.multiline_text((4, 4), "Install qrcode:\npip install qrcode[pil]",
-                            fill="black", font=f)
+                            fill="black", font=ImageFont.load_default())
         return img
 
     img  = Image.new("RGB", (w_px, h_px), "white")
     draw = ImageDraw.Draw(img)
     pad  = max(4, round(min(w_px, h_px) * 0.04))
+    bw   = max(1, round(dpi / 150))
 
-    # Generate QR
+    # Generate QR (always uses raw text as data, regardless of text_case)
     qr = _qrcode.QRCode(version=None,
                         error_correction=_qrcode.constants.ERROR_CORRECT_M,
                         box_size=4, border=1)
@@ -1860,36 +1862,43 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
     qr.make(fit=True)
     qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
 
-    if w_px > h_px * 1.5:
-        # Landscape — QR on left, text on right
-        qr_size = min(h_px - pad * 2, round(w_px * 0.45))
+    if not show_text:
+        # QR centred, no caption
+        qr_size = min(w_px - pad * 2, h_px - pad * 2)
         qr_img  = qr_img.resize((qr_size, qr_size), Image.NEAREST)
-        img.paste(qr_img, (pad, (h_px - qr_size) // 2))
+        img.paste(qr_img, ((w_px - qr_size) // 2, (h_px - qr_size) // 2))
+        draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
+        return img
 
+    if w_px > h_px * 1.5:
+        # Landscape — QR on left, caption on right
+        qr_size     = min(h_px - pad * 2, round(w_px * 0.45))
+        qr_img      = qr_img.resize((qr_size, qr_size), Image.NEAREST)
+        img.paste(qr_img, (pad, (h_px - qr_size) // 2))
         text_x0     = pad + qr_size + pad
         text_area_w = w_px - text_x0 - pad
         text_area_h = h_px - pad * 2
+        text_y_center = True
         align       = "left"
     else:
-        # Portrait / square — QR on top, text below
+        # Portrait / square — QR on top, caption below
         caption_h   = max(round(h_px * 0.22), round(0.18 * dpi))
         qr_size     = min(w_px - pad * 2, h_px - caption_h - pad * 2)
         qr_img      = qr_img.resize((qr_size, qr_size), Image.NEAREST)
         img.paste(qr_img, ((w_px - qr_size) // 2, pad))
-
         text_x0     = pad
         text_area_w = w_px - pad * 2
         text_area_h = caption_h - pad
+        text_y0     = pad + qr_size + pad // 2
+        text_y_center = False
         align       = "center"
-        # shift text_y0 below the QR
-        text_y0_offset = pad + qr_size + pad // 2
-        draw = ImageDraw.Draw(img)  # refresh after paste
+
+    draw = ImageDraw.Draw(img)
 
     display_text = _apply_case(text, text_case)
     font_path    = _find_font_path("enhanced", font_weight)
-
-    words = display_text.split()
-    max_n = max(1, (len(words) + 1) // 2)
+    words        = display_text.split()
+    max_n        = max(1, (len(words) + 1) // 2)
     best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
     for n in range(1, min(max_n, 4) + 1):
         lines = _split_words(words, n)
@@ -1900,19 +1909,11 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
     joined = "\n".join(best_lines)
     bb     = draw.multiline_textbbox((0, 0), joined, font=best_font, align=align)
     tw, th = bb[2] - bb[0], bb[3] - bb[1]
-
-    if w_px > h_px * 1.5:
-        x = text_x0
-        y = (h_px - th) / 2 - bb[1]
-    else:
-        x = text_x0 + (text_area_w - tw) / 2 - bb[0]
-        y = text_y0_offset
-
+    x = text_x0 + (text_area_w - tw) / 2 - bb[0] if align == "center" else text_x0
+    y = (h_px - th) / 2 - bb[1] if text_y_center else text_y0
     draw.multiline_text((x, y), joined, fill="black", font=best_font, align=align)
 
-    # Border
-    draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black",
-                   width=max(1, round(dpi / 150)))
+    draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
     return img
 
 
