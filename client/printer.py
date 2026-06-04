@@ -2188,6 +2188,90 @@ def _detect_icon(text: str):
     return None
 
 
+def _render_emoji_shaped(emoji_char: str, font_path: str, target_size: int):
+    """Shape and render an emoji (including ZWJ sequences) via HarfBuzz + FreeType.
+
+    Returns an L-mode PIL image (white=background, dark=ink), cropped to the
+    inked region, or None if HarfBuzz/FreeType are unavailable or rendering fails.
+    """
+    try:
+        import uharfbuzz as hb
+        import freetype as ft_lib
+    except ImportError:
+        return None
+    try:
+        with open(font_path, 'rb') as f:
+            font_data = f.read()
+
+        # --- Shape with HarfBuzz (resolves ZWJ ligatures to single glyph IDs) ---
+        hb_face = hb.Face(font_data)
+        hb_font = hb.Font(hb_face)
+        hb_font.scale = (target_size * 64, target_size * 64)
+        buf = hb.Buffer()
+        buf.add_str(emoji_char)
+        buf.guess_segment_properties()
+        hb.shape(hb_font, buf)
+        infos    = buf.glyph_infos
+        pos_list = buf.glyph_positions
+
+        # Canvas sized to the total advance
+        total_adv = sum(p.x_advance >> 6 for p in pos_list)
+        canvas_w  = max(total_adv, target_size)
+        canvas_h  = target_size + target_size // 2
+        baseline  = int(target_size * 0.85)
+        result    = Image.new("L", (canvas_w, canvas_h), 255)
+
+        # --- Render each shaped glyph with FreeType ---
+        ft_face = ft_lib.Face(font_path)
+        ft_face.set_pixel_sizes(0, target_size)
+        FT_LOAD_RENDER = 4
+        FT_LOAD_COLOR  = 1 << 20
+
+        pen = 0
+        for info, pos in zip(infos, pos_list):
+            loaded = False
+            for flags in (FT_LOAD_RENDER | FT_LOAD_COLOR, FT_LOAD_RENDER):
+                try:
+                    ft_face.load_glyph(info.codepoint, flags)
+                    loaded = True
+                    break
+                except Exception:
+                    pass
+            if not loaded:
+                pen += pos.x_advance >> 6
+                continue
+
+            bm = ft_face.glyph.bitmap
+            if bm.width == 0 or bm.rows == 0:
+                pen += pos.x_advance >> 6
+                continue
+
+            ox   = pen + (pos.x_offset >> 6) + ft_face.glyph.bitmap_left
+            oy   = baseline - ft_face.glyph.bitmap_top
+            data = bytes(bm.buffer)
+
+            if bm.pixel_mode == ft_lib.FT_PIXEL_MODE_BGRA:
+                # Color emoji (CBDT format): bytes are BGRA, Pillow reads as RGBA
+                raw           = Image.frombytes('RGBA', (bm.width, bm.rows), data)
+                ch0, ch1, ch2, ch3 = raw.split()   # ch0=actual_B, ch2=actual_R
+                gray  = Image.merge('RGBA', [ch2, ch1, ch0, ch3]).convert('L')
+                alpha = ch3
+                result.paste(gray, (ox, oy), mask=alpha)
+            elif bm.pixel_mode == ft_lib.FT_PIXEL_MODE_GRAY:
+                # Grayscale: 0=transparent, 255=ink — paste black using value as mask
+                mask = Image.frombytes('L', (bm.width, bm.rows), data)
+                result.paste(Image.new('L', mask.size, 0), (ox, oy), mask=mask)
+
+            pen += pos.x_advance >> 6
+
+        diff = ImageChops.difference(result, Image.new("L", result.size, 255))
+        bb   = diff.getbbox()
+        return result.crop(bb) if bb else None
+
+    except Exception:
+        return None
+
+
 def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0)):
     """Render an emoji into a temp image, crop to actual ink, then paste into img."""
     emoji = _ICON_EMOJIS.get(icon_type)
@@ -2198,39 +2282,36 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0)):
     if not font_path:
         return
 
-    # Render onto a large temp canvas (grayscale, white bg) to find true ink bounds
-    canvas = size * 4
-    tmp    = Image.new("L", (canvas, canvas), 255)
-    tdraw  = ImageDraw.Draw(tmp)
+    # Try HarfBuzz+FreeType first — correctly handles ZWJ sequences
+    emoji_img = _render_emoji_shaped(emoji, font_path, size * 2)
 
-    best_font = None
-    target    = size * 1.5
-    for pt in range(8, 400, 2):
-        try:
-            f  = ImageFont.truetype(font_path, pt)
-            bb = tdraw.textbbox((0, 0), emoji, font=f)
-            if (bb[2] - bb[0]) > target or (bb[3] - bb[1]) > target:
+    if emoji_img is None:
+        # Fallback: Pillow-based rendering (no ZWJ support but works for simple emoji)
+        canvas = size * 4
+        tmp    = Image.new("L", (canvas, canvas), 255)
+        tdraw  = ImageDraw.Draw(tmp)
+        best_font = None
+        target    = size * 1.5
+        for pt in range(8, 400, 2):
+            try:
+                f  = ImageFont.truetype(font_path, pt)
+                bb = tdraw.textbbox((0, 0), emoji, font=f)
+                if (bb[2] - bb[0]) > target or (bb[3] - bb[1]) > target:
+                    break
+                best_font = f
+            except OSError:
                 break
-            best_font = f
-        except OSError:
-            break
+        if best_font is None:
+            return
+        cx, cy = canvas // 2, canvas // 2
+        tdraw.text((cx, cy), emoji, font=best_font, fill=0, anchor="mm")
+        diff = ImageChops.difference(tmp, Image.new("L", tmp.size, 255))
+        ink_bb = diff.getbbox()
+        if not ink_bb:
+            return
+        emoji_img = tmp.crop(ink_bb)
 
-    if best_font is None:
-        return
-
-    # Draw centered on the temp canvas
-    cx, cy = canvas // 2, canvas // 2
-    tdraw.text((cx, cy), emoji, font=best_font, fill=0, anchor="mm")
-
-    # Find the actual ink bounding box (non-white pixels)
-    diff = ImageChops.difference(tmp, Image.new("L", tmp.size, 255))
-    ink_bb = diff.getbbox()
-    if not ink_bb:
-        return
-
-    # Crop to just the ink
-    emoji_img = tmp.crop(ink_bb)
-    ew, eh    = emoji_img.size
+    ew, eh = emoji_img.size
 
     # Scale to fill 82% of the icon area
     scale = min(size * 0.82 / ew, size * 0.82 / eh)
@@ -2241,9 +2322,7 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0)):
         )
         ew, eh = emoji_img.size
 
-    # Paste centered in the icon box using the grayscale as a mask so the
-    # emoji renders cleanly on any background (white labels, Win95 gray, etc.)
-    # In L mode: 0 = ink, 255 = background.  Invert so 255 = opaque ink, 0 = transparent.
+    # Paste centered: invert L mask so 255=opaque ink, 0=transparent
     mask      = ImageChops.invert(emoji_img)
     color_img = Image.new("RGB", emoji_img.size, color)
     paste_x   = x + (size - ew) // 2

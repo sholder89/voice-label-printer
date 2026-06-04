@@ -2145,20 +2145,20 @@ _ICON_EMOJIS = {
     "tuxedo":           "\U0001F935",       # 🤵
     "worker":           "\U0001F477",       # 👷
     # Profession person emojis (ZWJ sequences — render on Win10/11 with updated Segoe UI Emoji)
-    # Profession icons — single codepoints only (ZWJ person sequences don't render in Pillow)
-    "prof_judge":       "\U00002696",       # ⚖  scales of justice
-    "prof_chef":        "\U0001F373",       # 🍳  frying pan
-    "prof_student":     "\U0001F393",       # 🎓  graduation cap
-    "prof_teacher":     "\U0001F4DA",       # 📚  books
-    "prof_farmer":      "\U0001F33E",       # 🌾  sheaf of rice
-    "prof_medical":     "\U0001FA7A",       # 🩺  stethoscope
-    "prof_firefighter": "\U0001F692",       # 🚒  fire engine
-    "prof_pilot":       "\U00002708",       # ✈   airplane
-    "prof_mechanic":    "\U0001F527",       # 🔧  wrench
-    "prof_coder":       "\U0001F4BB",       # 💻  laptop
-    "prof_scientist":   "\U0001F52C",       # 🔬  microscope
-    "prof_artist":      "\U0001F3A8",       # 🎨  artist palette
-    "prof_singer":      "\U0001F3A4",       # 🎤  microphone
+    # Profession person emojis — ZWJ sequences, shaped correctly by HarfBuzz
+    "prof_judge":       "\U0001F9D1‍\U00002696",  # 🧑‍⚖️
+    "prof_chef":        "\U0001F9D1‍\U0001F373",  # 🧑‍🍳
+    "prof_student":     "\U0001F9D1‍\U0001F393",  # 🧑‍🎓
+    "prof_teacher":     "\U0001F9D1‍\U0001F3EB",  # 🧑‍🏫
+    "prof_farmer":      "\U0001F9D1‍\U0001F33E",  # 🧑‍🌾
+    "prof_medical":     "\U0001F9D1‍\U00002695",  # 🧑‍⚕️
+    "prof_firefighter": "\U0001F9D1‍\U0001F692",  # 🧑‍🚒
+    "prof_pilot":       "\U0001F9D1‍\U00002708",  # 🧑‍✈️
+    "prof_mechanic":    "\U0001F9D1‍\U0001F527",  # 🧑‍🔧
+    "prof_coder":       "\U0001F9D1‍\U0001F4BB",  # 🧑‍💻
+    "prof_scientist":   "\U0001F9D1‍\U0001F52C",  # 🧑‍🔬
+    "prof_artist":      "\U0001F9D1‍\U0001F3A8",  # 🧑‍🎨
+    "prof_singer":      "\U0001F9D1‍\U0001F3A4",  # 🧑‍🎤
     "skull":            "\U0001F480",       # 💀
     "ghost":            "\U0001F47B",       # 👻
     "robot":            "\U0001F916",       # 🤖
