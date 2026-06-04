@@ -1822,17 +1822,17 @@ def _render_blueprint(text: str, w_px: int, h_px: int, dpi: int,
     """Engineering blueprint style: black background, white text/grid, corner marks."""
     BG   = (0,   0,   0)    # pure black
     FG   = (255, 255, 255)  # pure white — text, border, corner marks
-    GRID = (255, 255, 255)  # pure white — guaranteed uninked lines on thermal
+    GRID = (100, 100, 100)  # mid-grey — visible but doesn't compete with text
 
     img  = Image.new("RGB", (w_px, h_px), BG)
     draw = ImageDraw.Draw(img)
 
-    # Grid — pure white 2px lines so they print as definite uninked stripes
+    # Grid — 3px mid-grey lines: subtle in preview, still visible when printed
     step = max(round(dpi * 0.22), 16)
     for gx in range(step, w_px, step):
-        draw.line([(gx, 0), (gx, h_px)], fill=GRID, width=2)
+        draw.line([(gx, 0), (gx, h_px)], fill=GRID, width=3)
     for gy in range(step, h_px, step):
-        draw.line([(0, gy), (w_px, gy)], fill=GRID, width=2)
+        draw.line([(0, gy), (w_px, gy)], fill=GRID, width=3)
 
     # Border
     bw = max(2, round(dpi / 80))

@@ -38,3 +38,6 @@ desktop.ini
 
 # ── Docker ────────────────────────────────────────────────────────────────────
 server/jobs.db
+
+# ── Dev utilities (not needed by end users) ───────────────────────────────────
+make_favicon.py
