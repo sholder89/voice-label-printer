@@ -56,6 +56,15 @@ STYLE_PRESETS = {
     "warning":    {"label": "⚠ Warning"},
 }
 
+# Ordered groups for the UI dropdown — (group_label, [preset_keys])
+# Use None as group_label to render ungrouped (no <optgroup> wrapper)
+STYLE_PRESET_GROUPS = [
+    (None,         ["none"]),
+    ("Typography", ["minimal", "bold", "elegant", "retro"]),
+    ("Layouts",    ["address", "price_tag", "cassette", "qr_code"]),
+    ("Themed",     ["windows95", "blueprint", "warning"]),
+]
+
 # Fonts for the Windows 95 style (regular weight, not bold)
 _WIN95_FONTS = [
     r"C:\Users\Steve\AppData\Local\Microsoft\Windows\Fonts\W95F.otf",  # W95FA pixel font

@@ -12,7 +12,8 @@ from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
     print_label, list_printers, render_label,
-    LABEL_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES, STYLE_PRESETS, WIN32_AVAILABLE,
+    LABEL_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
+    STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
 )
 
 app = Flask(__name__)
@@ -159,6 +160,7 @@ def index():
         border_styles=BORDER_STYLES,
         text_cases=TEXT_CASES,
         style_presets=STYLE_PRESETS,
+        style_preset_groups=STYLE_PRESET_GROUPS,
         state=state,
     )
 

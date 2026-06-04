@@ -400,10 +400,13 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
 
     <label>Style Preset</label>
     <select id="sel-style-preset" onchange="onPresetChange()">
-      {% for key, preset in style_presets.items() %}
-      <option value="{{ key }}" {% if key == state.style_preset %}selected{% endif %}>
-        {{ preset.label }}
-      </option>
+      {% for group_label, keys in style_preset_groups %}
+        {% if group_label %}<optgroup label="{{ group_label }}">{% endif %}
+        {% for key in keys %}
+          {% set preset = style_presets[key] %}
+          <option value="{{ key }}" {% if key == state.style_preset %}selected{% endif %}>{{ preset.label }}</option>
+        {% endfor %}
+        {% if group_label %}</optgroup>{% endif %}
       {% endfor %}
     </select>
 
