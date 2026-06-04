@@ -340,6 +340,19 @@ tr:nth-child(even) td { background: var(--tr-alt); }
 /* ── Divider ──────────────────────────────────────────────────────────── */
 .divider { height: 1px; background: var(--border); margin: .85rem 0; }
 
+/* ── Collapsible settings ─────────────────────────────────────────────── */
+#settings-body {
+  overflow: hidden;
+  max-height: 1200px;
+  transition: max-height .3s ease, opacity .25s;
+  opacity: 1;
+}
+#settings-body.collapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* ── History preview tooltip ─────────────────────────────────────────── */
 #hist-preview {
   position: fixed;
@@ -392,25 +405,16 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
   </div>
 
   <!-- ── Printer Settings ──────────────────────────────────────────── -->
-  <div class="card">
-    <div class="card-header">
+  <div class="card" id="settings-card">
+    <div class="card-header" onclick="toggleSettings()" style="cursor:pointer; user-select:none">
       <h2><span class="card-icon">⚙</span>Settings</h2>
+      <span id="settings-chevron" style="font-size:.85rem; color:var(--text3); transition:transform .25s">▲</span>
     </div>
-    <p class="section-desc">Changes apply immediately — including labels sent by voice.</p>
 
-    <label>Style Preset</label>
-    <select id="sel-style-preset" onchange="onPresetChange()">
-      {% for group_label, keys in style_preset_groups %}
-        {% if group_label %}<optgroup label="{{ group_label }}">{% endif %}
-        {% for key in keys %}
-          {% set preset = style_presets[key] %}
-          <option value="{{ key }}" {% if key == state.style_preset %}selected{% endif %}>{{ preset.label }}</option>
-        {% endfor %}
-        {% if group_label %}</optgroup>{% endif %}
-      {% endfor %}
-    </select>
+    <div id="settings-body">
+      <p class="section-desc">Changes apply immediately — including labels sent by voice.</p>
 
-    <div id="individual-settings">
+      <!-- Printer + Size always at the top -->
       <div class="grid-2">
         <div>
           <label>Printer</label>
@@ -430,8 +434,23 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
         </div>
       </div>
 
-      <!-- Font + Border dimmed when a style preset overrides them -->
-      <div id="style-overrides" style="transition: opacity .2s;">
+      <div class="divider"></div>
+
+      <label>Style Preset</label>
+      <select id="sel-style-preset" onchange="onPresetChange()">
+        {% for group_label, keys in style_preset_groups %}
+          {% if group_label %}<optgroup label="{{ group_label }}">{% endif %}
+          {% for key in keys %}
+            {% set preset = style_presets[key] %}
+            <option value="{{ key }}" {% if key == state.style_preset %}selected{% endif %}>{{ preset.label }}</option>
+          {% endfor %}
+          {% if group_label %}</optgroup>{% endif %}
+        {% endfor %}
+      </select>
+
+      <div id="individual-settings">
+        <!-- Font + Border dimmed when a style preset overrides them -->
+        <div id="style-overrides" style="transition: opacity .2s;">
         <div class="grid-2">
           <div>
             <label>Font Style</label>
@@ -498,13 +517,14 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
         </div>
       </div>
 
-      <label class="check-row" for="chk-icons">
-        <input type="checkbox" id="chk-icons" {% if state.icons %}checked{% endif %} onchange="saveConfig()">
-        <span>🎨 Auto icons — detect keywords &amp; add emoji</span>
-      </label>
-    </div><!-- end #individual-settings -->
+        <label class="check-row" for="chk-icons">
+          <input type="checkbox" id="chk-icons" {% if state.icons %}checked{% endif %} onchange="saveConfig()">
+          <span>🎨 Auto icons — detect keywords &amp; add emoji</span>
+        </label>
+      </div><!-- end #individual-settings -->
 
-    <div id="save-note" class="save-note"></div>
+      <div id="save-note" class="save-note"></div>
+    </div><!-- end #settings-body -->
   </div>
 
   <!-- ── Print Label ───────────────────────────────────────────────── -->
@@ -625,7 +645,20 @@ function toggleDark() {
   const saved = localStorage.getItem('labelprinter-dark');
   if (saved === '1') applyDark(true);
   else if (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches) applyDark(true);
+  if (localStorage.getItem('labelprinter-settings-open') === '0') {
+    document.getElementById('settings-body').classList.add('collapsed');
+    document.getElementById('settings-chevron').style.transform = 'rotate(180deg)';
+  }
 })();
+
+/* ── Collapsible settings ─────────────────────────────────────────────── */
+function toggleSettings() {
+  const body     = document.getElementById('settings-body');
+  const chevron  = document.getElementById('settings-chevron');
+  const collapsed = body.classList.toggle('collapsed');
+  chevron.style.transform = collapsed ? 'rotate(180deg)' : '';
+  localStorage.setItem('labelprinter-settings-open', collapsed ? '0' : '1');
+}
 
 /* ── Preview ──────────────────────────────────────────────────────────── */
 function schedulePreview() {
