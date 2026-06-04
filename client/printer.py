@@ -1284,6 +1284,9 @@ def render_label(
     # Push content inward so it never overlaps the border
     _border_inset = {"thin": 4, "thick": 8, "double": 14, "dashed": 4, "rounded": 6, "corners": 4}
     pad = max(pad, _border_inset.get(border, 0) + 4)
+    # Image borders have thick decorative edges — use a generous inset
+    if border in _IMAGE_BORDERS:
+        pad = max(pad, round(min(w_px, h_px) * 0.18))
 
     # Suppress icons on long labels — not enough space to look good
     if len(text) > 60:
@@ -1484,6 +1487,10 @@ def _render_address(text: str, w_px: int, h_px: int, dpi: int,
     inset  = _border_inset.get(border, 0)
     pad_x  = max(10, round(w_px * 0.055)) + inset
     pad_y  = max(6,  round(h_px * 0.07))  + inset
+    if border in _IMAGE_BORDERS:
+        img_pad = round(min(w_px, h_px) * 0.18)
+        pad_x   = max(pad_x, img_pad)
+        pad_y   = max(pad_y, img_pad)
 
     lines = [l.strip() for l in text.split('\n') if l.strip()]
     if not lines:
@@ -2247,8 +2254,55 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0)):
 
 # ── Border drawing ────────────────────────────────────────────────────────────
 
+def _nine_slice_scale(src: Image.Image, tw: int, th: int,
+                      corner_frac: float = 0.25) -> Image.Image:
+    """Scale src to (tw, th) using 9-slice scaling so corners stay undistorted.
+
+    The image is divided into a 3×3 grid.  Corners are kept at their original
+    proportional size; edges are stretched to fill the remaining space.  The
+    corner size is clamped so it never exceeds half the target dimension.
+    """
+    sw, sh = src.size
+    # Corner slice sizes — clamped to at most half the target dimension
+    cw = min(int(sw * corner_frac), tw // 2 - 1)
+    ch = min(int(sh * corner_frac), th // 2 - 1)
+    # Middle span in source and target
+    smw, smh = sw - 2 * cw, sh - 2 * ch
+    tmw, tmh = tw - 2 * cw, th - 2 * ch
+
+    def crop(x1, y1, x2, y2): return src.crop((x1, y1, x2, y2))
+
+    slices = {
+        'tl': crop(0,        0,        cw,        ch),
+        'tc': crop(cw,       0,        cw + smw,  ch),
+        'tr': crop(cw + smw, 0,        sw,        ch),
+        'ml': crop(0,        ch,       cw,        ch + smh),
+        'mr': crop(cw + smw, ch,       sw,        ch + smh),
+        'bl': crop(0,        ch + smh, cw,        sh),
+        'bc': crop(cw,       ch + smh, cw + smw,  sh),
+        'br': crop(cw + smw, ch + smh, sw,        sh),
+    }
+
+    def rs(piece, w, h):
+        return piece.resize((max(1, w), max(1, h)), Image.LANCZOS)
+
+    out = Image.new("RGBA", (tw, th), (0, 0, 0, 0))
+    # Corners (unchanged proportional size)
+    out.paste(slices['tl'], (0,        0))
+    out.paste(slices['tr'], (tw - cw,  0))
+    out.paste(slices['bl'], (0,        th - ch))
+    out.paste(slices['br'], (tw - cw,  th - ch))
+    # Edges (stretched)
+    out.paste(rs(slices['tc'], tmw, ch),  (cw, 0))
+    out.paste(rs(slices['bc'], tmw, ch),  (cw, th - ch))
+    out.paste(rs(slices['ml'], cw,  tmh), (0,  ch))
+    out.paste(rs(slices['mr'], cw,  tmh), (tw - cw, ch))
+    # Centre is left transparent — label content shows through
+    return out
+
+
 def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int) -> Image.Image:
-    """Scale border_<name>.* to the label size, recolour to pure black, and composite."""
+    """9-slice scale border_<name>.* to the label size, recolour to black, composite."""
     path = next(
         (f for ext in (".png", ".webp", ".jpg", ".jpeg")
          for f in [os.path.join(_IMAGES_DIR, f"border_{name}{ext}")]
@@ -2257,9 +2311,9 @@ def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int) -> 
     )
     if not path:
         return img
-    border = Image.open(path).convert("RGBA")
-    border = border.resize((w_px, h_px), Image.LANCZOS)
-    # Keep the alpha channel but force all RGB to black so the design prints black
+    src    = Image.open(path).convert("RGBA")
+    border = _nine_slice_scale(src, w_px, h_px)
+    # Force all non-transparent pixels to pure black
     _, _, _, a = border.split()
     black_border = Image.merge("RGBA", [
         Image.new("L", border.size, 0),
