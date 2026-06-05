@@ -207,6 +207,28 @@ _ICON_KEYWORDS = {
     "haunted":          "ghost",
     "spirit":           "ghost",
     "boo":              "ghost",
+    "monster":          "monster",
+    "ogre":             "monster",
+    "creature":         "monster",
+    "beast":            "monster",
+    "demon":            "monster",
+    "goblin":           "monster",
+    "troll":            "troll",
+    "poop":             "poop",
+    "poo":              "poop",
+    "turd":             "poop",
+    "crap":             "poop",
+    "doo doo":          "poop",
+    "doodoo":           "poop",
+    "dookie":           "poop",
+    "doody":            "poop",
+    "number two":       "poop",
+    "number 2":         "poop",
+    "stinky":           "poop",
+    "potty":            "poop",
+    "feces":            "poop",
+    "bowel movement":   "poop",
+    "bathroom break":   "poop",
     "robot":            "robot",
     "robotics":         "robot",
     "android":          "robot",
@@ -2267,6 +2289,9 @@ _ICON_EMOJIS = {
     "prof_singer":      "\U0001F9D1‍\U0001F3A4",  # 🧑‍🎤
     "skull":            "\U0001F480",       # 💀
     "ghost":            "\U0001F47B",       # 👻
+    "monster":          "\U0001F479",       # 👹
+    "troll":            "\U0001F9CC",       # 🧌
+    "poop":             "\U0001F4A9",       # 💩
     "robot":            "\U0001F916",       # 🤖
     "clown":            "\U0001F921",       # 🤡
     "fairy":            "\U0001F9DA",       # 🧚
