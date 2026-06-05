@@ -133,9 +133,47 @@ telegram://<bot_token>@telegram?chats=<chat_id>
 - `BurbankBigCondensed-Bold.otf` — enables the Burbank font style
 - `W95F.otf` (W95FA) — enables the authentic pixel font for Windows 95 style
 
-### Server (Docker / VPS)
+### Server
 
-The relay server brokers jobs between Alexa and the Windows client.
+The relay server brokers jobs between Alexa and the Windows client. It needs to be reachable from the internet with a public HTTPS URL. Pick whichever deployment option suits you:
+
+---
+
+#### Option A: Railway (easiest, free tier available)
+
+[Railway](https://railway.app) detects the Dockerfile automatically and handles HTTPS for you — no reverse proxy setup needed.
+
+1. Create a free account at railway.app
+2. Click **New Project → Deploy from GitHub repo** and select this repo
+3. Set the root directory to `server/`
+4. Under **Variables**, add:
+   ```
+   LABEL_TOKEN=your-secret-token
+   ```
+5. Railway gives you a public URL like `https://voice-label-printer-production.up.railway.app` — use this as your `RELAY_URL`
+
+---
+
+#### Option B: Render (also easy, free tier available)
+
+[Render](https://render.com) works similarly to Railway.
+
+1. Create a free account at render.com
+2. Click **New → Web Service**, connect your GitHub repo
+3. Set the root directory to `server/`, runtime to **Docker**
+4. Under **Environment**, add:
+   ```
+   LABEL_TOKEN=your-secret-token
+   ```
+5. Render gives you a public URL like `https://voice-label-printer.onrender.com` — use this as your `RELAY_URL`
+
+> **Note:** Render's free tier spins down after inactivity, which adds a ~30 second cold start delay on the first request. Railway stays warm. Either is fine for occasional use; Railway is better if you want instant response every time.
+
+---
+
+#### Option C: Self-hosted VPS (Docker Compose)
+
+If you already have a server (DigitalOcean, Linode, Vultr, etc.):
 
 1. Copy `server/.env.example` to `server/.env`:
    ```
@@ -246,10 +284,30 @@ The app lives in the Windows system tray when running:
 
 ## Security Notes
 
-- `LABEL_TOKEN` is sent as an `X-Token` HTTP header (not in the URL)
+### How it's secured
+- `LABEL_TOKEN` is required on every request to the relay server — anything without it gets a `401 Unauthorized`
+- The token is sent as an `X-Token` HTTP header (not in the URL, so it never appears in server access logs)
+- The relay server has rate limiting on all endpoints to prevent abuse
+- The server only accepts a known allowlist of setting keys and values — arbitrary data can't be injected
 - `server/.env` and `client/.env` are **gitignored** — never commit them
-- The relay server validates the token on every request
-- The Alexa Lambda is the only external caller; all other traffic can be firewall-blocked
+
+### Use a strong token
+The token is the only thing standing between your printer and the internet. Use something long and random — not a word or phrase. A good way to generate one:
+
+```python
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+This produces something like `3Kx9mP2vL8nQ4wRjF7tYcZ1oBsHdEuAg` — use this as your `LABEL_TOKEN` in all three places (server, client, Lambda).
+
+### The same token goes in three places
+| Where | How |
+|---|---|
+| Relay server | `LABEL_TOKEN` env var (Railway/Render dashboard or `server/.env`) |
+| Windows client | `LABEL_TOKEN` in `client/.env` |
+| AWS Lambda | `LABEL_TOKEN` env var in Lambda configuration |
+
+If any one of these doesn't match, that component stops working — which is a useful way to rotate the token if you ever think it's been compromised.
 
 ---
 
