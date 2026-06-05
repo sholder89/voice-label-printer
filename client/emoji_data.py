@@ -865,6 +865,26 @@ _ICON_KEYWORDS = {
     "lighter":          "candle",
 
     # ── Computer / Tech ──────────────────────────────────────────────────────
+    "floppy":           "floppy_disk",
+    "floppy disk":      "floppy_disk",
+    "diskette":         "floppy_disk",
+    "save":             "floppy_disk",
+    "saved":            "floppy_disk",
+    "saving":           "floppy_disk",
+    "unsaved":          "floppy_disk",
+    "cd":               "cd",
+    "disc":             "cd",
+    "optical disc":     "cd",
+    "cd-rom":           "cd",
+    "cdrom":            "cd",
+    "cd rom":           "cd",
+    "audio cd":         "cd",
+    "music cd":         "cd",
+    "dvd":              "dvd",
+    "blu-ray":          "dvd",
+    "bluray":           "dvd",
+    "blu ray":          "dvd",
+    "movie disc":       "dvd",
     "computer":         "computer",
     "laptop":           "computer",
     "tech":             "computer",
@@ -2676,6 +2696,9 @@ _ICON_EMOJIS = {
     "books":            "\U0001F4DA",       # 📚
     "tools":            "\U0001F527",       # 🔧
     "computer":         "\U0001F4BB",       # 💻
+    "floppy_disk":      "\U0001F4BE",       # 💾
+    "cd":               "\U0001F4BF",       # 💿
+    "dvd":              "\U0001F4C0",       # 📀
     "phone":            "\U0001F4F1",       # 📱
     "tv":               "\U0001F4FA",       # 📺
     "science":          "\U0001F9EA",       # 🧪
