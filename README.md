@@ -27,9 +27,9 @@ You (voice) → Alexa Skill → AWS Lambda → Relay Server (VPS) → Windows Cl
 
 ### 😀 Automatic Emoji Icons
 - Type (or say) any label text and the app automatically detects a matching emoji icon
-- Over **2,000 keywords** covering household items, sports, hobbies, professions, food, nature, and more
+- Over **3,000 keywords** covering household items, sports, hobbies, professions, food, brands, electronic components, country flags, and more
 - Icons appear to the left of the label text
-- Supports **ZWJ emoji sequences** (e.g. 🧑‍✈️ pilot, 🧑‍🔬 scientist, 🐦‍⬛ crow) rendered correctly via HarfBuzz + FreeType
+- Rendered via **Noto Color Emoji** (fonttools PNG extraction) with HarfBuzz + FreeType as fallback — correctly handles ZWJ sequences (🧑‍✈️ pilot, 🧑‍🔬 scientist) and country flags (🇺🇸 🇬🇧 🇯🇵 and all others)
 - Icons can be toggled on/off per label or globally
 - **Longest-match detection** — "polar bear" correctly picks 🐻‍❄️ over just 🐻
 
@@ -48,7 +48,7 @@ Choose a style to completely change the look of a label:
 | Layouts | **Cassette** | Black end blocks, white center spine |
 | Layouts | **QR Code** | Generates a scannable QR code from the label text |
 | Themed | **Windows 95** | Classic raised-button gray UI chrome |
-| Themed | **Blueprint** | Black background, white grid lines |
+| Themed | **Blueprint** | Black background, grey grid lines |
 | Themed | **Warning** | ⚠ hazard header, diagonal stripes, icon + body text |
 
 ### 🔤 Fonts & Weights
@@ -132,6 +132,7 @@ telegram://<bot_token>@telegram?chats=<chat_id>
 **Optional fonts** — place these in `C:\Users\<you>\AppData\Local\Microsoft\Windows\Fonts\`:
 - `BurbankBigCondensed-Bold.otf` — enables the Burbank font style
 - `W95F.otf` (W95FA) — enables the authentic pixel font for Windows 95 style
+- `NotoColorEmoji_WindowsCompatible.ttf` — enables country flags and Unicode 15 emoji (🪼 🫎 🪿 etc.). Download from [github.com/googlefonts/noto-emoji/releases](https://github.com/googlefonts/noto-emoji/releases) — get the `WindowsCompatible` variant
 
 ### Server
 
@@ -308,10 +309,9 @@ The app lives in the Windows system tray when running:
 │   ├── Dockerfile
 │   ├── docker-compose.yml
 │   └── requirements.txt
-├── alexa-skill/
-│   ├── lambda_function.py  # AWS Lambda handler
-│   └── interaction_model.json
-└── make_favicon.py         # Utility: regenerates favicon from printer emoji
+└── alexa-skill/
+    ├── lambda_function.py  # AWS Lambda handler
+    └── interaction_model.json
 ```
 
 ---
@@ -358,6 +358,7 @@ If any one of these doesn't match, that component stops working — which is a u
 | `qrcode[pil]` | QR Code style preset |
 | `uharfbuzz` | HarfBuzz text shaping for ZWJ emoji sequences |
 | `freetype-py` | FreeType rendering of color emoji bitmaps |
+| `fonttools` | PNG bitmap extraction from Noto Color Emoji (country flags + Unicode 15) |
 
 ### Server
 | Package | Purpose |
