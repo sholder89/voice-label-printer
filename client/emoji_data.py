@@ -431,6 +431,7 @@ _ICON_KEYWORDS = {
     "good job":         "thumbsup",
     "thumbs down":      "thumbsdown",
     "rejected":         "thumbsdown",
+    "clap":             "clap",
     "clapping":         "clap",
     "applause":         "clap",
     "well done":        "clap",
@@ -1173,6 +1174,7 @@ _ICON_KEYWORDS = {
     "doughnut":         "donut",
     "cupcake":          "cupcake",
     "muffin":           "cupcake",
+    "fudge":            "chocolate",
     "chocolate":        "chocolate",
     "candy":            "candy",
     "sweets":           "candy",
@@ -1599,6 +1601,21 @@ _ICON_KEYWORDS = {
     "stationery":       "pencil",
     "writing":          "pencil",
     "sketch":           "pencil",
+    "crayon":           "crayon",
+    "crayons":          "crayon",
+    "wax crayon":       "crayon",
+    "paperclip":        "paperclip",
+    "paper clip":       "paperclip",
+    "binder clip":      "paperclip",
+    "clip":             "paperclip",
+    "needle":           "needle",
+    "needles":          "needle",
+    "sewing needle":    "needle",
+    "thread":           "thread",
+    "sewing thread":    "thread",
+    "yarn":             "thread",
+    "string":           "thread",
+    "twine":            "thread",
     "chart":            "chart",
     "graph":            "chart",
     "data":             "chart",
@@ -2367,6 +2384,7 @@ _ICON_KEYWORDS = {
     "third place":      "medal_bronze",
 
     # ── Buildings / Places ───────────────────────────────────────────────────
+    "building":         "office_building",
     "office building":  "office_building",
     "headquarters":     "office_building",
     "workplace":        "office_building",
@@ -2399,6 +2417,37 @@ _ICON_KEYWORDS = {
     "doorbell":         "bell",
     "notification bell":"bell",
     "alarm bell":       "bell",
+    "can":              "canned_food",
+    "canned":           "canned_food",
+    "tin can":          "canned_food",
+    "tin":              "canned_food",
+    "canned food":      "canned_food",
+    "bar":              "bar",
+    "pub":              "bar",
+    "tavern":           "bar",
+    "brewery":          "bar",
+    "saloon":           "bar",
+    "badge":            "badge",
+    "name badge":       "badge",
+    "name tag":         "badge",
+    "id badge":         "badge",
+    "lanyard":          "badge",
+    "bulb":             "bulb",
+    "light bulb":       "bulb",
+    "idea":             "bulb",
+    "bright idea":      "bulb",
+    "brush":            "paintbrush",
+    "paintbrush":       "paintbrush",
+    "paint brush":      "paintbrush",
+    "button":           "button",
+    "buttons":          "button",
+    "sewing button":    "button",
+    "flag":             "flag",
+    "flags":            "flag",
+    "flagged":          "flag",
+    "checkered flag":   "checkered_flag",
+    "finish line":      "checkered_flag",
+    "race":             "checkered_flag",
     "polar bear":       "polar_bear",
     "arctic bear":      "polar_bear",
     "heart on fire":    "heart_fire",
@@ -2935,6 +2984,20 @@ _ICON_EMOJIS = {
     "disco_ball":       "\U0001FA69",       # 🪩
     "kite":             "\U0001FA81",       # 🪁
     "8ball":            "\U0001F3B1",       # 🎱
+
+    # Requested additions
+    "canned_food":      "\U0001F9C6",       # 🥫
+    "bar":              "\U0001F37A",       # 🍺
+    "badge":            "\U0001F4DB",       # 📛
+    "bulb":             "\U0001F4A1",       # 💡
+    "paintbrush":       "\U0001F58C",       # 🖌
+    "button":           "\U0001F518",       # 🔘 (closest circular button shape)
+    "flag":             "\U0001F6A9",       # 🚩
+    "checkered_flag":   "\U0001F3C1",       # 🏁
+    "crayon":           "\U0001F58D",       # 🖍
+    "paperclip":        "\U0001F4CE",       # 📎
+    "needle":           "\U0001FAA1",       # 🪡
+    "thread":           "\U0001F9F5",       # 🧵
 
     # Other misc
     "trash":            "\U0001F5D1",       # 🗑
