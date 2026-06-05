@@ -604,17 +604,8 @@ def _render_warning(text: str, w_px: int, h_px: int, dpi: int, text_case: str,
     icon_sz   = header_h - icon_pad * 2
     icon_lx   = ix1 + icon_pad * 2
     icon_ly   = iy1 + icon_pad
-    # Draw a white rounded badge behind the icon so it reads clearly on the
-    # black header regardless of how the glyph renders — this is the white
-    # border the user expects to see around the ⚠ symbol.
-    badge_pad = max(2, icon_sz // 8)
-    draw.rounded_rectangle(
-        [icon_lx - badge_pad, icon_ly - badge_pad,
-         icon_lx + icon_sz + badge_pad, icon_ly + icon_sz + badge_pad],
-        radius=max(2, badge_pad),
-        fill=WHITE,
-    )
-    _draw_icon(img, "warning", icon_lx, icon_ly, icon_sz, color=BLACK)
+    _draw_icon(img, "warning", icon_lx, icon_ly, icon_sz, color=WHITE,
+               skip_noto=True, skip_hb=True)
 
     warn_text   = "WARNING"
     warn_x1     = icon_lx + icon_sz + icon_pad * 2
@@ -1253,12 +1244,12 @@ def _render_emoji_shaped(emoji_char: str, font_path: str, target_size: int):
         return None
 
 
-def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False):
+def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, skip_hb=False):
     """Render an emoji into a temp image, crop to actual ink, then paste into img.
 
-    skip_noto=True forces the Segoe UI Emoji / FreeType path, bypassing Noto.
-    Useful when rendering white-on-black (e.g. warning header) where Noto's
-    detailed colour glyphs render too dark against a black background.
+    skip_noto=True  — bypass Noto PNG extraction, use HarfBuzz/FreeType instead.
+    skip_hb=True    — bypass HarfBuzz/FreeType, use basic Pillow text rendering.
+    Both True       — force the Pillow fallback (simple outline, no colour data).
     """
     emoji = _ICON_EMOJIS.get(icon_type)
     if not emoji:
@@ -1272,7 +1263,7 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False):
         font_path = next((p for p in _EMOJI_FONT_PATHS if os.path.exists(p)), None)
         if not font_path:
             return
-        emoji_img = _render_emoji_shaped(emoji, font_path, size * 2)
+        emoji_img = None if skip_hb else _render_emoji_shaped(emoji, font_path, size * 2)
 
     if emoji_img is None:
         # Fallback: Pillow-based rendering (no ZWJ support but works for simple emoji)
