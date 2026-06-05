@@ -169,7 +169,7 @@ def index():
 
 @app.route("/config", methods=["POST"])
 def set_config():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     for key in ("printer", "size", "font_style", "font_weight", "border", "text_case", "style_preset"):
         if key in data:
             state[key] = data[key]
@@ -206,7 +206,7 @@ def preview():
 
 @app.route("/print", methods=["POST"])
 def manual_print():
-    data        = request.get_json()
+    data        = request.get_json(silent=True) or {}
     text        = (data.get("text") or "").strip()
     size        = data.get("size",        state["size"])
     printer     = data.get("printer",     state["printer"])

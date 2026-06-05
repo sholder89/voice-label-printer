@@ -1,3 +1,4 @@
+import hmac
 import sqlite3
 import uuid
 from datetime import datetime
@@ -67,7 +68,7 @@ def require_token(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.args.get("token") or request.headers.get("X-Token")
-        if token != TOKEN:
+        if not token or not hmac.compare_digest(token, TOKEN):
             return jsonify({"error": "unauthorized"}), 401
         return f(*args, **kwargs)
     return decorated
@@ -194,6 +195,7 @@ def complete_setting(change_id):
 
 
 @app.route("/health", methods=["GET"])
+@limiter.exempt
 def health():
     return jsonify({"ok": True})
 
