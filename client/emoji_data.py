@@ -960,7 +960,6 @@ _ICON_KEYWORDS = {
     "observatory":      "telescope",
     "moon":             "moon",
     "lunar":            "moon",
-    "crescent":         "moon",
     "comet":            "comet",
     "meteor":           "comet",
     "asteroid":         "comet",
@@ -1028,7 +1027,6 @@ _ICON_KEYWORDS = {
     "fuses":            "lightning",
     "relay":            "lightning",
     "relays":           "lightning",
-    "crystal":          "lightning",
     "oscillator":       "lightning",
     "resonator":        "lightning",
     "voltage regulator":"lightning",
@@ -1037,7 +1035,6 @@ _ICON_KEYWORDS = {
     "opamp":            "lightning",
     "comparator":       "lightning",
     "component":        "lightning",
-    "components":       "lightning",
     "electronic":       "lightning",
     # Inductive/magnetic → 🧲
     "inductor":         "magnet",
@@ -2291,7 +2288,6 @@ _ICON_KEYWORDS = {
     "3d model":         "ruler_tri",
     "design file":      "ruler_tri",
     "blueprint":        "ruler_tri",
-    "schematic":        "ruler_tri",
     "draft":            "ruler_tri",
 
     # ── Laser / CNC / Engraving ──────────────────────────────────────────────
@@ -2439,7 +2435,7 @@ _ICON_KEYWORDS = {
     "tires":            "car",
     "motor":            "car",
     "engine":           "car",
-    "fuel":             "car",
+    "fuel":             "fuel_pump",
     "brakes":           "car",
     "windshield":       "car",
     "maintenance":      "car",
@@ -2906,19 +2902,19 @@ _ICON_KEYWORDS = {
     # ── Time / Schedule ──────────────────────────────────────────────────────
     "time":             "time",
     "clock":            "time",
-    "timer":            "time",
+    "timer":            "stopwatch",
     "alarm":            "time",
-    "schedule":         "time",
+    "schedule":         "calendar",
     "deadline":         "time",
-    "appointment":      "time",
+    "appointment":      "calendar",
     "reminder":         "time",
-    "weekly":           "time",
+    "weekly":           "calendar",
     "daily":            "time",
-    "monthly":          "time",
-    "calendar":         "time",
+    "monthly":          "calendar",
+    "calendar":         "calendar",
     "countdown":        "time",
-    "annual":           "time",
-    "hourglass":        "time",
+    "annual":           "calendar",
+    "hourglass":        "hourglass",
     "watch":            "time",
 
     # ── Star / Important ─────────────────────────────────────────────────────
@@ -3197,6 +3193,237 @@ _ICON_KEYWORDS = {
     "bank building":    "bank",
     "atm":              "bank",
     "hospital building": "hospital_building",
+
+    # ── Drama / theater ──────────────────────────────────────────────────────
+    "drama":            "theater",
+    "dramatic":         "theater",
+    "acting":           "theater",
+    "theatrics":        "theater",
+
+    # ── Rock & roll (sign of the horns) ──────────────────────────────────────
+    "rock and roll":    "rock_on",
+    "rock n roll":      "rock_on",
+    "rock 'n' roll":    "rock_on",
+    "rocknroll":        "rock_on",
+    "headbanger":       "rock_on",
+    "metalhead":        "rock_on",
+    "mosh":             "rock_on",
+    "mosh pit":         "rock_on",
+
+    # ── Blog / notes ─────────────────────────────────────────────────────────
+    "blog":             "memo",
+    "vlog":             "memo",
+    "blogging":         "memo",
+    "memo":             "memo",
+    "note":             "memo",
+    "notepad":          "memo",
+    "sticky note":      "memo",
+    "to do list":       "memo",
+
+    # ── Burp / exhale ────────────────────────────────────────────────────────
+    "burp":             "face_exhale",
+    "burping":          "face_exhale",
+    "belch":            "face_exhale",
+    "belching":         "face_exhale",
+    "sigh":             "face_exhale",
+    "sighing":          "face_exhale",
+    "exhale":           "face_exhale",
+    "whew":             "face_exhale",
+    "phew":             "face_exhale",
+    "relieved":         "face_exhale",
+    "breath":           "face_exhale",
+    "breathe":          "face_exhale",
+
+    # ── Fart / gas (the smelly kind) → wind ──────────────────────────────────
+    "fart":             "wind",
+    "farts":            "wind",
+    "farting":          "wind",
+    "toot":             "wind",
+    "flatulence":       "wind",
+    "gassy":            "wind",
+    "passing gas":      "wind",
+    "fluff":            "wind",
+
+    # ── Fudgy / chocolate ────────────────────────────────────────────────────
+    "fudgy":            "chocolate",
+    "brownie":          "chocolate",
+    "brownies":         "chocolate",
+    "ganache":          "chocolate",
+
+    # ── Fail / wrong → ❌ ─────────────────────────────────────────────────────
+    "fail":             "cross_mark",
+    "failed":           "cross_mark",
+    "failing":          "cross_mark",
+    "failure":          "cross_mark",
+    "wrong":            "cross_mark",
+    "wrong answer":     "cross_mark",
+    "incorrect":        "cross_mark",
+    "error":            "cross_mark",
+    "invalid":          "cross_mark",
+    "nope":             "cross_mark",
+    "mistake":          "cross_mark",
+    "false":            "cross_mark",
+    "x mark":           "cross_mark",
+    "cross mark":       "cross_mark",
+
+    # ── Pass / correct → ✅ ───────────────────────────────────────────────────
+    "pass":             "check_mark",
+    "passed":           "check_mark",
+    "passing":          "check_mark",
+    "correct":          "check_mark",
+    "complete":         "check_mark",
+    "completed":        "check_mark",
+    "done":             "check_mark",
+    "finished":         "check_mark",
+    "verified":         "check_mark",
+    "success":          "check_mark",
+    "successful":       "check_mark",
+    "checkmark":        "check_mark",
+    "valid":            "check_mark",
+    "right answer":     "check_mark",
+
+    # ── Grass / weed / marijuana → 🌿 ─────────────────────────────────────────
+    "grass":            "herb",
+    "lawn":             "herb",
+    "yard":             "herb",
+    "turf":             "herb",
+    "sod":              "herb",
+    "weed":             "herb",
+    "weeds":            "herb",
+    "marijuana":        "herb",
+    "cannabis":         "herb",
+    "hemp":             "herb",
+    "ganja":            "herb",
+    "cbd":              "herb",
+    "pot leaf":         "herb",
+
+    # ── Geometric shapes ─────────────────────────────────────────────────────
+    "cube":             "ice",
+    "cubes":            "ice",
+    "sphere":           "crystal_glass",
+    "orb":              "crystal_glass",
+    "circle":           "circle",
+    "circles":          "circle",
+    "circular":         "circle",
+    "square":           "square",
+    "squares":          "square",
+    "triangle":         "triangle",
+    "triangles":        "triangle",
+    "triangular":       "triangle",
+    "pyramid":          "triangle",
+    "pyramids":         "triangle",
+
+    # ── Machine → ⚙ ──────────────────────────────────────────────────────────
+    "machine":          "gear",
+    "machines":         "gear",
+    "machinery":        "gear",
+    "machining":        "gear",
+    "mechanical":       "gear",
+
+    # ── Gun / firearms → 🔫 ───────────────────────────────────────────────────
+    "gun":              "gun",
+    "guns":             "gun",
+    "pistol":           "gun",
+    "pistols":          "gun",
+    "revolver":         "gun",
+    "firearm":          "gun",
+    "firearms":         "gun",
+    "rifle":            "gun",
+    "rifles":           "gun",
+    "handgun":          "gun",
+    "shotgun":          "gun",
+    "machine gun":      "gun",
+    "ammo":             "gun",
+    "ammunition":       "gun",
+    "bullet":           "gun",
+    "bullets":          "gun",
+
+    # ── Factory / industrial → 🏭 ─────────────────────────────────────────────
+    "factory":          "factory",
+    "factories":        "factory",
+    "manufacturing":    "factory",
+    "industrial":       "factory",
+    "mill":             "factory",
+    "smokestack":       "factory",
+    "assembly line":    "factory",
+
+    # ── Label / sticker / tag → 🏷 ────────────────────────────────────────────
+    "label":            "label",
+    "labels":           "label",
+    "sticker":          "label",
+    "stickers":         "label",
+    "tag":              "label",
+    "tags":             "label",
+    "hang tag":         "label",
+    "price label":      "label",
+
+    # ── Calendar extras → 📅 ──────────────────────────────────────────────────
+    "agenda":           "calendar",
+    "meeting":          "calendar",
+    "meetings":         "calendar",
+    "planner":          "calendar",
+    "day planner":      "calendar",
+
+    # ── Stopwatch / timing → ⏱ ────────────────────────────────────────────────
+    "stopwatch":        "stopwatch",
+    "lap time":         "stopwatch",
+    "time trial":       "stopwatch",
+
+    # ── Hourglass / sand timer → ⌛ ────────────────────────────────────────────
+    "sand timer":       "hourglass",
+    "sandglass":        "hourglass",
+    "egg timer":        "hourglass",
+
+    # ── Map / geography → 🗺 ──────────────────────────────────────────────────
+    "map":              "world_map",
+    "maps":             "world_map",
+    "atlas":            "world_map",
+    "geography":        "world_map",
+    "world map":        "world_map",
+    "road map":         "world_map",
+    "treasure map":     "world_map",
+
+    # ── Gas / fuel → ⛽ ───────────────────────────────────────────────────────
+    "gas":              "fuel_pump",
+    "gasoline":         "fuel_pump",
+    "petrol":           "fuel_pump",
+    "diesel":           "fuel_pump",
+    "gas station":      "fuel_pump",
+    "gas pump":         "fuel_pump",
+    "fuel pump":        "fuel_pump",
+    "filling station":  "fuel_pump",
+    "unleaded":         "fuel_pump",
+
+    # ── English / alphabet → 🔤 ───────────────────────────────────────────────
+    "english":          "abc",
+    "alphabet":         "abc",
+    "spelling":         "abc",
+    "spell":            "abc",
+    "vocabulary":       "abc",
+    "abc":              "abc",
+    "abcs":             "abc",
+    "language":         "abc",
+    "grammar":          "abc",
+
+    # ── Math / arithmetic → 🧮 ────────────────────────────────────────────────
+    "math":             "abacus",
+    "maths":            "abacus",
+    "mathematics":      "abacus",
+    "arithmetic":       "abacus",
+    "algebra":          "abacus",
+    "calculus":         "abacus",
+    "geometry":         "abacus",
+    "counting":         "abacus",
+    "addition":         "abacus",
+    "subtraction":      "abacus",
+    "multiplication":   "abacus",
+    "division":         "abacus",
+    "equation":         "abacus",
+
+    # ── Numbers → 🔢 ──────────────────────────────────────────────────────────
+    "numbers":          "numbers",
+    "digits":           "numbers",
+    "numeric":          "numbers",
 }
 
 
@@ -3740,7 +3967,6 @@ _ICON_EMOJIS = {
     "crayon":           "\U0001F58D",       # 🖍
     "paperclip":        "\U0001F4CE",       # 📎
     "needle":           "\U0001FAA1",       # 🪡
-    "thread":           "\U0001F9F5",       # 🧵
 
     # Other misc
     "trash":            "\U0001F5D1",       # 🗑
@@ -3850,7 +4076,6 @@ _ICON_EMOJIS = {
     "castle":           "\U0001F3F0",       # 🏰
     "church":           "\U000026EA",       # ⛪
     "stadium":          "\U0001F3DF",       # 🏟
-    "theater":          "\U0001F3A4",       # 🎤 (fallback)
     "museum":           "\U0001F3DB",       # 🏛
     "bank":             "\U0001F3E6",       # 🏦
     "hospital_building": "\U0001F3E5",      # 🏥
@@ -4131,4 +4356,30 @@ _ICON_EMOJIS = {
     "flag_za": "\U0001F1FF\U0001F1E6",  # 🇿🇦 South Africa
     "flag_zm": "\U0001F1FF\U0001F1F2",  # 🇿🇲 Zambia
     "flag_zw": "\U0001F1FF\U0001F1FC",  # 🇿🇼 Zimbabwe
+
+    # ── Marks / symbols ──────────────────────────────────────────────────────
+    "cross_mark":       "\U0000274C",       # ❌
+    "check_mark":       "\U00002705",       # ✅
+    "abc":              "\U0001F524",       # 🔤
+    "abacus":           "\U0001F9EE",       # 🧮
+    "numbers":          "\U0001F522",       # 🔢
+
+    # ── Geometric shapes ─────────────────────────────────────────────────────
+    "circle":           "\U0001F535",       # 🔵
+    "square":           "\U0001F7E6",       # 🟦
+    "triangle":         "\U0001F53A",       # 🔺
+
+    # ── Objects / places ─────────────────────────────────────────────────────
+    "factory":          "\U0001F3ED",       # 🏭
+    "gun":              "\U0001F52B",       # 🔫 (water pistol — the only firearm emoji)
+    "label":            "\U0001F3F7",       # 🏷
+    "memo":             "\U0001F4DD",       # 📝
+    "calendar":         "\U0001F4C5",       # 📅
+    "stopwatch":        "\U000023F1",       # ⏱
+    "hourglass":        "\U0000231B",       # ⌛
+    "world_map":        "\U0001F5FA",       # 🗺
+    "fuel_pump":        "\U000026FD",       # ⛽
+
+    # ── Faces (new expressions) ──────────────────────────────────────────────
+    "face_exhale":      "\U0001F62E‍\U0001F4A8",  # 😮‍💨 (ZWJ — exhaling)
 }
