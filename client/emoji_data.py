@@ -3806,6 +3806,127 @@ _ICON_KEYWORDS = {
     "ashes":            "funeral_urn",
     "cremation":        "funeral_urn",
     "memorial urn":     "funeral_urn",
+
+    # ── Moon phases ───────────────────────────────────────────────────────────
+    "new moon":             "moon_new",
+    "dark moon":            "moon_new",
+    "no moon":              "moon_new",
+    "waxing crescent":      "moon_waxing_crescent",
+    "waxing crescent moon": "moon_waxing_crescent",
+    "first quarter moon":   "moon_first_quarter",
+    "half moon":            "moon_first_quarter",
+    "waxing gibbous":       "moon_waxing_gibbous",
+    "waxing gibbous moon":  "moon_waxing_gibbous",
+    "waxing moon":          "moon_waxing_gibbous",
+    "full moon":            "moon_full",
+    "moon phase":           "moon_full",
+    "lunar phase":          "moon_full",
+    "waning gibbous":       "moon_waning_gibbous",
+    "waning gibbous moon":  "moon_waning_gibbous",
+    "waning moon":          "moon_waning_crescent",
+    "last quarter moon":    "moon_last_quarter",
+    "third quarter moon":   "moon_last_quarter",
+    "waning crescent":      "moon_waning_crescent",
+    "waning crescent moon": "moon_waning_crescent",
+
+    # ── Zodiac signs ──────────────────────────────────────────────────────────
+    "aries":            "zodiac_aries",
+    "aries sign":       "zodiac_aries",
+    "taurus":           "zodiac_taurus",
+    "taurus sign":      "zodiac_taurus",
+    "gemini":           "zodiac_gemini",
+    "gemini sign":      "zodiac_gemini",
+    "cancer":           "zodiac_cancer",
+    "cancer sign":      "zodiac_cancer",
+    "cancer zodiac":    "zodiac_cancer",
+    "leo":              "zodiac_leo",
+    "leo sign":         "zodiac_leo",
+    "leo zodiac":       "zodiac_leo",
+    "virgo":            "zodiac_virgo",
+    "virgo sign":       "zodiac_virgo",
+    "libra":            "zodiac_libra",
+    "libra sign":       "zodiac_libra",
+    "scorpio":          "zodiac_scorpio",
+    "scorpio sign":     "zodiac_scorpio",
+    "sagittarius":      "zodiac_sagittarius",
+    "sagittarius sign": "zodiac_sagittarius",
+    "capricorn":        "zodiac_capricorn",
+    "capricorn sign":   "zodiac_capricorn",
+    "aquarius":         "zodiac_aquarius",
+    "aquarius sign":    "zodiac_aquarius",
+    "pisces":           "zodiac_pisces",
+    "pisces sign":      "zodiac_pisces",
+    "ophiuchus":        "zodiac_ophiuchus",
+    "horoscope":        "zodiac_aquarius",
+    "star sign":        "zodiac_aquarius",
+    "astrology":        "zodiac_aquarius",
+
+    # ── Colored hearts ────────────────────────────────────────────────────────
+    "orange heart":     "heart_orange",
+    "yellow heart":     "heart_yellow",
+    "gold heart":       "heart_yellow",
+    "green heart":      "heart_green",
+    "teal heart":       "heart_green",
+    "blue heart":       "heart_blue",
+    "navy heart":       "heart_blue",
+    "purple heart":     "heart_purple",
+    "violet heart":     "heart_purple",
+    "lavender heart":   "heart_purple",
+    "brown heart":      "heart_brown",
+    "black heart":      "heart_black",
+    "dark heart":       "heart_black",
+    "white heart":      "heart_white",
+    "pink heart":       "heart_pink",
+
+    # ── Colored circles (color coding / dot labels) ───────────────────────────
+    "red circle":       "circle_red",
+    "red dot":          "circle_red",
+    "orange circle":    "circle_orange",
+    "orange dot":       "circle_orange",
+    "yellow circle":    "circle_yellow",
+    "yellow dot":       "circle_yellow",
+    "green circle":     "circle_green",
+    "green dot":        "circle_green",
+    "blue circle":      "circle",
+    "blue dot":         "circle",
+    "purple circle":    "circle_purple",
+    "purple dot":       "circle_purple",
+    "brown circle":     "circle_brown",
+    "black circle":     "circle_black",
+    "black dot":        "circle_black",
+    "white circle":     "circle_white",
+    "white dot":        "circle_white",
+    "dot":              "circle",
+    "color code":       "circle_red",
+    "colour code":      "circle_red",
+
+    # ── Colored squares ───────────────────────────────────────────────────────
+    "red square":       "square_red",
+    "orange square":    "square_orange",
+    "yellow square":    "square_yellow",
+    "green square":     "square_green",
+    "blue square":      "square",
+    "purple square":    "square_purple",
+    "brown square":     "square_brown",
+
+    # ── Weather extras ────────────────────────────────────────────────────────
+    "cloudy":           "cloudy",
+    "overcast":         "cloudy",
+    "partly cloudy":    "cloudy",
+    "partly sunny":     "cloudy",
+    "clouds":           "cloudy",
+    "rain cloud":       "rainy",
+    "showers":          "rainy",
+    "foggy":            "foggy",
+    "fog":              "foggy",
+    "mist":             "foggy",
+    "misty":            "foggy",
+    "hazy":             "foggy",
+    "haze":             "foggy",
+    "snowy":            "snowy_cloud",
+    "snow cloud":       "snowy_cloud",
+    "light snow":       "snowy_cloud",
+    "flurries":         "snowy_cloud",
 }
 
 
@@ -4795,4 +4916,64 @@ _ICON_EMOJIS = {
     "sign":             "\U0001FAA7",       # 🪧
     "coffin":           "\U000026B0",       # ⚰
     "funeral_urn":      "\U000026B1",       # ⚱
+
+    # ── Moon phases ───────────────────────────────────────────────────────────
+    "moon_new":             "\U0001F311",   # 🌑
+    "moon_waxing_crescent": "\U0001F312",   # 🌒
+    "moon_first_quarter":   "\U0001F313",   # 🌓
+    "moon_waxing_gibbous":  "\U0001F314",   # 🌔
+    "moon_full":            "\U0001F315",   # 🌕
+    "moon_waning_gibbous":  "\U0001F316",   # 🌖
+    "moon_last_quarter":    "\U0001F317",   # 🌗
+    "moon_waning_crescent": "\U0001F318",   # 🌘
+
+    # ── Zodiac signs ──────────────────────────────────────────────────────────
+    "zodiac_aries":         "\U00002648",   # ♈
+    "zodiac_taurus":        "\U00002649",   # ♉
+    "zodiac_gemini":        "\U0000264A",   # ♊
+    "zodiac_cancer":        "\U0000264B",   # ♋
+    "zodiac_leo":           "\U0000264C",   # ♌
+    "zodiac_virgo":         "\U0000264D",   # ♍
+    "zodiac_libra":         "\U0000264E",   # ♎
+    "zodiac_scorpio":       "\U0000264F",   # ♏
+    "zodiac_sagittarius":   "\U00002650",   # ♐
+    "zodiac_capricorn":     "\U00002651",   # ♑
+    "zodiac_aquarius":      "\U00002652",   # ♒
+    "zodiac_pisces":        "\U00002653",   # ♓
+    "zodiac_ophiuchus":     "\U000026CE",   # ⛎
+
+    # ── Colored hearts ────────────────────────────────────────────────────────
+    "heart_orange":     "\U0001F9E1",       # 🧡
+    "heart_yellow":     "\U0001F49B",       # 💛
+    "heart_green":      "\U0001F49A",       # 💚
+    "heart_blue":       "\U0001F499",       # 💙
+    "heart_purple":     "\U0001F49C",       # 💜
+    "heart_brown":      "\U0001F90E",       # 🤎
+    "heart_black":      "\U0001F5A4",       # 🖤
+    "heart_white":      "\U0001F90D",       # 🤍
+    "heart_pink":       "\U0001FA77",       # 🩷
+
+    # ── Colored circles ───────────────────────────────────────────────────────
+    "circle_red":       "\U0001F534",       # 🔴
+    "circle_orange":    "\U0001F7E0",       # 🟠
+    "circle_yellow":    "\U0001F7E1",       # 🟡
+    "circle_green":     "\U0001F7E2",       # 🟢
+    "circle_purple":    "\U0001F7E3",       # 🟣
+    "circle_brown":     "\U0001F7E4",       # 🟤
+    "circle_black":     "\U000026AB",       # ⚫
+    "circle_white":     "\U000026AA",       # ⚪
+
+    # ── Colored squares ───────────────────────────────────────────────────────
+    "square_red":       "\U0001F7E5",       # 🟥
+    "square_orange":    "\U0001F7E7",       # 🟧
+    "square_yellow":    "\U0001F7E8",       # 🟨
+    "square_green":     "\U0001F7E9",       # 🟩
+    "square_purple":    "\U0001F7EA",       # 🟪
+    "square_brown":     "\U0001F7EB",       # 🟫
+
+    # ── Weather extras ────────────────────────────────────────────────────────
+    "cloudy":           "\U0001F325",       # 🌥
+    "rainy":            "\U0001F327",       # 🌧
+    "foggy":            "\U0001F32B",       # 🌫
+    "snowy_cloud":      "\U0001F328",       # 🌨
 }
