@@ -6,3 +6,4 @@ pystray>=0.19
 qrcode[pil]>=7.4
 uharfbuzz>=0.30.0
 freetype-py>=2.4.0
+fonttools>=4.0.0
