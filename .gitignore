@@ -38,6 +38,7 @@ desktop.ini
 
 # ── Docker ────────────────────────────────────────────────────────────────────
 server/jobs.db
+server/docker-compose.override.yml   # VPS-specific overrides (real domain, LAN IP)
 
 # ── Dev utilities (not needed by end users) ───────────────────────────────────
 make_favicon.py

@@ -15,7 +15,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.label-relay.entrypoints=http"
-      - "traefik.http.routers.label-relay.rule=Host(`your-domain.com`)"
+      - "traefik.http.routers.label-relay.rule=Host(`your-domain.com`)"  # override in docker-compose.override.yml
       - "traefik.http.middlewares.label-relay-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.label-relay.middlewares=label-relay-https-redirect"
       - "traefik.http.routers.label-relay-secure.entrypoints=https"
