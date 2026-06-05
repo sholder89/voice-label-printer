@@ -2425,6 +2425,45 @@ _ICON_KEYWORDS = {
     "genetics":         "dna",
     "biology":          "dna",
 
+    # ── Barber / Hair ────────────────────────────────────────────────────────
+    "barber":           "barber_pole",
+    "barbershop":       "barber_pole",
+    "barber shop":      "barber_pole",
+    "barber pole":      "barber_pole",
+    "haircut":          "barber_pole",
+    "hair salon":       "barber_pole",
+    "salon":            "barber_pole",
+    "hairdresser":      "barber_pole",
+    "stylist":          "barber_pole",
+    "trim":             "barber_pole",
+    "shave":            "barber_pole",
+
+    # ── Voting / Politics ────────────────────────────────────────────────────
+    "vote":             "ballot_box",
+    "voting":           "ballot_box",
+    "voter":            "ballot_box",
+    "poll":             "ballot_box",
+    "polls":            "ballot_box",
+    "ballot":           "ballot_box",
+    "ballots":          "ballot_box",
+    "election":         "ballot_box",
+    "elections":        "ballot_box",
+    "referendum":       "ballot_box",
+    "democracy":        "ballot_box",
+    "candidate":        "ballot_box",
+    "campaign":         "ballot_box",
+
+    # ── Poles ────────────────────────────────────────────────────────────────
+    "flagpole":         "flag",
+    "flag pole":        "flag",
+    "fishing pole":     "fishing",
+    "fishing rod":      "fishing",
+    "north pole":       "snowflake",
+    "south pole":       "penguin",
+    "telephone pole":   "antenna",
+    "power pole":       "lightning",
+    "totem pole":       "art",
+
     # ── Science ──────────────────────────────────────────────────────────────
     "science":          "science",
     "chemistry":        "science",
@@ -3639,6 +3678,10 @@ _ICON_EMOJIS = {
 
     # Ham radio
     "antenna":          "\U0001F4E1",       # 📡
+
+    # Barber / voting
+    "barber_pole":      "\U0001F488",       # 💈
+    "ballot_box":       "\U0001F5F3",       # 🗳
 
     # ── Country flags (Regional Indicator pairs — rendered via Noto Color Emoji) ──
     "flag_ac": "\U0001F1E6\U0001F1E8",  # 🇦🇨 Ascension Island
