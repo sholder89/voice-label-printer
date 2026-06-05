@@ -899,10 +899,30 @@ _ICON_KEYWORDS = {
     "programming":      "computer",
     "coding":           "computer",
     "developer":        "computer",
-    "wifi":             "computer",
+    "wifi":             "wireless",
+    "wi-fi":            "wireless",
+    "wlan":             "wireless",
+    "wireless":         "wireless",
+    "hotspot":          "wireless",
+    "access point":     "wireless",
+    "rfid":             "wireless",
+    "nfc":              "wireless",
+    "near field":       "wireless",
+    "bluetooth":        "wireless",
+    "zigbee":           "wireless",
+    "z-wave":           "wireless",
     "network":          "computer",
     "router":           "computer",
     "internet":         "computer",
+    "signal":           "signal_bars",
+    "reception":        "signal_bars",
+    "cell signal":      "signal_bars",
+    "cellular":         "signal_bars",
+    "4g":               "signal_bars",
+    "5g":               "signal_bars",
+    "lte":              "signal_bars",
+    "no signal":        "signal_bars",
+    "dead zone":        "signal_bars",
     "phone":            "phone",
     "contact":          "phone",
     "call":             "phone",
@@ -2696,6 +2716,8 @@ _ICON_EMOJIS = {
     "books":            "\U0001F4DA",       # 📚
     "tools":            "\U0001F527",       # 🔧
     "computer":         "\U0001F4BB",       # 💻
+    "wireless":         "\U0001F6DC",       # 🛜
+    "signal_bars":      "\U0001F4F6",       # 📶
     "floppy_disk":      "\U0001F4BE",       # 💾
     "cd":               "\U0001F4BF",       # 💿
     "dvd":              "\U0001F4C0",       # 📀
