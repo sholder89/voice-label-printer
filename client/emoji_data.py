@@ -1831,7 +1831,10 @@ _ICON_KEYWORDS = {
     "ukulele":          "guitar",
     "banjo":            "banjo_icon",
     "piano":            "piano",
-    "keyboard":         "piano",
+    "keyboard":         "computer_keyboard",
+    "piano keyboard":   "piano",
+    "music keyboard":   "piano",
+    "electronic keyboard": "piano",
     "organ":            "piano",
     "synthesizer":      "piano",
     "drums":            "drums",
@@ -1917,10 +1920,10 @@ _ICON_KEYWORDS = {
     "marathon":         "running",
     "athlete":          "running",
     "athletics":        "running",
-    "hiker":            "climbing",
-    "hiking":           "climbing",
-    "trekking":         "climbing",
-    "trekker":          "climbing",
+    "hiker":            "hiking_boot",
+    "hiking":           "hiking_boot",
+    "trekking":         "hiking_boot",
+    "trekker":          "hiking_boot",
     "mountaineer":      "climbing",
     "dance":            "dancer",
     "dancer":           "dancer",
@@ -2011,7 +2014,7 @@ _ICON_KEYWORDS = {
     "brushes":          "art",
     "canvas":           "art",
     "markers":          "art",
-    "knitting":         "thread",
+    "knitting":         "yarn",
     "crochet":          "thread",
     "embroidery":       "thread",
     "fabric":           "thread",
@@ -3424,6 +3427,124 @@ _ICON_KEYWORDS = {
     "numbers":          "numbers",
     "digits":           "numbers",
     "numeric":          "numbers",
+
+    # ── Deck of cards → 🃏 ────────────────────────────────────────────────────
+    "deck":             "card_joker",
+    "deck of cards":    "card_joker",
+
+    # ── Dungeon → 🏰 ─────────────────────────────────────────────────────────
+    "dungeon":          "castle",
+    "dungeons":         "castle",
+    "dungeon master":   "castle",
+
+    # ── Rubbish / trash → 🗑 ──────────────────────────────────────────────────
+    "rubbish":          "trash",
+
+    # ── See / look → 👀 ───────────────────────────────────────────────────────
+    "see":              "eyes",
+    "seen":             "eyes",
+    "look":             "eyes",
+    "observe":          "eyes",
+    "surveillance":     "eyes",
+    "spying":           "eyes",
+
+    # ── Hike / trail → 🥾 ────────────────────────────────────────────────────
+    "hike":             "hiking_boot",
+    "trek":             "hiking_boot",
+    "trail":            "hiking_boot",
+    "trails":           "hiking_boot",
+    "trailhead":        "hiking_boot",
+    "nature walk":      "hiking_boot",
+    "day hike":         "hiking_boot",
+
+    # ── Outdoor / outside → ⛺ ────────────────────────────────────────────────
+    "outdoor":          "camping",
+    "outdoors":         "camping",
+    "outside":          "camping",
+    "exterior":         "camping",
+    "open air":         "camping",
+
+    # ── Inside / indoor → 🏠 ─────────────────────────────────────────────────
+    "inside":           "home",
+    "indoor":           "home",
+    "indoors":          "home",
+    "interior":         "home",
+
+    # ── Soldier / military → 🪖 ───────────────────────────────────────────────
+    "soldier":          "military_helmet",
+    "soldiers":         "military_helmet",
+    "military":         "military_helmet",
+    "army":             "military_helmet",
+    "troops":           "military_helmet",
+    "infantry":         "military_helmet",
+    "marines":          "military_helmet",
+    "veteran":          "military_helmet",
+
+    # ── Underwear → 🩲 ───────────────────────────────────────────────────────
+    "underwear":        "underwear",
+    "undies":           "underwear",
+    "briefs":           "underwear",
+    "boxers":           "underwear",
+    "boxer briefs":     "underwear",
+    "panties":          "underwear",
+    "lingerie":         "underwear",
+    "thong":            "underwear",
+    "g-string":         "underwear",
+    "bra":              "underwear",
+
+    # ── Cigarette / smoking → 🚬 ─────────────────────────────────────────────
+    "cigarette":        "cigarette",
+    "cigarettes":       "cigarette",
+    "cigar":            "cigarette",
+    "cigars":           "cigarette",
+    "smoke":            "cigarette",
+    "smoking":          "cigarette",
+    "smoker":           "cigarette",
+    "tobacco":          "cigarette",
+    "vape":             "cigarette",
+    "vaping":           "cigarette",
+    "e-cigarette":      "cigarette",
+
+    # ── Ski / skiing → 🎿 ────────────────────────────────────────────────────
+    "ski":              "skiing",
+    "skis":             "skiing",
+    "ski gear":         "skiing",
+    "ski equipment":    "skiing",
+
+    # ── Skier → ⛷ ───────────────────────────────────────────────────────────
+    "skier":            "skier",
+    "skiers":           "skier",
+
+    # ── Yarn → 🧶 ────────────────────────────────────────────────────────────
+    "yarn":             "yarn",
+    "yarn ball":        "yarn",
+    "crochet yarn":     "yarn",
+    "wool yarn":        "yarn",
+
+    # ── OK / okay → 👌 ───────────────────────────────────────────────────────
+    "ok":               "ok_hand",
+    "okay":             "ok_hand",
+    "okey dokey":       "ok_hand",
+    "a-okay":           "ok_hand",
+    "all good":         "ok_hand",
+
+    # ── Computer mouse → 🖱 ───────────────────────────────────────────────────
+    "computer mouse":   "computer_mouse",
+    "pc mouse":         "computer_mouse",
+    "mouse pad":        "computer_mouse",
+    "mousepad":         "computer_mouse",
+    "trackball":        "computer_mouse",
+    "trackpad":         "computer_mouse",
+    "touchpad":         "computer_mouse",
+
+    # ── Computer keyboard → ⌨ ────────────────────────────────────────────────
+    "computer keyboard": "computer_keyboard",
+    "pc keyboard":      "computer_keyboard",
+    "mechanical keyboard": "computer_keyboard",
+    "wireless keyboard": "computer_keyboard",
+    "numpad":           "computer_keyboard",
+    "number pad":       "computer_keyboard",
+    "keypad":           "computer_keyboard",
 }
 
 
@@ -4382,4 +4503,16 @@ _ICON_EMOJIS = {
 
     # ── Faces (new expressions) ──────────────────────────────────────────────
     "face_exhale":      "\U0001F62E‍\U0001F4A8",  # 😮‍💨 (ZWJ — exhaling)
+
+    # ── New this session ─────────────────────────────────────────────────────
+    "hiking_boot":      "\U0001F97E",       # 🥾
+    "military_helmet":  "\U0001FA96",       # 🪖
+    "underwear":        "\U0001FA72",       # 🩲
+    "cigarette":        "\U0001F6AC",       # 🚬
+    "yarn":             "\U0001F9F6",       # 🧶
+    "ok_hand":          "\U0001F44C",       # 👌
+    "computer_mouse":   "\U0001F5B1",       # 🖱
+    "computer_keyboard": "\U00002328",      # ⌨
+    "skier":            "\U000026F7",       # ⛷
+    "card_joker":       "\U0001F0CF",       # 🃏
 }
