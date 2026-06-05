@@ -3770,6 +3770,42 @@ _ICON_KEYWORDS = {
     "loose parts":      "misc_box",
     "random stuff":     "misc_box",
     "mixed":            "misc_box",
+
+    # ── Fire extinguisher → 🧯 ───────────────────────────────────────────────
+    "fire extinguisher": "fire_extinguisher",
+    "extinguisher":     "fire_extinguisher",
+    "fire suppression": "fire_extinguisher",
+    "fire safety":      "fire_extinguisher",
+    "dry chemical":     "fire_extinguisher",
+    "co2 extinguisher": "fire_extinguisher",
+    "halon":            "fire_extinguisher",
+
+    # ── Sign / placard → 🪧 ──────────────────────────────────────────────────
+    "sign":             "sign",
+    "signs":            "sign",
+    "placard":          "sign",
+    "signage":          "sign",
+    "notice":           "sign",
+    "notice board":     "sign",
+    "billboard":        "sign",
+    "poster":           "sign",
+    "board":            "sign",
+
+    # ── Coffin → ⚰ ───────────────────────────────────────────────────────────
+    "coffin":           "coffin",
+    "casket":           "coffin",
+    "burial":           "coffin",
+    "funeral":          "coffin",
+    "hearse":           "coffin",
+    "rest in peace":    "coffin",
+    "deceased":         "coffin",
+
+    # ── Funeral urn → ⚱ ──────────────────────────────────────────────────────
+    "urn":              "funeral_urn",
+    "funeral urn":      "funeral_urn",
+    "ashes":            "funeral_urn",
+    "cremation":        "funeral_urn",
+    "memorial urn":     "funeral_urn",
 }
 
 
@@ -4754,5 +4790,9 @@ _ICON_EMOJIS = {
     "computer_keyboard": "\U00002328",      # ⌨
     "skier":            "\U000026F7",       # ⛷
     "card_joker":       "\U0001F0CF",       # 🃏
-    "misc_box":         "\U0001F5C3",       # 🗃
+    "misc_box":         "\U0001F587",       # 🖇 linked paperclips
+    "fire_extinguisher": "\U0001F9EF",      # 🧯
+    "sign":             "\U0001FAA7",       # 🪧
+    "coffin":           "\U000026B0",       # ⚰
+    "funeral_urn":      "\U000026B1",       # ⚱
 }
