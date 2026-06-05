@@ -2148,11 +2148,78 @@ _ICON_EMOJIS_LEGACY = {
     "antenna":      "\U0001F4E1",   # 📡
 }
 
-# Emoji font paths — first one found wins
+# Emoji font paths — first one found wins (used for Segoe/FreeType path)
 _EMOJI_FONT_PATHS = [
     r"C:\Windows\Fonts\seguiemj.ttf",   # Segoe UI Emoji (Windows 10/11)
     r"C:\Windows\Fonts\seguisym.ttf",   # Segoe UI Symbol (fallback)
 ]
+
+# Noto Color Emoji (Windows Compatible) — CBDT/PNG format, supports country flags
+_NOTO_PATH = r"C:\Users\Steve\AppData\Local\Microsoft\Windows\Fonts\NotoColorEmoji_WindowsCompatible.ttf"
+
+# Cache for Noto fonttools objects (loaded once, reused)
+_noto_cache = {}
+
+def _render_emoji_noto(emoji_char: str, target_size: int):
+    """Render emoji via fonttools PNG extraction from Noto Color Emoji CBDT table.
+    Supports country flags and all emoji Noto covers. Returns RGBA PIL image or None.
+    """
+    if not os.path.exists(_NOTO_PATH):
+        return None
+    try:
+        import uharfbuzz as hb
+        import io
+
+        # Load/cache fonttools + raw bytes
+        if 'tt' not in _noto_cache:
+            from fontTools.ttLib import TTFont
+            _noto_cache['tt'] = TTFont(_NOTO_PATH)
+            with open(_NOTO_PATH, 'rb') as f:
+                _noto_cache['data'] = f.read()
+            _noto_cache['strike'] = _noto_cache['tt']['CBDT'].strikeData[0]
+
+        tt     = _noto_cache['tt']
+        data   = _noto_cache['data']
+        strike = _noto_cache['strike']
+
+        # Shape with HarfBuzz to resolve ZWJ / flag sequences → glyph ID
+        hb_face = hb.Face(data)
+        hb_font = hb.Font(hb_face)
+        hb_font.scale = (109 * 64, 109 * 64)   # Noto's only strike is 109px
+        buf = hb.Buffer()
+        buf.add_str(emoji_char)
+        buf.guess_segment_properties()
+        hb.shape(hb_font, buf)
+
+        infos = buf.glyph_infos
+        if not infos:
+            return None
+
+        # For multi-glyph sequences (shouldn't happen after shaping, but be safe)
+        glyph_name = tt.getGlyphName(infos[0].codepoint)
+        if glyph_name not in strike:
+            return None
+
+        raw = strike[glyph_name].imageData
+        img = Image.open(io.BytesIO(raw)).convert('RGBA')
+
+        # Resize to target (Noto strike is always 136x128 — crop to square then resize)
+        side = min(img.size)
+        left = (img.width  - side) // 2
+        top  = (img.height - side) // 2
+        img  = img.crop((left, top, left + side, top + side))
+        img  = img.resize((target_size, target_size), Image.LANCZOS)
+
+        # Convert RGBA → L-mode (white=background, dark=ink) to match Segoe pipeline:
+        # composite grayscale emoji over white using alpha as mask
+        gray = img.convert('L')
+        alpha = img.split()[3]
+        bg = Image.new('L', img.size, 255)
+        result = Image.composite(gray, bg, alpha)
+        return result
+
+    except Exception:
+        return None
 
 
 def _detect_icon(text: str):
@@ -2285,12 +2352,15 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0)):
     if not emoji:
         return
 
-    font_path = next((p for p in _EMOJI_FONT_PATHS if os.path.exists(p)), None)
-    if not font_path:
-        return
+    # Try Noto Color Emoji first — supports flags + all emoji via PNG extraction
+    emoji_img = _render_emoji_noto(emoji, size * 2)
 
-    # Try HarfBuzz+FreeType first — correctly handles ZWJ sequences
-    emoji_img = _render_emoji_shaped(emoji, font_path, size * 2)
+    if emoji_img is None:
+        # Fall back to HarfBuzz+FreeType with Segoe UI Emoji
+        font_path = next((p for p in _EMOJI_FONT_PATHS if os.path.exists(p)), None)
+        if not font_path:
+            return
+        emoji_img = _render_emoji_shaped(emoji, font_path, size * 2)
 
     if emoji_img is None:
         # Fallback: Pillow-based rendering (no ZWJ support but works for simple emoji)

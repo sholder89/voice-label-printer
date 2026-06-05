@@ -2383,6 +2383,157 @@ _ICON_KEYWORDS = {
     "3rd place":        "medal_bronze",
     "third place":      "medal_bronze",
 
+    # ── Country flags ────────────────────────────────────────────────────────
+    "united states":        "flag_us",
+    "usa":                  "flag_us",
+    "american":             "flag_us",
+    "america":              "flag_us",
+    "united kingdom":       "flag_gb",
+    "uk":                   "flag_gb",
+    "england":              "flag_gb",
+    "britain":              "flag_gb",
+    "british":              "flag_gb",
+    "canada":               "flag_ca",
+    "canadian":             "flag_ca",
+    "australia":            "flag_au",
+    "australian":           "flag_au",
+    "germany":              "flag_de",
+    "german":               "flag_de",
+    "france":               "flag_fr",
+    "french":               "flag_fr",
+    "italy":                "flag_it",
+    "italian":              "flag_it",
+    "spain":                "flag_es",
+    "spanish":              "flag_es",
+    "japan":                "flag_jp",
+    "japanese":             "flag_jp",
+    "china":                "flag_cn",
+    "chinese":              "flag_cn",
+    "brazil":               "flag_br",
+    "brazilian":            "flag_br",
+    "mexico":               "flag_mx",
+    "mexican":              "flag_mx",
+    "india":                "flag_in",
+    "indian":               "flag_in",
+    "russia":               "flag_ru",
+    "russian":              "flag_ru",
+    "south korea":          "flag_kr",
+    "korean":               "flag_kr",
+    "netherlands":          "flag_nl",
+    "dutch":                "flag_nl",
+    "sweden":               "flag_se",
+    "swedish":              "flag_se",
+    "norway":               "flag_no",
+    "norwegian":            "flag_no",
+    "denmark":              "flag_dk",
+    "danish":               "flag_dk",
+    "finland":              "flag_fi",
+    "finnish":              "flag_fi",
+    "switzerland":          "flag_ch",
+    "swiss":                "flag_ch",
+    "austria":              "flag_at",
+    "austrian":             "flag_at",
+    "belgium":              "flag_be",
+    "belgian":              "flag_be",
+    "portugal":             "flag_pt",
+    "portuguese":           "flag_pt",
+    "greece":               "flag_gr",
+    "greek":                "flag_gr",
+    "poland":               "flag_pl",
+    "polish":               "flag_pl",
+    "ukraine":              "flag_ua",
+    "ukrainian":            "flag_ua",
+    "turkey":               "flag_tr",
+    "turkish":              "flag_tr",
+    "israel":               "flag_il",
+    "israeli":              "flag_il",
+    "saudi arabia":         "flag_sa",
+    "saudi":                "flag_sa",
+    "uae":                  "flag_ae",
+    "emirates":             "flag_ae",
+    "south africa":         "flag_za",
+    "nigeria":              "flag_ng",
+    "nigerian":             "flag_ng",
+    "egypt":                "flag_eg",
+    "egyptian":             "flag_eg",
+    "argentina":            "flag_ar",
+    "argentinian":          "flag_ar",
+    "colombia":             "flag_co",
+    "colombian":            "flag_co",
+    "chile":                "flag_cl",
+    "chilean":              "flag_cl",
+    "peru":                 "flag_pe",
+    "peruvian":             "flag_pe",
+    "venezuela":            "flag_ve",
+    "venezuelan":           "flag_ve",
+    "new zealand":          "flag_nz",
+    "kiwi":                 "flag_nz",
+    "ireland":              "flag_ie",
+    "irish":                "flag_ie",
+    "scotland":             "flag_gb",
+    "wales":                "flag_gb",
+    "singapore":            "flag_sg",
+    "malaysia":             "flag_my",
+    "thailand":             "flag_th",
+    "thai":                 "flag_th",
+    "vietnam":              "flag_vn",
+    "vietnamese":           "flag_vn",
+    "indonesia":            "flag_id",
+    "indonesian":           "flag_id",
+    "philippines":          "flag_ph",
+    "filipino":             "flag_ph",
+    "pakistan":             "flag_pk",
+    "pakistan":             "flag_pk",
+    "bangladesh":           "flag_bd",
+    "iran":                 "flag_ir",
+    "iranian":              "flag_ir",
+    "iraq":                 "flag_iq",
+    "iraqi":                "flag_iq",
+    "morocco":              "flag_ma",
+    "moroccan":             "flag_ma",
+    "kenya":                "flag_ke",
+    "kenyan":               "flag_ke",
+    "ghana":                "flag_gh",
+    "ghana":                "flag_gh",
+    "ethiopia":             "flag_et",
+    "ethiopian":            "flag_et",
+    "cuba":                 "flag_cu",
+    "cuban":                "flag_cu",
+    "czech republic":       "flag_cz",
+    "czechia":              "flag_cz",
+    "czech":                "flag_cz",
+    "hungary":              "flag_hu",
+    "hungarian":            "flag_hu",
+    "romania":              "flag_ro",
+    "romanian":             "flag_ro",
+    "croatia":              "flag_hr",
+    "croatian":             "flag_hr",
+    "slovakia":             "flag_sk",
+    "slovak":               "flag_sk",
+    "slovenia":             "flag_si",
+    "slovenian":            "flag_si",
+    "serbia":               "flag_rs",
+    "serbian":              "flag_rs",
+    "bulgaria":             "flag_bg",
+    "bulgarian":            "flag_bg",
+    "iceland":              "flag_is",
+    "icelandic":            "flag_is",
+    "luxembourg":           "flag_lu",
+    "estonia":              "flag_ee",
+    "estonian":             "flag_ee",
+    "latvia":               "flag_lv",
+    "latvian":              "flag_lv",
+    "lithuania":            "flag_lt",
+    "lithuanian":           "flag_lt",
+    "taiwan":               "flag_tw",
+    "taiwanese":            "flag_tw",
+    "hong kong":            "flag_hk",
+    "puerto rico":          "flag_pr",
+    "puerto rican":         "flag_pr",
+    "european union":       "flag_eu",
+    "europe":               "flag_eu",
+    "united nations":       "flag_un",
+
     # ── Buildings / Places ───────────────────────────────────────────────────
     "building":         "office_building",
     "office building":  "office_building",
@@ -3086,4 +3237,264 @@ _ICON_EMOJIS = {
 
     # Ham radio
     "antenna":          "\U0001F4E1",       # 📡
+
+    # ── Country flags (Regional Indicator pairs — rendered via Noto Color Emoji) ──
+    "flag_ac": "\U0001F1E6\U0001F1E8",  # 🇦🇨 Ascension Island
+    "flag_ad": "\U0001F1E6\U0001F1E9",  # 🇦🇩 Andorra
+    "flag_ae": "\U0001F1E6\U0001F1EA",  # 🇦🇪 UAE
+    "flag_af": "\U0001F1E6\U0001F1EB",  # 🇦🇫 Afghanistan
+    "flag_ag": "\U0001F1E6\U0001F1EC",  # 🇦🇬 Antigua & Barbuda
+    "flag_ai": "\U0001F1E6\U0001F1EE",  # 🇦🇮 Anguilla
+    "flag_al": "\U0001F1E6\U0001F1F1",  # 🇦🇱 Albania
+    "flag_am": "\U0001F1E6\U0001F1F2",  # 🇦🇲 Armenia
+    "flag_ao": "\U0001F1E6\U0001F1F4",  # 🇦🇴 Angola
+    "flag_aq": "\U0001F1E6\U0001F1F6",  # 🇦🇶 Antarctica
+    "flag_ar": "\U0001F1E6\U0001F1F7",  # 🇦🇷 Argentina
+    "flag_as": "\U0001F1E6\U0001F1F8",  # 🇦🇸 American Samoa
+    "flag_at": "\U0001F1E6\U0001F1F9",  # 🇦🇹 Austria
+    "flag_au": "\U0001F1E6\U0001F1FA",  # 🇦🇺 Australia
+    "flag_aw": "\U0001F1E6\U0001F1FC",  # 🇦🇼 Aruba
+    "flag_ax": "\U0001F1E6\U0001F1FD",  # 🇦🇽 Åland Islands
+    "flag_az": "\U0001F1E6\U0001F1FF",  # 🇦🇿 Azerbaijan
+    "flag_ba": "\U0001F1E7\U0001F1E6",  # 🇧🇦 Bosnia & Herzegovina
+    "flag_bb": "\U0001F1E7\U0001F1E7",  # 🇧🇧 Barbados
+    "flag_bd": "\U0001F1E7\U0001F1E9",  # 🇧🇩 Bangladesh
+    "flag_be": "\U0001F1E7\U0001F1EA",  # 🇧🇪 Belgium
+    "flag_bf": "\U0001F1E7\U0001F1EB",  # 🇧🇫 Burkina Faso
+    "flag_bg": "\U0001F1E7\U0001F1EC",  # 🇧🇬 Bulgaria
+    "flag_bh": "\U0001F1E7\U0001F1ED",  # 🇧🇭 Bahrain
+    "flag_bi": "\U0001F1E7\U0001F1EE",  # 🇧🇮 Burundi
+    "flag_bj": "\U0001F1E7\U0001F1EF",  # 🇧🇯 Benin
+    "flag_bl": "\U0001F1E7\U0001F1F1",  # 🇧🇱 St. Barthélemy
+    "flag_bm": "\U0001F1E7\U0001F1F2",  # 🇧🇲 Bermuda
+    "flag_bn": "\U0001F1E7\U0001F1F3",  # 🇧🇳 Brunei
+    "flag_bo": "\U0001F1E7\U0001F1F4",  # 🇧🇴 Bolivia
+    "flag_bq": "\U0001F1E7\U0001F1F6",  # 🇧🇶 Caribbean Netherlands
+    "flag_br": "\U0001F1E7\U0001F1F7",  # 🇧🇷 Brazil
+    "flag_bs": "\U0001F1E7\U0001F1F8",  # 🇧🇸 Bahamas
+    "flag_bt": "\U0001F1E7\U0001F1F9",  # 🇧🇹 Bhutan
+    "flag_bv": "\U0001F1E7\U0001F1FB",  # 🇧🇻 Bouvet Island
+    "flag_bw": "\U0001F1E7\U0001F1FC",  # 🇧🇼 Botswana
+    "flag_by": "\U0001F1E7\U0001F1FE",  # 🇧🇾 Belarus
+    "flag_bz": "\U0001F1E7\U0001F1FF",  # 🇧🇿 Belize
+    "flag_ca": "\U0001F1E8\U0001F1E6",  # 🇨🇦 Canada
+    "flag_cc": "\U0001F1E8\U0001F1E8",  # 🇨🇨 Cocos Islands
+    "flag_cd": "\U0001F1E8\U0001F1E9",  # 🇨🇩 Congo - Kinshasa
+    "flag_cf": "\U0001F1E8\U0001F1EB",  # 🇨🇫 Central African Republic
+    "flag_cg": "\U0001F1E8\U0001F1EC",  # 🇨🇬 Congo - Brazzaville
+    "flag_ch": "\U0001F1E8\U0001F1ED",  # 🇨🇭 Switzerland
+    "flag_ci": "\U0001F1E8\U0001F1EE",  # 🇨🇮 Côte d'Ivoire
+    "flag_ck": "\U0001F1E8\U0001F1F0",  # 🇨🇰 Cook Islands
+    "flag_cl": "\U0001F1E8\U0001F1F1",  # 🇨🇱 Chile
+    "flag_cm": "\U0001F1E8\U0001F1F2",  # 🇨🇲 Cameroon
+    "flag_cn": "\U0001F1E8\U0001F1F3",  # 🇨🇳 China
+    "flag_co": "\U0001F1E8\U0001F1F4",  # 🇨🇴 Colombia
+    "flag_cp": "\U0001F1E8\U0001F1F5",  # 🇨🇵 Clipperton Island
+    "flag_cr": "\U0001F1E8\U0001F1F7",  # 🇨🇷 Costa Rica
+    "flag_cu": "\U0001F1E8\U0001F1FA",  # 🇨🇺 Cuba
+    "flag_cv": "\U0001F1E8\U0001F1FB",  # 🇨🇻 Cape Verde
+    "flag_cw": "\U0001F1E8\U0001F1FC",  # 🇨🇼 Curaçao
+    "flag_cx": "\U0001F1E8\U0001F1FD",  # 🇨🇽 Christmas Island
+    "flag_cy": "\U0001F1E8\U0001F1FE",  # 🇨🇾 Cyprus
+    "flag_cz": "\U0001F1E8\U0001F1FF",  # 🇨🇿 Czechia
+    "flag_de": "\U0001F1E9\U0001F1EA",  # 🇩🇪 Germany
+    "flag_dg": "\U0001F1E9\U0001F1EC",  # 🇩🇬 Diego Garcia
+    "flag_dj": "\U0001F1E9\U0001F1EF",  # 🇩🇯 Djibouti
+    "flag_dk": "\U0001F1E9\U0001F1F0",  # 🇩🇰 Denmark
+    "flag_dm": "\U0001F1E9\U0001F1F2",  # 🇩🇲 Dominica
+    "flag_do": "\U0001F1E9\U0001F1F4",  # 🇩🇴 Dominican Republic
+    "flag_dz": "\U0001F1E9\U0001F1FF",  # 🇩🇿 Algeria
+    "flag_ea": "\U0001F1EA\U0001F1E6",  # 🇪🇦 Ceuta & Melilla
+    "flag_ec": "\U0001F1EA\U0001F1E8",  # 🇪🇨 Ecuador
+    "flag_ee": "\U0001F1EA\U0001F1EA",  # 🇪🇪 Estonia
+    "flag_eg": "\U0001F1EA\U0001F1EC",  # 🇪🇬 Egypt
+    "flag_eh": "\U0001F1EA\U0001F1ED",  # 🇪🇭 Western Sahara
+    "flag_er": "\U0001F1EA\U0001F1F7",  # 🇪🇷 Eritrea
+    "flag_es": "\U0001F1EA\U0001F1F8",  # 🇪🇸 Spain
+    "flag_et": "\U0001F1EA\U0001F1F9",  # 🇪🇹 Ethiopia
+    "flag_eu": "\U0001F1EA\U0001F1FA",  # 🇪🇺 European Union
+    "flag_fi": "\U0001F1EB\U0001F1EE",  # 🇫🇮 Finland
+    "flag_fj": "\U0001F1EB\U0001F1EF",  # 🇫🇯 Fiji
+    "flag_fk": "\U0001F1EB\U0001F1F0",  # 🇫🇰 Falkland Islands
+    "flag_fm": "\U0001F1EB\U0001F1F2",  # 🇫🇲 Micronesia
+    "flag_fo": "\U0001F1EB\U0001F1F4",  # 🇫🇴 Faroe Islands
+    "flag_fr": "\U0001F1EB\U0001F1F7",  # 🇫🇷 France
+    "flag_ga": "\U0001F1EC\U0001F1E6",  # 🇬🇦 Gabon
+    "flag_gb": "\U0001F1EC\U0001F1E7",  # 🇬🇧 UK
+    "flag_gd": "\U0001F1EC\U0001F1E9",  # 🇬🇩 Grenada
+    "flag_ge": "\U0001F1EC\U0001F1EA",  # 🇬🇪 Georgia
+    "flag_gf": "\U0001F1EC\U0001F1EB",  # 🇬🇫 French Guiana
+    "flag_gg": "\U0001F1EC\U0001F1EC",  # 🇬🇬 Guernsey
+    "flag_gh": "\U0001F1EC\U0001F1ED",  # 🇬🇭 Ghana
+    "flag_gi": "\U0001F1EC\U0001F1EE",  # 🇬🇮 Gibraltar
+    "flag_gl": "\U0001F1EC\U0001F1F1",  # 🇬🇱 Greenland
+    "flag_gm": "\U0001F1EC\U0001F1F2",  # 🇬🇲 Gambia
+    "flag_gn": "\U0001F1EC\U0001F1F3",  # 🇬🇳 Guinea
+    "flag_gp": "\U0001F1EC\U0001F1F5",  # 🇬🇵 Guadeloupe
+    "flag_gq": "\U0001F1EC\U0001F1F6",  # 🇬🇶 Equatorial Guinea
+    "flag_gr": "\U0001F1EC\U0001F1F7",  # 🇬🇷 Greece
+    "flag_gs": "\U0001F1EC\U0001F1F8",  # 🇬🇸 South Georgia
+    "flag_gt": "\U0001F1EC\U0001F1F9",  # 🇬🇹 Guatemala
+    "flag_gu": "\U0001F1EC\U0001F1FA",  # 🇬🇺 Guam
+    "flag_gw": "\U0001F1EC\U0001F1FC",  # 🇬🇼 Guinea-Bissau
+    "flag_gy": "\U0001F1EC\U0001F1FE",  # 🇬🇾 Guyana
+    "flag_hk": "\U0001F1ED\U0001F1F0",  # 🇭🇰 Hong Kong
+    "flag_hm": "\U0001F1ED\U0001F1F2",  # 🇭🇲 Heard & McDonald Islands
+    "flag_hn": "\U0001F1ED\U0001F1F3",  # 🇭🇳 Honduras
+    "flag_hr": "\U0001F1ED\U0001F1F7",  # 🇭🇷 Croatia
+    "flag_ht": "\U0001F1ED\U0001F1F9",  # 🇭🇹 Haiti
+    "flag_hu": "\U0001F1ED\U0001F1FA",  # 🇭🇺 Hungary
+    "flag_ic": "\U0001F1EE\U0001F1E8",  # 🇮🇨 Canary Islands
+    "flag_id": "\U0001F1EE\U0001F1E9",  # 🇮🇩 Indonesia
+    "flag_ie": "\U0001F1EE\U0001F1EA",  # 🇮🇪 Ireland
+    "flag_il": "\U0001F1EE\U0001F1F1",  # 🇮🇱 Israel
+    "flag_im": "\U0001F1EE\U0001F1F2",  # 🇮🇲 Isle of Man
+    "flag_in": "\U0001F1EE\U0001F1F3",  # 🇮🇳 India
+    "flag_io": "\U0001F1EE\U0001F1F4",  # 🇮🇴 British Indian Ocean Territory
+    "flag_iq": "\U0001F1EE\U0001F1F6",  # 🇮🇶 Iraq
+    "flag_ir": "\U0001F1EE\U0001F1F7",  # 🇮🇷 Iran
+    "flag_is": "\U0001F1EE\U0001F1F8",  # 🇮🇸 Iceland
+    "flag_it": "\U0001F1EE\U0001F1F9",  # 🇮🇹 Italy
+    "flag_je": "\U0001F1EF\U0001F1EA",  # 🇯🇪 Jersey
+    "flag_jm": "\U0001F1EF\U0001F1F2",  # 🇯🇲 Jamaica
+    "flag_jo": "\U0001F1EF\U0001F1F4",  # 🇯🇴 Jordan
+    "flag_jp": "\U0001F1EF\U0001F1F5",  # 🇯🇵 Japan
+    "flag_ke": "\U0001F1F0\U0001F1EA",  # 🇰🇪 Kenya
+    "flag_kg": "\U0001F1F0\U0001F1EC",  # 🇰🇬 Kyrgyzstan
+    "flag_kh": "\U0001F1F0\U0001F1ED",  # 🇰🇭 Cambodia
+    "flag_ki": "\U0001F1F0\U0001F1EE",  # 🇰🇮 Kiribati
+    "flag_km": "\U0001F1F0\U0001F1F2",  # 🇰🇲 Comoros
+    "flag_kn": "\U0001F1F0\U0001F1F3",  # 🇰🇳 St. Kitts & Nevis
+    "flag_kp": "\U0001F1F0\U0001F1F5",  # 🇰🇵 North Korea
+    "flag_kr": "\U0001F1F0\U0001F1F7",  # 🇰🇷 South Korea
+    "flag_kw": "\U0001F1F0\U0001F1FC",  # 🇰🇼 Kuwait
+    "flag_ky": "\U0001F1F0\U0001F1FE",  # 🇰🇾 Cayman Islands
+    "flag_kz": "\U0001F1F0\U0001F1FF",  # 🇰🇿 Kazakhstan
+    "flag_la": "\U0001F1F1\U0001F1E6",  # 🇱🇦 Laos
+    "flag_lb": "\U0001F1F1\U0001F1E7",  # 🇱🇧 Lebanon
+    "flag_lc": "\U0001F1F1\U0001F1E8",  # 🇱🇨 St. Lucia
+    "flag_li": "\U0001F1F1\U0001F1EE",  # 🇱🇮 Liechtenstein
+    "flag_lk": "\U0001F1F1\U0001F1F0",  # 🇱🇰 Sri Lanka
+    "flag_lr": "\U0001F1F1\U0001F1F7",  # 🇱🇷 Liberia
+    "flag_ls": "\U0001F1F1\U0001F1F8",  # 🇱🇸 Lesotho
+    "flag_lt": "\U0001F1F1\U0001F1F9",  # 🇱🇹 Lithuania
+    "flag_lu": "\U0001F1F1\U0001F1FA",  # 🇱🇺 Luxembourg
+    "flag_lv": "\U0001F1F1\U0001F1FB",  # 🇱🇻 Latvia
+    "flag_ly": "\U0001F1F1\U0001F1FE",  # 🇱🇾 Libya
+    "flag_ma": "\U0001F1F2\U0001F1E6",  # 🇲🇦 Morocco
+    "flag_mc": "\U0001F1F2\U0001F1E8",  # 🇲🇨 Monaco
+    "flag_md": "\U0001F1F2\U0001F1E9",  # 🇲🇩 Moldova
+    "flag_me": "\U0001F1F2\U0001F1EA",  # 🇲🇪 Montenegro
+    "flag_mf": "\U0001F1F2\U0001F1EB",  # 🇲🇫 St. Martin
+    "flag_mg": "\U0001F1F2\U0001F1EC",  # 🇲🇬 Madagascar
+    "flag_mh": "\U0001F1F2\U0001F1ED",  # 🇲🇭 Marshall Islands
+    "flag_mk": "\U0001F1F2\U0001F1F0",  # 🇲🇰 North Macedonia
+    "flag_ml": "\U0001F1F2\U0001F1F1",  # 🇲🇱 Mali
+    "flag_mm": "\U0001F1F2\U0001F1F2",  # 🇲🇲 Myanmar
+    "flag_mn": "\U0001F1F2\U0001F1F3",  # 🇲🇳 Mongolia
+    "flag_mo": "\U0001F1F2\U0001F1F4",  # 🇲🇴 Macao
+    "flag_mp": "\U0001F1F2\U0001F1F5",  # 🇲🇵 Northern Mariana Islands
+    "flag_mq": "\U0001F1F2\U0001F1F6",  # 🇲🇶 Martinique
+    "flag_mr": "\U0001F1F2\U0001F1F7",  # 🇲🇷 Mauritania
+    "flag_ms": "\U0001F1F2\U0001F1F8",  # 🇲🇸 Montserrat
+    "flag_mt": "\U0001F1F2\U0001F1F9",  # 🇲🇹 Malta
+    "flag_mu": "\U0001F1F2\U0001F1FA",  # 🇲🇺 Mauritius
+    "flag_mv": "\U0001F1F2\U0001F1FB",  # 🇲🇻 Maldives
+    "flag_mw": "\U0001F1F2\U0001F1FC",  # 🇲🇼 Malawi
+    "flag_mx": "\U0001F1F2\U0001F1FD",  # 🇲🇽 Mexico
+    "flag_my": "\U0001F1F2\U0001F1FE",  # 🇲🇾 Malaysia
+    "flag_mz": "\U0001F1F2\U0001F1FF",  # 🇲🇿 Mozambique
+    "flag_na": "\U0001F1F3\U0001F1E6",  # 🇳🇦 Namibia
+    "flag_nc": "\U0001F1F3\U0001F1E8",  # 🇳🇨 New Caledonia
+    "flag_ne": "\U0001F1F3\U0001F1EA",  # 🇳🇪 Niger
+    "flag_nf": "\U0001F1F3\U0001F1EB",  # 🇳🇫 Norfolk Island
+    "flag_ng": "\U0001F1F3\U0001F1EC",  # 🇳🇬 Nigeria
+    "flag_ni": "\U0001F1F3\U0001F1EE",  # 🇳🇮 Nicaragua
+    "flag_nl": "\U0001F1F3\U0001F1F1",  # 🇳🇱 Netherlands
+    "flag_no": "\U0001F1F3\U0001F1F4",  # 🇳🇴 Norway
+    "flag_np": "\U0001F1F3\U0001F1F5",  # 🇳🇵 Nepal
+    "flag_nr": "\U0001F1F3\U0001F1F7",  # 🇳🇷 Nauru
+    "flag_nu": "\U0001F1F3\U0001F1FA",  # 🇳🇺 Niue
+    "flag_nz": "\U0001F1F3\U0001F1FF",  # 🇳🇿 New Zealand
+    "flag_om": "\U0001F1F4\U0001F1F2",  # 🇴🇲 Oman
+    "flag_pa": "\U0001F1F5\U0001F1E6",  # 🇵🇦 Panama
+    "flag_pe": "\U0001F1F5\U0001F1EA",  # 🇵🇪 Peru
+    "flag_pf": "\U0001F1F5\U0001F1EB",  # 🇵🇫 French Polynesia
+    "flag_pg": "\U0001F1F5\U0001F1EC",  # 🇵🇬 Papua New Guinea
+    "flag_ph": "\U0001F1F5\U0001F1ED",  # 🇵🇭 Philippines
+    "flag_pk": "\U0001F1F5\U0001F1F0",  # 🇵🇰 Pakistan
+    "flag_pl": "\U0001F1F5\U0001F1F1",  # 🇵🇱 Poland
+    "flag_pm": "\U0001F1F5\U0001F1F2",  # 🇵🇲 St. Pierre & Miquelon
+    "flag_pn": "\U0001F1F5\U0001F1F3",  # 🇵🇳 Pitcairn Islands
+    "flag_pr": "\U0001F1F5\U0001F1F7",  # 🇵🇷 Puerto Rico
+    "flag_ps": "\U0001F1F5\U0001F1F8",  # 🇵🇸 Palestinian Territories
+    "flag_pt": "\U0001F1F5\U0001F1F9",  # 🇵🇹 Portugal
+    "flag_pw": "\U0001F1F5\U0001F1FC",  # 🇵🇼 Palau
+    "flag_py": "\U0001F1F5\U0001F1FE",  # 🇵🇾 Paraguay
+    "flag_qa": "\U0001F1F6\U0001F1E6",  # 🇶🇦 Qatar
+    "flag_re": "\U0001F1F7\U0001F1EA",  # 🇷🇪 Réunion
+    "flag_ro": "\U0001F1F7\U0001F1F4",  # 🇷🇴 Romania
+    "flag_rs": "\U0001F1F7\U0001F1F8",  # 🇷🇸 Serbia
+    "flag_ru": "\U0001F1F7\U0001F1FA",  # 🇷🇺 Russia
+    "flag_rw": "\U0001F1F7\U0001F1FC",  # 🇷🇼 Rwanda
+    "flag_sa": "\U0001F1F8\U0001F1E6",  # 🇸🇦 Saudi Arabia
+    "flag_sb": "\U0001F1F8\U0001F1E7",  # 🇸🇧 Solomon Islands
+    "flag_sc": "\U0001F1F8\U0001F1E8",  # 🇸🇨 Seychelles
+    "flag_sd": "\U0001F1F8\U0001F1E9",  # 🇸🇩 Sudan
+    "flag_se": "\U0001F1F8\U0001F1EA",  # 🇸🇪 Sweden
+    "flag_sg": "\U0001F1F8\U0001F1EC",  # 🇸🇬 Singapore
+    "flag_sh": "\U0001F1F8\U0001F1ED",  # 🇸🇭 St. Helena
+    "flag_si": "\U0001F1F8\U0001F1EE",  # 🇸🇮 Slovenia
+    "flag_sj": "\U0001F1F8\U0001F1EF",  # 🇸🇯 Svalbard & Jan Mayen
+    "flag_sk": "\U0001F1F8\U0001F1F0",  # 🇸🇰 Slovakia
+    "flag_sl": "\U0001F1F8\U0001F1F1",  # 🇸🇱 Sierra Leone
+    "flag_sm": "\U0001F1F8\U0001F1F2",  # 🇸🇲 San Marino
+    "flag_sn": "\U0001F1F8\U0001F1F3",  # 🇸🇳 Senegal
+    "flag_so": "\U0001F1F8\U0001F1F4",  # 🇸🇴 Somalia
+    "flag_sr": "\U0001F1F8\U0001F1F7",  # 🇸🇷 Suriname
+    "flag_ss": "\U0001F1F8\U0001F1F8",  # 🇸🇸 South Sudan
+    "flag_st": "\U0001F1F8\U0001F1F9",  # 🇸🇹 São Tomé & Príncipe
+    "flag_sv": "\U0001F1F8\U0001F1FB",  # 🇸🇻 El Salvador
+    "flag_sx": "\U0001F1F8\U0001F1FD",  # 🇸🇽 Sint Maarten
+    "flag_sy": "\U0001F1F8\U0001F1FE",  # 🇸🇾 Syria
+    "flag_sz": "\U0001F1F8\U0001F1FF",  # 🇸🇿 Eswatini
+    "flag_ta": "\U0001F1F9\U0001F1E6",  # 🇹🇦 Tristan da Cunha
+    "flag_tc": "\U0001F1F9\U0001F1E8",  # 🇹🇨 Turks & Caicos Islands
+    "flag_td": "\U0001F1F9\U0001F1E9",  # 🇹🇩 Chad
+    "flag_tf": "\U0001F1F9\U0001F1EB",  # 🇹🇫 French Southern Territories
+    "flag_tg": "\U0001F1F9\U0001F1EC",  # 🇹🇬 Togo
+    "flag_th": "\U0001F1F9\U0001F1ED",  # 🇹🇭 Thailand
+    "flag_tj": "\U0001F1F9\U0001F1EF",  # 🇹🇯 Tajikistan
+    "flag_tk": "\U0001F1F9\U0001F1F0",  # 🇹🇰 Tokelau
+    "flag_tl": "\U0001F1F9\U0001F1F1",  # 🇹🇱 Timor-Leste
+    "flag_tm": "\U0001F1F9\U0001F1F2",  # 🇹🇲 Turkmenistan
+    "flag_tn": "\U0001F1F9\U0001F1F3",  # 🇹🇳 Tunisia
+    "flag_to": "\U0001F1F9\U0001F1F4",  # 🇹🇴 Tonga
+    "flag_tr": "\U0001F1F9\U0001F1F7",  # 🇹🇷 Turkey
+    "flag_tt": "\U0001F1F9\U0001F1F9",  # 🇹🇹 Trinidad & Tobago
+    "flag_tv": "\U0001F1F9\U0001F1FB",  # 🇹🇻 Tuvalu
+    "flag_tw": "\U0001F1F9\U0001F1FC",  # 🇹🇼 Taiwan
+    "flag_tz": "\U0001F1F9\U0001F1FF",  # 🇹🇿 Tanzania
+    "flag_ua": "\U0001F1FA\U0001F1E6",  # 🇺🇦 Ukraine
+    "flag_ug": "\U0001F1FA\U0001F1EC",  # 🇺🇬 Uganda
+    "flag_um": "\U0001F1FA\U0001F1F2",  # 🇺🇲 U.S. Outlying Islands
+    "flag_un": "\U0001F1FA\U0001F1F3",  # 🇺🇳 United Nations
+    "flag_us": "\U0001F1FA\U0001F1F8",  # 🇺🇸 United States
+    "flag_uy": "\U0001F1FA\U0001F1FE",  # 🇺🇾 Uruguay
+    "flag_uz": "\U0001F1FA\U0001F1FF",  # 🇺🇿 Uzbekistan
+    "flag_va": "\U0001F1FB\U0001F1E6",  # 🇻🇦 Vatican City
+    "flag_vc": "\U0001F1FB\U0001F1E8",  # 🇻🇨 St. Vincent & Grenadines
+    "flag_ve": "\U0001F1FB\U0001F1EA",  # 🇻🇪 Venezuela
+    "flag_vg": "\U0001F1FB\U0001F1EC",  # 🇻🇬 British Virgin Islands
+    "flag_vi": "\U0001F1FB\U0001F1EE",  # 🇻🇮 U.S. Virgin Islands
+    "flag_vn": "\U0001F1FB\U0001F1F3",  # 🇻🇳 Vietnam
+    "flag_vu": "\U0001F1FB\U0001F1FA",  # 🇻🇺 Vanuatu
+    "flag_wf": "\U0001F1FC\U0001F1EB",  # 🇼🇫 Wallis & Futuna
+    "flag_ws": "\U0001F1FC\U0001F1F8",  # 🇼🇸 Samoa
+    "flag_xk": "\U0001F1FD\U0001F1F0",  # 🇽🇰 Kosovo
+    "flag_ye": "\U0001F1FE\U0001F1EA",  # 🇾🇪 Yemen
+    "flag_yt": "\U0001F1FE\U0001F1F9",  # 🇾🇹 Mayotte
+    "flag_za": "\U0001F1FF\U0001F1E6",  # 🇿🇦 South Africa
+    "flag_zm": "\U0001F1FF\U0001F1F2",  # 🇿🇲 Zambia
+    "flag_zw": "\U0001F1FF\U0001F1FC",  # 🇿🇼 Zimbabwe
 }
