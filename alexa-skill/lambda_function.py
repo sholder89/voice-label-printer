@@ -8,8 +8,8 @@ import urllib.error
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-WEBHOOK_URL  = os.environ["WEBHOOK_URL"]    # e.g. https://your-domain.com/webhook
-SETTINGS_URL = os.environ["SETTINGS_URL"]   # e.g. https://your-domain.com/settings
+WEBHOOK_URL  = os.environ["WEBHOOK_URL"]    # e.g. https://your-relay-server.com/webhook
+SETTINGS_URL = os.environ["SETTINGS_URL"]   # e.g. https://your-relay-server.com/settings
 LABEL_TOKEN  = os.environ["LABEL_TOKEN"]    # shared secret — sent as X-Token header, not in URL
 
 # How many times to retry a failed request before giving up

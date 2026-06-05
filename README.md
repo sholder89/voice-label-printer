@@ -298,7 +298,7 @@ The app lives in the Windows system tray when running:
 ├── client/
 │   ├── app.py              # Flask web UI + background polling thread + tray icon
 │   ├── printer.py          # Label rendering (Pillow) + Windows GDI printing
-│   ├── emoji_data.py       # 2,000+ keyword → emoji mappings
+│   ├── emoji_data.py       # 3,000+ keyword → emoji mappings
 │   ├── requirements.txt
 │   ├── images/             # Drop custom border images here (border_<name>.png)
 │   ├── static/             # favicon.ico, favicon.png

@@ -6,7 +6,7 @@ services:
     volumes:
       - label-data:/data
     environment:
-      - LABEL_TOKEN=${LABEL_TOKEN:-REMOVED}
+      - LABEL_TOKEN=${LABEL_TOKEN}
       - DB_PATH=/data/jobs.db
     ports:
       - "127.0.0.1:5001:5001"

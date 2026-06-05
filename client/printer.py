@@ -6,6 +6,12 @@ import re
 import struct
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
+# Per-user font directory (works regardless of Windows username)
+_USER_FONTS = os.path.join(
+    os.environ.get("LOCALAPPDATA", os.path.expanduser("~") + r"\AppData\Local"),
+    "Microsoft", "Windows", "Fonts",
+)
+
 try:
     import win32print
     import win32ui
@@ -94,7 +100,7 @@ STYLE_PRESET_GROUPS = [
 
 # Fonts for the Windows 95 style (regular weight, not bold)
 _WIN95_FONTS = [
-    r"C:\Users\Steve\AppData\Local\Microsoft\Windows\Fonts\W95F.otf",  # W95FA pixel font
+    os.path.join(_USER_FONTS, "W95F.otf"),  # W95FA pixel font
     r"C:\Windows\Fonts\micross.ttf",  # Microsoft Sans Serif (fallback)
     r"C:\Windows\Fonts\arial.ttf",    # Arial (fallback)
 ]
@@ -117,8 +123,8 @@ _FILL = {
     "burbank":  0.95,
 }
 
-_BURBANK_PATH = r"C:\Users\Steve\AppData\Local\Microsoft\Windows\Fonts\BurbankBigCondensed-Bold.otf"
-_W95FA_PATH   = r"C:\Users\Steve\AppData\Local\Microsoft\Windows\Fonts\W95F.otf"
+_BURBANK_PATH = os.path.join(_USER_FONTS, "BurbankBigCondensed-Bold.otf")
+_W95FA_PATH   = os.path.join(_USER_FONTS, "W95F.otf")
 
 # Nested: font_style → font_weight → [path candidates, in preference order]
 # Fonts with only one variant (Impact, Burbank, W95FA) repeat the same path for all weights.
@@ -2155,7 +2161,7 @@ _EMOJI_FONT_PATHS = [
 ]
 
 # Noto Color Emoji (Windows Compatible) — CBDT/PNG format, supports country flags
-_NOTO_PATH = r"C:\Users\Steve\AppData\Local\Microsoft\Windows\Fonts\NotoColorEmoji_WindowsCompatible.ttf"
+_NOTO_PATH = os.path.join(_USER_FONTS, "NotoColorEmoji_WindowsCompatible.ttf")
 
 # Cache for Noto fonttools objects (loaded once, reused)
 _noto_cache = {}
