@@ -604,7 +604,7 @@ def _render_warning(text: str, w_px: int, h_px: int, dpi: int, text_case: str,
     icon_sz   = header_h - icon_pad * 2
     icon_lx   = ix1 + icon_pad * 2
     icon_ly   = iy1 + icon_pad
-    _draw_icon(img, "warning", icon_lx, icon_ly, icon_sz, color=WHITE)
+    _draw_icon(img, "warning", icon_lx, icon_ly, icon_sz, color=WHITE, skip_noto=True)
 
     warn_text   = "WARNING"
     warn_x1     = icon_lx + icon_sz + icon_pad * 2
@@ -1243,14 +1243,19 @@ def _render_emoji_shaped(emoji_char: str, font_path: str, target_size: int):
         return None
 
 
-def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0)):
-    """Render an emoji into a temp image, crop to actual ink, then paste into img."""
+def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False):
+    """Render an emoji into a temp image, crop to actual ink, then paste into img.
+
+    skip_noto=True forces the Segoe UI Emoji / FreeType path, bypassing Noto.
+    Useful when rendering white-on-black (e.g. warning header) where Noto's
+    detailed colour glyphs render too dark against a black background.
+    """
     emoji = _ICON_EMOJIS.get(icon_type)
     if not emoji:
         return
 
     # Try Noto Color Emoji first — supports flags + all emoji via PNG extraction
-    emoji_img = _render_emoji_noto(emoji, size * 2)
+    emoji_img = None if skip_noto else _render_emoji_noto(emoji, size * 2)
 
     if emoji_img is None:
         # Fall back to HarfBuzz+FreeType with Segoe UI Emoji
