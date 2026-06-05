@@ -3718,6 +3718,58 @@ _ICON_KEYWORDS = {
     "killer whale":     "whale",
     "beluga":           "whale",
     "zebras":           "zebra",
+
+    # ── Generic / catch-all labels ────────────────────────────────────────────
+
+    # "parts / spares" — mechanical context → 🔩
+    "parts":            "nut_bolt",
+    "spares":           "nut_bolt",
+    "spare":            "nut_bolt",
+    "leftover parts":   "nut_bolt",
+    "extra parts":      "nut_bolt",
+
+    # "supplies / goods / items" — box/inventory context → 📦
+    "supplies":         "package_box",
+    "supply":           "package_box",
+    "items":            "package_box",
+    "goods":            "package_box",
+    "contents":         "package_box",
+    "inventory":        "package_box",
+    "stock":            "package_box",
+    "materials":        "package_box",
+    "material":         "package_box",
+    "kit":              "package_box",
+    "collection":       "package_box",
+
+    # "bits and bobs / misc / stuff" — truly generic → 🗃
+    "stuff":            "misc_box",
+    "things":           "misc_box",
+    "bits":             "misc_box",
+    "bobs":             "misc_box",
+    "bits and bobs":    "misc_box",
+    "odds and ends":    "misc_box",
+    "misc":             "misc_box",
+    "miscellaneous":    "misc_box",
+    "assorted":         "misc_box",
+    "various":          "misc_box",
+    "random":           "misc_box",
+    "junk drawer":      "misc_box",
+    "knick knacks":     "misc_box",
+    "knick-knacks":     "misc_box",
+    "trinkets":         "misc_box",
+    "whatnot":          "misc_box",
+    "this and that":    "misc_box",
+    "everything":       "misc_box",
+    "catchall":         "misc_box",
+    "catch all":        "misc_box",
+    "general":          "misc_box",
+    "other":            "misc_box",
+    "extras":           "misc_box",
+    "overflow":         "misc_box",
+    "spare bits":       "misc_box",
+    "loose parts":      "misc_box",
+    "random stuff":     "misc_box",
+    "mixed":            "misc_box",
 }
 
 
@@ -4702,4 +4754,5 @@ _ICON_EMOJIS = {
     "computer_keyboard": "\U00002328",      # ⌨
     "skier":            "\U000026F7",       # ⛷
     "card_joker":       "\U0001F0CF",       # 🃏
+    "misc_box":         "\U0001F5C3",       # 🗃
 }
