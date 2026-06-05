@@ -2072,8 +2072,13 @@ _ICON_KEYWORDS = {
     "shower":           "bathroom",
     "toilet":           "toilet",
     "loo":              "toilet",
-    "restroom":         "toilet",
-    "lavatory":         "toilet",
+    "restroom":         "restroom_sign",
+    "restrooms":        "restroom_sign",
+    "washroom":         "restroom_sign",
+    "lavatory":         "restroom_sign",
+    "wc":               "restroom_sign",
+    "comfort room":     "restroom_sign",
+    "facilities":       "restroom_sign",
     "bathtub":          "bathtub",
     "tub":              "bathtub",
     "towel":            "bathroom",
@@ -3927,6 +3932,111 @@ _ICON_KEYWORDS = {
     "snow cloud":       "snowy_cloud",
     "light snow":       "snowy_cloud",
     "flurries":         "snowy_cloud",
+
+    # ── Hole ─────────────────────────────────────────────────────────────────
+    "hole":             "hole",
+    "holes":            "hole",
+    "pit":              "hole",
+    "void":             "hole",
+    "opening":          "hole",
+    "cable hole":       "hole",
+    "drill hole":       "hole",
+    "access hole":      "hole",
+
+    # ── Splat / splatter / blob ───────────────────────────────────────────────
+    "splat":            "splat",
+    "splatter":         "splat",
+    "splattered":       "splat",
+    "blob":             "splat",
+    "blobs":            "splat",
+    "gooey":            "splat",
+    "impact":           "splat",
+    "collision":        "splat",
+    "boom":             "splat",
+    "explosion":        "splat",
+    "explode":          "splat",
+    "burst":            "splat",
+    "bang":             "splat",
+
+    # ── Media controls ────────────────────────────────────────────────────────
+    "play":             "play_button",
+    "playing":          "play_button",
+    "start":            "play_button",
+    "pause":            "pause_button",
+    "paused":           "pause_button",
+    "hold":             "pause_button",
+    "stop":             "stop_button",
+    "stopped":          "stop_button",
+    "halt":             "stop_button",
+    "end":              "stop_button",
+    "record":           "record_button",
+    "rec":              "record_button",
+    "fast forward":     "fast_forward",
+    "skip forward":     "fast_forward",
+    "skip ahead":       "fast_forward",
+    "ff":               "fast_forward",
+    "rewind":           "rewind_button",
+    "skip back":        "rewind_button",
+    "skip backward":    "rewind_button",
+    "rw":               "rewind_button",
+    "next track":       "next_track",
+    "next song":        "next_track",
+    "skip next":        "next_track",
+    "previous track":   "prev_track",
+    "previous song":    "prev_track",
+    "last track":       "prev_track",
+    "shuffle":          "shuffle",
+    "random play":      "shuffle",
+    "repeat":           "repeat_button",
+    "loop":             "repeat_button",
+    "repeat all":       "repeat_button",
+
+    # ── Directional arrows ────────────────────────────────────────────────────
+    "up":               "arrow_up",
+    "upward":           "arrow_up",
+    "upwards":          "arrow_up",
+    "above":            "arrow_up",
+    "north":            "arrow_up",
+    "up arrow":         "arrow_up",
+    "this way up":      "arrow_up",
+    "this side up":     "arrow_up",
+    "down":             "arrow_down",
+    "downward":         "arrow_down",
+    "downwards":        "arrow_down",
+    "below":            "arrow_down",
+    "south":            "arrow_down",
+    "down arrow":       "arrow_down",
+    "left":             "arrow_left",
+    "leftward":         "arrow_left",
+    "west":             "arrow_left",
+    "left arrow":       "arrow_left",
+    "right":            "arrow_right",
+    "rightward":        "arrow_right",
+    "east":             "arrow_right",
+    "right arrow":      "arrow_right",
+    "forward":          "arrow_right",
+    "up right":         "arrow_up_right",
+    "upper right":      "arrow_up_right",
+    "northeast":        "arrow_up_right",
+    "down right":       "arrow_down_right",
+    "lower right":      "arrow_down_right",
+    "southeast":        "arrow_down_right",
+    "down left":        "arrow_down_left",
+    "lower left":       "arrow_down_left",
+    "up left":          "arrow_up_left",
+    "upper left":       "arrow_up_left",
+    "northwest":        "arrow_up_left",
+    "back":             "arrow_back",
+    "go back":          "arrow_back",
+    "backward":         "arrow_back",
+    "clockwise":        "rotate_cw",
+    "rotate right":     "rotate_cw",
+    "counterclockwise": "rotate_ccw",
+    "counter clockwise":"rotate_ccw",
+    "anticlockwise":    "rotate_ccw",
+    "rotate left":      "rotate_ccw",
+    "arrow":            "arrow_right",
+    "arrows":           "rotate_cw",
 }
 
 
@@ -4967,4 +5077,34 @@ _ICON_EMOJIS = {
     "rainy":            "\U0001F327",       # 🌧
     "foggy":            "\U0001F32B",       # 🌫
     "snowy_cloud":      "\U0001F328",       # 🌨
+
+    # ── Signs / objects ──────────────────────────────────────────────────────
+    "restroom_sign":    "\U0001F6BB",       # 🚻
+    "hole":             "\U0001F573",       # 🕳
+    "splat":            "\U0001F4A5",       # 💥
+
+    # ── Media controls ────────────────────────────────────────────────────────
+    "play_button":      "\U000025B6",       # ▶
+    "pause_button":     "\U000023F8",       # ⏸
+    "stop_button":      "\U000023F9",       # ⏹
+    "record_button":    "\U000023FA",       # ⏺
+    "fast_forward":     "\U000023E9",       # ⏩
+    "rewind_button":    "\U000023EA",       # ⏪
+    "next_track":       "\U000023ED",       # ⏭
+    "prev_track":       "\U000023EE",       # ⏮
+    "shuffle":          "\U0001F500",       # 🔀
+    "repeat_button":    "\U0001F501",       # 🔁
+
+    # ── Directional arrows ────────────────────────────────────────────────────
+    "arrow_up":         "\U00002B06",       # ⬆
+    "arrow_down":       "\U00002B07",       # ⬇
+    "arrow_left":       "\U00002B05",       # ⬅
+    "arrow_right":      "\U000027A1",       # ➡
+    "arrow_up_right":   "\U00002197",       # ↗
+    "arrow_down_right": "\U00002198",       # ↘
+    "arrow_down_left":  "\U00002199",       # ↙
+    "arrow_up_left":    "\U00002196",       # ↖
+    "arrow_back":       "\U0001F519",       # 🔙
+    "rotate_cw":        "\U0001F503",       # 🔃
+    "rotate_ccw":       "\U0001F504",       # 🔄
 }
