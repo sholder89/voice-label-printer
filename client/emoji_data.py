@@ -3830,84 +3830,82 @@ _ICON_KEYWORDS = {
     "waning crescent moon": "moon_waning_crescent",
 
     # ── Zodiac signs ──────────────────────────────────────────────────────────
-    "aries":            "zodiac_aries",
-    "aries sign":       "zodiac_aries",
-    "taurus":           "zodiac_taurus",
-    "taurus sign":      "zodiac_taurus",
-    "gemini":           "zodiac_gemini",
-    "gemini sign":      "zodiac_gemini",
-    "cancer":           "zodiac_cancer",
-    "cancer sign":      "zodiac_cancer",
-    "cancer zodiac":    "zodiac_cancer",
-    "leo":              "zodiac_leo",
-    "leo sign":         "zodiac_leo",
-    "leo zodiac":       "zodiac_leo",
-    "virgo":            "zodiac_virgo",
-    "virgo sign":       "zodiac_virgo",
-    "libra":            "zodiac_libra",
-    "libra sign":       "zodiac_libra",
-    "scorpio":          "zodiac_scorpio",
-    "scorpio sign":     "zodiac_scorpio",
-    "sagittarius":      "zodiac_sagittarius",
-    "sagittarius sign": "zodiac_sagittarius",
-    "capricorn":        "zodiac_capricorn",
-    "capricorn sign":   "zodiac_capricorn",
-    "aquarius":         "zodiac_aquarius",
-    "aquarius sign":    "zodiac_aquarius",
-    "pisces":           "zodiac_pisces",
-    "pisces sign":      "zodiac_pisces",
-    "ophiuchus":        "zodiac_ophiuchus",
-    "horoscope":        "zodiac_aquarius",
-    "star sign":        "zodiac_aquarius",
-    "astrology":        "zodiac_aquarius",
+    "aries":            "ram",
+    "aries sign":       "ram",
+    "taurus":           "ox",
+    "taurus sign":      "ox",
+    "gemini":           "people",
+    "gemini sign":      "people",
+    "cancer":           "crab",
+    "cancer sign":      "crab",
+    "cancer zodiac":    "crab",
+    "leo":              "lion",
+    "leo sign":         "lion",
+    "leo zodiac":       "lion",
+    "virgo":            "wheat",
+    "virgo sign":       "wheat",
+    "libra":            "scales",
+    "libra sign":       "scales",
+    "scorpio":          "scorpion",
+    "scorpio sign":     "scorpion",
+    "sagittarius":      "archery",
+    "sagittarius sign": "archery",
+    "capricorn":        "goat",
+    "capricorn sign":   "goat",
+    "aquarius":         "wave_water",
+    "aquarius sign":    "wave_water",
+    "pisces":           "fish",
+    "pisces sign":      "fish",
+    "ophiuchus":        "snake",
+    "horoscope":        "glowing_star",
+    "star sign":        "glowing_star",
+    "astrology":        "glowing_star",
 
-    # ── Colored hearts ────────────────────────────────────────────────────────
-    "orange heart":     "heart_orange",
-    "yellow heart":     "heart_yellow",
-    "gold heart":       "heart_yellow",
-    "green heart":      "heart_green",
-    "teal heart":       "heart_green",
-    "blue heart":       "heart_blue",
-    "navy heart":       "heart_blue",
-    "purple heart":     "heart_purple",
-    "violet heart":     "heart_purple",
-    "lavender heart":   "heart_purple",
-    "brown heart":      "heart_brown",
-    "black heart":      "heart_black",
-    "dark heart":       "heart_black",
-    "white heart":      "heart_white",
-    "pink heart":       "heart_pink",
+    # ── Heart color keywords (B&W printer — all map to base heart) ────────────
+    "orange heart":     "heart",
+    "yellow heart":     "heart",
+    "gold heart":       "heart",
+    "green heart":      "heart",
+    "teal heart":       "heart",
+    "blue heart":       "heart",
+    "navy heart":       "heart",
+    "purple heart":     "heart",
+    "violet heart":     "heart",
+    "lavender heart":   "heart",
+    "brown heart":      "heart",
+    "black heart":      "heart",
+    "dark heart":       "heart",
+    "white heart":      "heart",
+    "pink heart":       "heart",
 
-    # ── Colored circles (color coding / dot labels) ───────────────────────────
-    "red circle":       "circle_red",
-    "red dot":          "circle_red",
-    "orange circle":    "circle_orange",
-    "orange dot":       "circle_orange",
-    "yellow circle":    "circle_yellow",
-    "yellow dot":       "circle_yellow",
-    "green circle":     "circle_green",
-    "green dot":        "circle_green",
+    # ── Colored circle/square keywords (B&W printer — all map to base shape) ──
+    "red circle":       "circle",
+    "red dot":          "circle",
+    "orange circle":    "circle",
+    "orange dot":       "circle",
+    "yellow circle":    "circle",
+    "yellow dot":       "circle",
+    "green circle":     "circle",
+    "green dot":        "circle",
     "blue circle":      "circle",
     "blue dot":         "circle",
-    "purple circle":    "circle_purple",
-    "purple dot":       "circle_purple",
-    "brown circle":     "circle_brown",
-    "black circle":     "circle_black",
-    "black dot":        "circle_black",
-    "white circle":     "circle_white",
-    "white dot":        "circle_white",
+    "purple circle":    "circle",
+    "purple dot":       "circle",
+    "brown circle":     "circle",
+    "black circle":     "circle",
+    "black dot":        "circle",
+    "white circle":     "circle",
+    "white dot":        "circle",
     "dot":              "circle",
-    "color code":       "circle_red",
-    "colour code":      "circle_red",
-
-    # ── Colored squares ───────────────────────────────────────────────────────
-    "red square":       "square_red",
-    "orange square":    "square_orange",
-    "yellow square":    "square_yellow",
-    "green square":     "square_green",
+    "color code":       "circle",
+    "colour code":      "circle",
+    "red square":       "square",
+    "orange square":    "square",
+    "yellow square":    "square",
+    "green square":     "square",
     "blue square":      "square",
-    "purple square":    "square_purple",
-    "brown square":     "square_brown",
+    "purple square":    "square",
+    "brown square":     "square",
 
     # ── Weather extras ────────────────────────────────────────────────────────
     "cloudy":           "cloudy",
@@ -4927,49 +4925,11 @@ _ICON_EMOJIS = {
     "moon_last_quarter":    "\U0001F317",   # 🌗
     "moon_waning_crescent": "\U0001F318",   # 🌘
 
-    # ── Zodiac signs ──────────────────────────────────────────────────────────
-    "zodiac_aries":         "\U00002648",   # ♈
-    "zodiac_taurus":        "\U00002649",   # ♉
-    "zodiac_gemini":        "\U0000264A",   # ♊
-    "zodiac_cancer":        "\U0000264B",   # ♋
-    "zodiac_leo":           "\U0000264C",   # ♌
-    "zodiac_virgo":         "\U0000264D",   # ♍
-    "zodiac_libra":         "\U0000264E",   # ♎
-    "zodiac_scorpio":       "\U0000264F",   # ♏
-    "zodiac_sagittarius":   "\U00002650",   # ♐
-    "zodiac_capricorn":     "\U00002651",   # ♑
-    "zodiac_aquarius":      "\U00002652",   # ♒
-    "zodiac_pisces":        "\U00002653",   # ♓
-    "zodiac_ophiuchus":     "\U000026CE",   # ⛎
-
-    # ── Colored hearts ────────────────────────────────────────────────────────
-    "heart_orange":     "\U0001F9E1",       # 🧡
-    "heart_yellow":     "\U0001F49B",       # 💛
-    "heart_green":      "\U0001F49A",       # 💚
-    "heart_blue":       "\U0001F499",       # 💙
-    "heart_purple":     "\U0001F49C",       # 💜
-    "heart_brown":      "\U0001F90E",       # 🤎
-    "heart_black":      "\U0001F5A4",       # 🖤
-    "heart_white":      "\U0001F90D",       # 🤍
-    "heart_pink":       "\U0001FA77",       # 🩷
-
-    # ── Colored circles ───────────────────────────────────────────────────────
-    "circle_red":       "\U0001F534",       # 🔴
-    "circle_orange":    "\U0001F7E0",       # 🟠
-    "circle_yellow":    "\U0001F7E1",       # 🟡
-    "circle_green":     "\U0001F7E2",       # 🟢
-    "circle_purple":    "\U0001F7E3",       # 🟣
-    "circle_brown":     "\U0001F7E4",       # 🟤
-    "circle_black":     "\U000026AB",       # ⚫
-    "circle_white":     "\U000026AA",       # ⚪
-
-    # ── Colored squares ───────────────────────────────────────────────────────
-    "square_red":       "\U0001F7E5",       # 🟥
-    "square_orange":    "\U0001F7E7",       # 🟧
-    "square_yellow":    "\U0001F7E8",       # 🟨
-    "square_green":     "\U0001F7E9",       # 🟩
-    "square_purple":    "\U0001F7EA",       # 🟪
-    "square_brown":     "\U0001F7EB",       # 🟫
+    # ── Zodiac animals / symbols ──────────────────────────────────────────────
+    "ram":              "\U0001F40F",       # 🐏  (Aries)
+    "ox":               "\U0001F402",       # 🐂  (Taurus)
+    "wheat":            "\U0001F33E",       # 🌾  (Virgo — harvest maiden)
+    "scales":           "\U00002696",       # ⚖   (Libra)
 
     # ── Weather extras ────────────────────────────────────────────────────────
     "cloudy":           "\U0001F325",       # 🌥
