@@ -1,5 +1,7 @@
 # 🖨️ Voice Label Printer
 
+> ⚠️ **Heads up:** This app is fully vibe coded. I'm a database guy, not a developer. Use at your own risk.
+
 Print labels with your voice. Say *"Alexa, print kitchen supplies"* and a label rolls out of your NIIMBOT printer — complete with an automatically matched emoji icon.
 
 ---
