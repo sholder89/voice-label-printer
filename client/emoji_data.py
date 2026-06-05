@@ -1679,27 +1679,26 @@ _ICON_KEYWORDS = {
     "draft":            "ruler_tri",
 
     # ── Laser / CNC / Engraving ──────────────────────────────────────────────
-    "laser":            "scissors",
-    "laser cut":        "scissors",
-    "laser cutting":    "scissors",
-    "laser cutter":     "scissors",
-    "laser cutout":     "scissors",
-    "cnc":              "scissors",
-    "cnc router":       "scissors",
-    "cnc cut":          "scissors",
+    "laser":            "laser_beam",
+    "laser cut":        "laser_beam",
+    "laser cutting":    "laser_beam",
+    "laser cutter":     "laser_beam",
+    "laser cutout":     "laser_beam",
+    "cnc":              "laser_beam",
+    "cnc router":       "laser_beam",
+    "cnc cut":          "laser_beam",
     "vinyl cut":        "scissors",
     "vinyl cutter":     "scissors",
     "die cut":          "scissors",
-    "acrylic":          "scissors",
-    "engrave":          "diamond",
-    "engraving":        "diamond",
-    "engraved":         "diamond",
-    "laser engrave":    "diamond",
-    "laser engraving":  "diamond",
-    "rotary engrave":   "diamond",
-    "etching":          "diamond",
-    "etched":           "diamond",
-    "etch":             "diamond",
+    "engrave":          "engraving",
+    "engraving":        "engraving",
+    "engraved":         "engraving",
+    "laser engrave":    "engraving",
+    "laser engraving":  "engraving",
+    "rotary engrave":   "engraving",
+    "etching":          "engraving",
+    "etched":           "engraving",
+    "etch":             "engraving",
     "pyrography":       "wood",
     "wood burn":        "wood",
     "woodburning":      "wood",
@@ -2755,6 +2754,8 @@ _ICON_EMOJIS = {
     "folder_icon":      "\U0001F4C1",       # 📁
     "ruler_tri":        "\U0001F4D0",       # 📐
     "scissors":         "\U00002702",       # ✂
+    "laser_beam":       "\U0001F506",       # 🔆
+    "engraving":        "\U0000270F",       # ✏️
     "hammer":           "\U0001F528",       # 🔨
     "screwdriver":      "\U0001FA9B",       # 🪛
     "saw_tool":         "\U0001FA9A",       # 🪚
