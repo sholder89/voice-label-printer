@@ -2059,6 +2059,21 @@ _ICON_KEYWORDS = {
     "party":            "party",
     "celebration":      "party",
     "confetti":         "party",
+    "pinata":           "pinata",
+    "piñata":           "pinata",
+    "disco":            "disco_ball",
+    "disco ball":       "disco_ball",
+    "dance floor":      "disco_ball",
+    "nightclub":        "disco_ball",
+    "kite":             "kite",
+    "kites":            "kite",
+    "kite flying":      "kite",
+    "magic 8":          "8ball",
+    "magic 8 ball":     "8ball",
+    "8 ball":           "8ball",
+    "eight ball":       "8ball",
+    "billiards":        "8ball",
+    "pool ball":        "8ball",
     "new year":         "fireworks",
     "fourth of july":   "fireworks",
     "fireworks":        "fireworks",
@@ -2268,6 +2283,20 @@ _ICON_KEYWORDS = {
     "trophy":           "trophy",
     "medal":            "medal",
     "gold":             "medal",
+    "gold medal":       "medal",
+    "1st":              "medal",
+    "1st place":        "medal",
+    "first place":      "medal",
+    "silver":           "medal_silver",
+    "silver medal":     "medal_silver",
+    "2nd":              "medal_silver",
+    "2nd place":        "medal_silver",
+    "second place":     "medal_silver",
+    "bronze":           "medal_bronze",
+    "bronze medal":     "medal_bronze",
+    "3rd":              "medal_bronze",
+    "3rd place":        "medal_bronze",
+    "third place":      "medal_bronze",
 
     # ── Buildings / Places ───────────────────────────────────────────────────
     "office building":  "office_building",
@@ -2830,6 +2859,12 @@ _ICON_EMOJIS = {
     "ribbon":           "\U0001F38A",       # 🎊
     "trophy":           "\U0001F3C6",       # 🏆
     "medal":            "\U0001F947",       # 🥇
+    "medal_silver":     "\U0001F948",       # 🥈
+    "medal_bronze":     "\U0001F949",       # 🥉
+    "pinata":           "\U0001FA85",       # 🪅
+    "disco_ball":       "\U0001FA69",       # 🪩
+    "kite":             "\U0001FA81",       # 🪁
+    "8ball":            "\U0001F3B1",       # 🎱
 
     # Other misc
     "trash":            "\U0001F5D1",       # 🗑
