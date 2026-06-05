@@ -4037,6 +4037,91 @@ _ICON_KEYWORDS = {
     "rotate left":      "rotate_ccw",
     "arrow":            "arrow_right",
     "arrows":           "rotate_cw",
+
+    # ── Pointing fingers ──────────────────────────────────────────────────────
+    "point up":         "pointing_up",
+    "pointing up":      "pointing_up",
+    "finger up":        "pointing_up",
+    "press up":         "pointing_up",
+    "swipe up":         "pointing_up",
+    "point down":       "pointing_down",
+    "pointing down":    "pointing_down",
+    "finger down":      "pointing_down",
+    "swipe down":       "pointing_down",
+    "point left":       "pointing_left",
+    "pointing left":    "pointing_left",
+    "finger left":      "pointing_left",
+    "swipe left":       "pointing_left",
+    "point right":      "pointing_right",
+    "pointing right":   "pointing_right",
+    "finger right":     "pointing_right",
+    "swipe right":      "pointing_right",
+    "tap":              "pointing_right",
+    "press here":       "pointing_right",
+    "click here":       "pointing_right",
+    "one":              "pointing_index",
+    "attention":        "pointing_index",
+    "pointer":          "pointing_index",
+
+    # ── Info / question / exclamation ─────────────────────────────────────────
+    "information":      "info_symbol",
+    "info":             "info_symbol",
+    "help":             "info_symbol",
+    "details":          "info_symbol",
+    "more info":        "info_symbol",
+    "see inside":       "info_symbol",
+    "question":         "question_mark",
+    "questions":        "question_mark",
+    "faq":              "question_mark",
+    "unknown":          "question_mark",
+    "query":            "question_mark",
+    "unsure":           "question_mark",
+    "exclamation":      "exclamation_mark",
+    "important notice": "exclamation_mark",
+    "attention required":"exclamation_mark",
+    "heads up":         "exclamation_mark",
+
+    # ── Clock faces ───────────────────────────────────────────────────────────
+    # On the hour
+    "1 o'clock":        "clock_1",   "one o'clock":      "clock_1",
+    "1am":              "clock_1",   "1pm":              "clock_1",
+    "2 o'clock":        "clock_2",   "two o'clock":      "clock_2",
+    "2am":              "clock_2",   "2pm":              "clock_2",
+    "3 o'clock":        "clock_3",   "three o'clock":    "clock_3",
+    "3am":              "clock_3",   "3pm":              "clock_3",
+    "4 o'clock":        "clock_4",   "four o'clock":     "clock_4",
+    "4am":              "clock_4",   "4pm":              "clock_4",
+    "5 o'clock":        "clock_5",   "five o'clock":     "clock_5",
+    "5am":              "clock_5",   "5pm":              "clock_5",
+    "6 o'clock":        "clock_6",   "six o'clock":      "clock_6",
+    "6am":              "clock_6",   "6pm":              "clock_6",
+    "7 o'clock":        "clock_7",   "seven o'clock":    "clock_7",
+    "7am":              "clock_7",   "7pm":              "clock_7",
+    "8 o'clock":        "clock_8",   "eight o'clock":    "clock_8",
+    "8am":              "clock_8",   "8pm":              "clock_8",
+    "9 o'clock":        "clock_9",   "nine o'clock":     "clock_9",
+    "9am":              "clock_9",   "9pm":              "clock_9",
+    "10 o'clock":       "clock_10",  "ten o'clock":      "clock_10",
+    "10am":             "clock_10",  "10pm":             "clock_10",
+    "11 o'clock":       "clock_11",  "eleven o'clock":   "clock_11",
+    "11am":             "clock_11",  "11pm":             "clock_11",
+    "12 o'clock":       "clock_12",  "twelve o'clock":   "clock_12",
+    "noon":             "clock_12",  "midday":           "clock_12",
+    "12pm":             "clock_12",  "midnight":         "clock_12",
+    "12am":             "clock_12",
+    # Half past
+    "1:30":             "clock_1_30",  "one thirty":     "clock_1_30",  "half one":    "clock_1_30",
+    "2:30":             "clock_2_30",  "two thirty":     "clock_2_30",  "half two":    "clock_2_30",
+    "3:30":             "clock_3_30",  "three thirty":   "clock_3_30",  "half three":  "clock_3_30",
+    "4:30":             "clock_4_30",  "four thirty":    "clock_4_30",  "half four":   "clock_4_30",
+    "5:30":             "clock_5_30",  "five thirty":    "clock_5_30",  "half five":   "clock_5_30",
+    "6:30":             "clock_6_30",  "six thirty":     "clock_6_30",  "half six":    "clock_6_30",
+    "7:30":             "clock_7_30",  "seven thirty":   "clock_7_30",  "half seven":  "clock_7_30",
+    "8:30":             "clock_8_30",  "eight thirty":   "clock_8_30",  "half eight":  "clock_8_30",
+    "9:30":             "clock_9_30",  "nine thirty":    "clock_9_30",  "half nine":   "clock_9_30",
+    "10:30":            "clock_10_30", "ten thirty":     "clock_10_30", "half ten":    "clock_10_30",
+    "11:30":            "clock_11_30", "eleven thirty":  "clock_11_30", "half eleven": "clock_11_30",
+    "12:30":            "clock_12_30", "twelve thirty":  "clock_12_30", "half twelve": "clock_12_30",
 }
 
 
@@ -5107,4 +5192,44 @@ _ICON_EMOJIS = {
     "arrow_back":       "\U0001F519",       # 🔙
     "rotate_cw":        "\U0001F503",       # 🔃
     "rotate_ccw":       "\U0001F504",       # 🔄
+
+    # ── Pointing fingers ──────────────────────────────────────────────────────
+    "pointing_up":      "\U0001F446",       # 👆
+    "pointing_down":    "\U0001F447",       # 👇
+    "pointing_left":    "\U0001F448",       # 👈
+    "pointing_right":   "\U0001F449",       # 👉
+    "pointing_index":   "\U0000261D",       # ☝  (one finger / attention)
+
+    # ── Info / question / exclamation ─────────────────────────────────────────
+    "info_symbol":      "\U00002139",       # ℹ
+    "question_mark":    "\U00002753",       # ❓
+    "exclamation_mark": "\U00002757",       # ❗
+
+    # ── Clock faces — on the hour ─────────────────────────────────────────────
+    "clock_1":          "\U0001F550",       # 🕐
+    "clock_2":          "\U0001F551",       # 🕑
+    "clock_3":          "\U0001F552",       # 🕒
+    "clock_4":          "\U0001F553",       # 🕓
+    "clock_5":          "\U0001F554",       # 🕔
+    "clock_6":          "\U0001F555",       # 🕕
+    "clock_7":          "\U0001F556",       # 🕖
+    "clock_8":          "\U0001F557",       # 🕗
+    "clock_9":          "\U0001F558",       # 🕘
+    "clock_10":         "\U0001F559",       # 🕙
+    "clock_11":         "\U0001F55A",       # 🕚
+    "clock_12":         "\U0001F55B",       # 🕛
+
+    # ── Clock faces — half past ───────────────────────────────────────────────
+    "clock_1_30":       "\U0001F55C",       # 🕜
+    "clock_2_30":       "\U0001F55D",       # 🕝
+    "clock_3_30":       "\U0001F55E",       # 🕞
+    "clock_4_30":       "\U0001F55F",       # 🕟
+    "clock_5_30":       "\U0001F560",       # 🕠
+    "clock_6_30":       "\U0001F561",       # 🕡
+    "clock_7_30":       "\U0001F562",       # 🕢
+    "clock_8_30":       "\U0001F563",       # 🕣
+    "clock_9_30":       "\U0001F564",       # 🕤
+    "clock_10_30":      "\U0001F565",       # 🕥
+    "clock_11_30":      "\U0001F566",       # 🕦
+    "clock_12_30":      "\U0001F567",       # 🕧
 }
