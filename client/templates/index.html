@@ -220,6 +220,11 @@ button:active { transform: scale(.97); }
   transition: background .15s, border-color .15s;
 }
 .btn-icon:hover { background: var(--border2); border-color: var(--text3); }
+.hist-page-num { min-width: 2rem; text-align: center; }
+.hist-page-num.active {
+  background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700;
+}
+.hist-page-num.active:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
 
 /* ── Preview ──────────────────────────────────────────────────────────── */
 #preview-wrap {
@@ -621,7 +626,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
     </table>
     <div id="hist-pagination" style="display:none; margin-top:.75rem; display:flex; align-items:center; gap:.5rem; justify-content:center;">
       <button class="btn-icon" id="hist-prev" onclick="histPage(-1)">← Prev</button>
-      <span id="hist-page-label" style="font-size:.8rem; color:var(--text2); min-width:80px; text-align:center"></span>
+      <span id="hist-pages" style="display:flex; gap:.3rem; align-items:center;"></span>
       <button class="btn-icon" id="hist-next" onclick="histPage(1)">Next →</button>
     </div>
   </div>
@@ -1069,8 +1074,13 @@ function renderHistPage() {
 
   if (totalPages > 1) {
     pgDiv.style.display = 'flex';
-    document.getElementById('hist-page-label').textContent =
-      `Page ${_histPage + 1} of ${totalPages}`;
+    let html = '';
+    for (let p = 0; p < totalPages; p++) {
+      const active = p === _histPage;
+      html += `<button class="btn-icon hist-page-num${active ? ' active' : ''}"`
+            + ` onclick="goHistPage(${p})"${active ? ' aria-current="page"' : ''}>${p + 1}</button>`;
+    }
+    document.getElementById('hist-pages').innerHTML = html;
     document.getElementById('hist-prev').disabled = _histPage === 0;
     document.getElementById('hist-next').disabled = _histPage >= totalPages - 1;
   } else {
@@ -1081,6 +1091,12 @@ function renderHistPage() {
 function histPage(dir) {
   hideHistoryPreview();
   _histPage += dir;
+  renderHistPage();
+}
+
+function goHistPage(n) {
+  hideHistoryPreview();
+  _histPage = n;
   renderHistPage();
 }
 
