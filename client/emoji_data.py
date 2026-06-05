@@ -436,6 +436,51 @@ _ICON_KEYWORDS = {
     "wishing":          "pray",
     "please":           "pray",
     "meditation":       "pray",
+    "faith":            "pray",
+    "worship":          "pray",
+    "spiritual":        "pray",
+    "religion":         "pray",
+    "religious":        "pray",
+    "bible":            "pray",
+    "scripture":        "pray",
+    "angel":            "angel",
+    "angels":           "angel",
+    "cherub":           "angel",
+    "cherubs":          "angel",
+    "halo":             "halo_face",
+    "god":              "halo_face",
+    "goddess":          "halo_face",
+    "deity":            "halo_face",
+    "divine":           "halo_face",
+    "holy":             "halo_face",
+    "sacred":           "halo_face",
+    "blessed":          "halo_face",
+    "blessing":         "halo_face",
+    "saint":            "halo_face",
+    "saintly":          "halo_face",
+    "heaven":           "halo_face",
+    "heavenly":         "halo_face",
+    "almighty":         "halo_face",
+    "cross":            "cross",
+    "crucifix":         "cross",
+    "jesus":            "cross",
+    "christ":           "cross",
+    "lord":             "cross",
+    "savior":           "cross",
+    "messiah":          "cross",
+    "christian":        "cross",
+    "christianity":     "cross",
+    "crescent":         "moon",
+    "islam":            "moon",
+    "muslim":           "moon",
+    "mosque":           "church",
+    "star of david":    "star_of_david",
+    "jewish":           "star_of_david",
+    "judaism":          "star_of_david",
+    "synagogue":        "church",
+    "buddha":           "pray",
+    "buddhism":         "pray",
+    "buddhist":         "pray",
     "strength":         "muscle",
     "flexing":          "muscle",
     "crown":            "crown",
@@ -3682,6 +3727,12 @@ _ICON_EMOJIS = {
     # Barber / voting
     "barber_pole":      "\U0001F488",       # 💈
     "ballot_box":       "\U0001F5F3",       # 🗳
+
+    # Spiritual / religious
+    "angel":            "\U0001F47C",       # 👼
+    "halo_face":        "\U0001F607",       # 😇
+    "cross":            "\U0000271D",       # ✝
+    "star_of_david":    "\U00002721",       # ✡
 
     # ── Country flags (Regional Indicator pairs — rendered via Noto Color Emoji) ──
     "flag_ac": "\U0001F1E6\U0001F1E8",  # 🇦🇨 Ascension Island
