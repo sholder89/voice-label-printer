@@ -538,6 +538,37 @@ _ICON_KEYWORDS = {
     "not allowed":      "prohibited",
     "banned":           "prohibited",
     "off limits":       "prohibited",
+
+    # Specific "no" signs — each has its own dedicated Unicode emoji
+    "no smoking":       "no_smoking",
+    "non smoking":      "no_smoking",
+    "smoke free":       "no_smoking",
+    "no cigarettes":    "no_smoking",
+    "no littering":     "no_littering",
+    "no litter":        "no_littering",
+    "no dumping":       "no_littering",
+    "keep clean":       "no_littering",
+    "no pedestrians":   "no_pedestrians",
+    "no walking":       "no_pedestrians",
+    "pedestrians prohibited": "no_pedestrians",
+    "no bicycles":      "no_bicycles",
+    "no bikes":         "no_bicycles",
+    "no cycling":       "no_bicycles",
+    "bikes prohibited": "no_bicycles",
+    "non potable":      "non_potable_water",
+    "non potable water":"non_potable_water",
+    "not drinking water":"non_potable_water",
+    "do not drink":     "non_potable_water",
+    "no phones":        "no_phones",
+    "no cell phones":   "no_phones",
+    "no mobile phones": "no_phones",
+    "no cellphones":    "no_phones",
+    "phone free":       "no_phones",
+    "no under 18":      "no_under_18",
+    "adults only":      "no_under_18",
+    "18 plus":          "no_under_18",
+    "age restricted":   "no_under_18",
+    "mature":           "no_under_18",
     "shield":           "shield",
     "protection":       "shield",
     "armor":            "shield",
@@ -4121,6 +4152,13 @@ _ICON_EMOJIS = {
     "radioactive":      "\U00002622",       # ☢
     "biohazard":        "\U00002623",       # ☣
     "prohibited":       "\U0001F6AB",       # 🚫
+    "no_smoking":       "\U0001F6AD",       # 🚭
+    "no_littering":     "\U0001F6AF",       # 🚯
+    "no_pedestrians":   "\U0001F6B7",       # 🚷
+    "no_bicycles":      "\U0001F6B3",       # 🚳
+    "non_potable_water": "\U0001F6B1",      # 🚱
+    "no_phones":        "\U0001F4F5",       # 📵
+    "no_under_18":      "\U0001F51E",       # 🔞
     "shield":           "\U0001F6E1",       # 🛡
     "sword":            "\U00002694",       # ⚔
     # Vehicles
