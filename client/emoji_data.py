@@ -567,6 +567,15 @@ _ICON_KEYWORDS = {
     "hugging":          "hug",
     "embrace":          "hug",
     "cuddle":           "hug",
+    "melting":          "face_melt",
+    "melting face":     "face_melt",
+    "salute":           "face_salute",
+    "saluting":         "face_salute",
+    "yes sir":          "face_salute",
+    "peeking":          "face_peek",
+    "peeping":          "face_peek",
+    "shy":              "face_peek",
+    "hiding":           "face_peek",
 
     # ── Animals — Pets ───────────────────────────────────────────────────────
     "dog":              "dog",
@@ -599,7 +608,11 @@ _ICON_KEYWORDS = {
     "flamingo":         "flamingo",
     "peacock":          "peacock",
     "rooster":          "rooster",
-    "hen":              "rooster",
+    "hen":              "chicken",
+    "chicken":          "chicken",
+    "chickens":         "chicken",
+    "chooks":           "chicken",
+    "poultry":          "chicken",
     "chick":            "chick",
     "baby bird":        "chick",
 
@@ -616,6 +629,15 @@ _ICON_KEYWORDS = {
     "shrimp":           "shrimp",
     "squid":            "squid",
     "jellyfish":        "jellyfish",
+    "jelly fish":       "jellyfish",
+    "worm":             "worm",
+    "worms":            "worm",
+    "earthworm":        "worm",
+    "gummy worm":       "worm",
+    "cockroach":        "cockroach",
+    "roach":            "cockroach",
+    "bug":              "cockroach",
+    "pest":             "cockroach",
     "seahorse":         "seahorse",
     "blowfish":         "blowfish",
 
@@ -703,7 +725,9 @@ _ICON_KEYWORDS = {
     "mouse":            "mouse",
     "rat":              "mouse",
     "deer":             "deer",
-    "moose":            "deer",
+    "moose":            "moose",
+    "elk":              "moose",
+    "caribou":          "moose",
     "reindeer":         "deer",
     "boar":             "boar",
     "wild boar":        "boar",
@@ -728,7 +752,8 @@ _ICON_KEYWORDS = {
     # Irregular plurals the auto-rule won't catch
     "mice":             "mouse",
     "geese":            "duck",
-    "goose":            "duck",
+    "goose":            "goose",
+    "geese":            "goose",
     "cacti":            "cactus",
     "fungi":            "mushroom",
     "octopi":           "octopus",
@@ -844,6 +869,16 @@ _ICON_KEYWORDS = {
     "plant pot":        "potted_plant",
     "hibiscus":         "hibiscus",
     "tropical flower":  "hibiscus",
+    "lotus":            "lotus",
+    "lotus flower":     "lotus",
+    "water lily":       "lotus",
+    "coral":            "coral",
+    "reef":             "coral",
+    "coral reef":       "coral",
+    "nest":             "nest",
+    "bird nest":        "nest",
+    "eggs":             "nest",
+    "nesting":          "nest",
     "mushroom":         "mushroom",
     "fungi":            "mushroom",
     "clover":           "clover",
@@ -864,6 +899,12 @@ _ICON_KEYWORDS = {
     "globe":            "earth",
     "world":            "earth",
     "planet earth":     "earth",
+    "global":           "globe_meridians",
+    "worldwide":        "globe_meridians",
+    "international":    "globe_meridians",
+    "internet":         "globe_meridians",
+    "web":              "globe_meridians",
+    "online":           "globe_meridians",
 
     # ── Space ────────────────────────────────────────────────────────────────
     "rocket":           "rocket",
@@ -1429,7 +1470,12 @@ _ICON_KEYWORDS = {
     "climbing":         "climbing",
     "skateboarding":    "skateboard",
     "skating":          "skateboard",
-    "rollerskating":    "skateboard",
+    "rollerskating":    "roller_skate",
+    "roller skate":     "roller_skate",
+    "roller skating":   "roller_skate",
+    "rollerblade":      "roller_skate",
+    "rollerblading":    "roller_skate",
+    "inline skate":     "roller_skate",
     "karate":           "martial_arts",
     "martial arts":     "martial_arts",
     "judo":             "martial_arts",
@@ -1571,6 +1617,29 @@ _ICON_KEYWORDS = {
     "recliner":         "chair",
     "armchair":         "chair",
     "seat":             "chair",
+    "teddy bear":       "teddy_bear",
+    "teddy":            "teddy_bear",
+    "stuffed animal":   "teddy_bear",
+    "plush":            "teddy_bear",
+    "nesting doll":     "nesting_dolls",
+    "nesting dolls":    "nesting_dolls",
+    "matryoshka":       "nesting_dolls",
+    "russian doll":     "nesting_dolls",
+    "mousetrap":        "mousetrap",
+    "mouse trap":       "mousetrap",
+    "trap":             "mousetrap",
+    "hut":              "hut",
+    "cabin":            "hut",
+    "shack":            "hut",
+    "shed":             "hut",
+    "bungalow":         "hut",
+    "headstone":        "headstone",
+    "gravestone":       "headstone",
+    "tombstone":        "headstone",
+    "grave":            "headstone",
+    "cemetery":         "headstone",
+    "graveyard":        "headstone",
+    "rip":              "headstone",
     "door":             "door",
     "entrance":         "door",
     "exit":             "door",
@@ -2009,6 +2078,15 @@ _ICON_KEYWORDS = {
     "checkup":          "stethoscope",
     "hospital":         "stethoscope",
     "surgery":          "stethoscope",
+    "x-ray":            "xray",
+    "xray":             "xray",
+    "x ray":            "xray",
+    "scan":             "xray",
+    "mri":              "xray",
+    "ct scan":          "xray",
+    "cardiac":          "anatomical_heart",
+    "heart health":     "anatomical_heart",
+    "cardiology":       "anatomical_heart",
     "syringe":          "syringe",
     "injection":        "syringe",
     "vaccine":          "syringe",
@@ -2537,6 +2615,22 @@ _ICON_KEYWORDS = {
     # ── Buildings / Places ───────────────────────────────────────────────────
     "building":         "office_building",
     "office building":  "office_building",
+    "apartment":        "cityscape",
+    "apartments":       "cityscape",
+    "flat":             "cityscape",
+    "condo":            "cityscape",
+    "condominium":      "cityscape",
+    "complex":          "cityscape",
+    "downtown":         "cityscape",
+    "city":             "cityscape",
+    "urban":            "cityscape",
+    "street":           "road",
+    "road":             "road",
+    "avenue":           "road",
+    "boulevard":        "road",
+    "highway":          "road",
+    "lane":             "road",
+    "drive":            "road",
     "headquarters":     "office_building",
     "workplace":        "office_building",
     "university":       "school_building",
@@ -2745,6 +2839,7 @@ _ICON_EMOJIS = {
     "flamingo":         "\U0001F9A9",       # 🦩
     "peacock":          "\U0001F99A",       # 🦚
     "rooster":          "\U0001F413",       # 🐓
+    "chicken":          "\U0001F414",       # 🐔
     "chick":            "\U0001F425",       # 🐥
 
     # Animals — sea
@@ -2757,7 +2852,9 @@ _ICON_EMOJIS = {
     "lobster":          "\U0001F99E",       # 🦞
     "shrimp":           "\U0001F990",       # 🦐
     "squid":            "\U0001F991",       # 🦑
-    "jellyfish":        "\U0001F421",       # 🐡  (no single-codepoint jellyfish; blowfish is closest)
+    "jellyfish":        "\U0001FABC",       # 🪼  (Unicode 15 — Noto supported)
+    "worm":             "\U0001FAB1",       # 🪱
+    "cockroach":        "\U0001FAB3",       # 🪳
     "seahorse":         "\U0001F420",       # 🐠  (no seahorse emoji; map to fish)
     "blowfish":         "\U0001F421",       # 🐡
     "seal":             "\U0001F9AD",       # 🦭
@@ -3199,8 +3296,13 @@ _ICON_EMOJIS = {
     # Plants
     "potted_plant":     "\U0001FAB4",       # 🪴
     "hibiscus":         "\U0001F33A",       # 🌺
+    "lotus":            "\U0001FAB7",       # 🪷
+    "coral":            "\U0001FAB8",       # 🪸
+    "nest":             "\U0001FABA",       # 🪺
     # Animals
     "beetle":           "\U0001FAB2",       # 🪲
+    "moose":            "\U0001FACE",       # 🫎  (Unicode 15)
+    "goose":            "\U0001FABF",       # 🪿  (Unicode 15)
     "crow":             "\U0001F426‍\U00002B1B",  # 🐦‍⬛ (ZWJ — black bird)
     "polar_bear":       "\U0001F43B‍\U00002744",  # 🐻‍❄️ (ZWJ)
     "baby":             "\U0001F476",       # 👶
@@ -3223,6 +3325,29 @@ _ICON_EMOJIS = {
     "headphones_icon":  "\U0001F3A7",       # 🎧
     "banjo_icon":       "\U0001FA95",       # 🪕
     "accordion":        "\U0001FA97",       # 🪗
+
+    # Faces (new expressions)
+    "face_melt":        "\U0001FAE0",       # 🫠
+    "face_salute":      "\U0001FAE1",       # 🫡
+    "face_peek":        "\U0001FAE3",       # 🫣
+
+    # Home / objects
+    "teddy_bear":       "\U0001F9F8",       # 🧸
+    "nesting_dolls":    "\U0001FA86",       # 🪆
+    "mousetrap":        "\U0001FA94",       # 🪤
+    "headstone":        "\U0001FAA6",       # 🪦
+    "hut":              "\U0001F6D6",       # 🛖
+    "cityscape":        "\U0001F3D9",       # 🏙
+    "road":             "\U0001F6E3",       # 🛣
+
+    # Sports
+    "roller_skate":     "\U0001F6FC",       # 🛼
+
+    # Health
+    "xray":             "\U0001FA7B",       # 🩻
+
+    # Globe
+    "globe_meridians":  "\U0001F310",       # 🌐
 
     # Buildings
     "office_building":  "\U0001F3E2",       # 🏢
