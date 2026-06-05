@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Edit(*emoji_data.py)|Write(*emoji_data.py)",
+            "shell": "powershell",
+            "command": "python 'C:\\Users\\Steve\\OneDrive\\Documents\\Claude\\Voice Label Printer\\generate_emojis_md.py'",
+            "statusMessage": "Regenerating EMOJIS.md...",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

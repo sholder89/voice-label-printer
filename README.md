@@ -29,8 +29,8 @@ You (voice) → Alexa Skill → AWS Lambda → Relay Server (VPS) → Windows Cl
 
 ### 😀 Automatic Emoji Icons
 - Type (or say) any label text and the app automatically detects a matching emoji icon
-- Over **3,000 keywords** covering household items, sports, hobbies, professions, food, brands, electronic components, country flags, and more
-- Icons appear to the left of the label text
+- Over **3,800 keywords** covering household items, sports, hobbies, professions, food, brands, electronic components, country flags, and more — see **[EMOJIS.md](EMOJIS.md)** for the full list
+- Icons appear to the left of the label text (stacked above on portrait labels)
 - Rendered via **Noto Color Emoji** (fonttools PNG extraction) with HarfBuzz + FreeType as fallback — correctly handles ZWJ sequences (🧑‍✈️ pilot, 🧑‍🔬 scientist) and country flags (🇺🇸 🇬🇧 🇯🇵 and all others)
 - Icons can be toggled on/off per label or globally
 - **Longest-match detection** — "polar bear" correctly picks 🐻‍❄️ over just 🐻
@@ -300,7 +300,7 @@ The app lives in the Windows system tray when running:
 ├── client/
 │   ├── app.py              # Flask web UI + background polling thread + tray icon
 │   ├── printer.py          # Label rendering (Pillow) + Windows GDI printing
-│   ├── emoji_data.py       # 3,000+ keyword → emoji mappings
+│   ├── emoji_data.py       # 3,800+ keyword → emoji mappings (see EMOJIS.md)
 │   ├── requirements.txt
 │   ├── images/             # Drop custom border images here (border_<name>.png)
 │   ├── static/             # favicon.ico, favicon.png
