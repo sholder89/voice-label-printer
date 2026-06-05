@@ -552,7 +552,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
       <label>Label Text</label>
       <input type="text" id="print-text" placeholder="Type your label…"
              oninput="schedulePreview(); updateCharCount()"
-             onkeydown="if(event.key==='Enter') doPrint()" />
+             onkeydown="if(event.key==='Enter' && !event.repeat) doPrint()" />
       <div class="char-count" id="char-count">0 / 200</div>
       <p class="hint">💡 Mention keywords like <em>kitchen, tools, travel, music, fragile, warning</em> to auto-add an emoji.</p>
     </div>
@@ -857,7 +857,14 @@ function saveConfig() {
   refreshPreview();
 }
 
+let _lastPrintAt = 0;
 function doPrint(overrideText) {
+  // Throttle: ignore rapid repeat triggers (e.g. holding/mashing Enter) so a
+  // single keypress can't fire off a burst of labels. ~1.5s between prints.
+  const now = Date.now();
+  if (now - _lastPrintAt < 1500) return;
+  _lastPrintAt = now;
+
   const text   = overrideText || getPrintText();
   const copies = parseInt(document.getElementById('num-copies').value) || 1;
   const s      = getSettings();
