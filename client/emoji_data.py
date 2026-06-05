@@ -1690,15 +1690,15 @@ _ICON_KEYWORDS = {
     "vinyl cut":        "scissors",
     "vinyl cutter":     "scissors",
     "die cut":          "scissors",
-    "engrave":          "engraving",
-    "engraving":        "engraving",
-    "engraved":         "engraving",
-    "laser engrave":    "engraving",
-    "laser engraving":  "engraving",
-    "rotary engrave":   "engraving",
-    "etching":          "engraving",
-    "etched":           "engraving",
-    "etch":             "engraving",
+    "engrave":          "diamond",
+    "engraving":        "diamond",
+    "engraved":         "diamond",
+    "laser engrave":    "diamond",
+    "laser engraving":  "diamond",
+    "rotary engrave":   "diamond",
+    "etching":          "diamond",
+    "etched":           "diamond",
+    "etch":             "diamond",
     "pyrography":       "wood",
     "wood burn":        "wood",
     "woodburning":      "wood",
@@ -2755,7 +2755,6 @@ _ICON_EMOJIS = {
     "ruler_tri":        "\U0001F4D0",       # 📐
     "scissors":         "\U00002702",       # ✂
     "laser_beam":       "\U0001F506",       # 🔆
-    "engraving":        "\U0000270F",       # ✏️
     "hammer":           "\U0001F528",       # 🔨
     "screwdriver":      "\U0001FA9B",       # 🪛
     "saw_tool":         "\U0001FA9A",       # 🪚
