@@ -280,15 +280,27 @@ def render_label(
     text = _apply_case(text, text_case)
 
     if icon:
-        icon_size = int(h_px * 0.55)
-        icon_x    = pad
-        icon_y    = (h_px - icon_size) // 2
-        text_x0   = icon_x + icon_size + pad
+        if h_px > w_px:
+            # Portrait label (e.g. 4x6): stack icon on top, text below — sizing
+            # the icon to the WIDTH so it doesn't balloon on a tall label.
+            icon_size = int(min(w_px * 0.42, h_px * 0.28))
+            icon_x    = (w_px - icon_size) // 2
+            icon_y    = pad
+            text_x0   = pad
+            text_y0   = icon_y + icon_size + pad
+        else:
+            # Landscape label (e.g. 2x1): icon on the left, text to the right.
+            icon_size = int(h_px * 0.55)
+            icon_x    = pad
+            icon_y    = (h_px - icon_size) // 2
+            text_x0   = icon_x + icon_size + pad
+            text_y0   = pad
     else:
-        text_x0   = pad
+        text_x0 = pad
+        text_y0 = pad
 
     text_area_w = w_px - text_x0 - pad
-    text_area_h = h_px - pad * 2
+    text_area_h = h_px - text_y0 - pad
 
     fill    = _FILL.get(font_style, 0.85)
     wrapped, font = _fit_text(text, text_area_w, text_area_h, font_style, fill, font_weight)
@@ -296,7 +308,7 @@ def render_label(
 
     bb = draw.multiline_textbbox((0, 0), joined, font=font, align="center")
     x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-    y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
+    y  = text_y0 + (text_area_h - (bb[3] - bb[1])) / 2 - bb[1]
     draw.multiline_text((x, y), joined, fill="black", font=font, align="center")
 
     if icon:
