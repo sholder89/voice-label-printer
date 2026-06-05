@@ -193,19 +193,53 @@ and http.user_agent eq "AlexaLabelPrinter/1.0"
 and (http.request.uri.path eq "/webhook" or http.request.uri.path eq "/settings")
 ```
 
-### Alexa Skill
+### Alexa Skill + AWS Lambda
 
-1. Create a new custom skill in the [Alexa Developer Console](https://developer.amazon.com/alexa/console/ask)
-2. In the **JSON Editor**, paste the contents of `alexa-skill/interaction_model.json` and click **Save Model**
-3. Click **Build Model**
-4. Deploy `alexa-skill/lambda_function.py` to AWS Lambda (Python 3.12 runtime)
-5. Set these Lambda environment variables:
-   ```
-   WEBHOOK_URL=https://your-relay-server.com/webhook
-   SETTINGS_URL=https://your-relay-server.com/settings
-   LABEL_TOKEN=your-secret-token
-   ```
-6. Connect the Lambda to your Alexa skill as the endpoint
+The Alexa skill is what listens for your voice commands. When you speak, Alexa calls an AWS Lambda function (a small piece of code that runs in the cloud) which forwards the job to your relay server. You'll need free accounts on both the [Alexa Developer Console](https://developer.amazon.com/alexa/console/ask) and [AWS](https://aws.amazon.com).
+
+#### Step 1 — Create the Lambda function
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com) and go to **Lambda**
+2. Click **Create function**
+3. Choose **Author from scratch**, give it a name like `VoiceLabelPrinter`, and set the runtime to **Python 3.12**
+4. Click **Create function**
+5. In the **Code** tab, open the file tree on the left and click `lambda_function.py`
+6. Delete all the placeholder code and paste in the entire contents of `alexa-skill/lambda_function.py` from this repo
+7. Click **Deploy**
+
+#### Step 2 — Set Lambda environment variables
+
+1. In your Lambda function, click the **Configuration** tab → **Environment variables** → **Edit**
+2. Add these three variables:
+
+   | Key | Value |
+   |---|---|
+   | `WEBHOOK_URL` | `https://your-relay-server.com/webhook` |
+   | `SETTINGS_URL` | `https://your-relay-server.com/settings` |
+   | `LABEL_TOKEN` | your secret token |
+
+3. Click **Save**
+
+#### Step 3 — Create the Alexa skill
+
+1. Sign in to the [Alexa Developer Console](https://developer.amazon.com/alexa/console/ask) and click **Create Skill**
+2. Name it `Label Printer`, choose **Custom** model and **Alexa-hosted (Python)** — then switch to **Provision your own** hosting
+3. On the left sidebar, click **JSON Editor**
+4. Delete everything in the editor and paste in the full contents of `alexa-skill/interaction_model.json` from this repo
+5. Click **Save Model**, then **Build Model** — wait for it to finish (takes about a minute)
+
+#### Step 4 — Connect Lambda to the skill
+
+1. In your Lambda function, click **+ Add trigger** → search for **Alexa Skills Kit**
+2. Paste your **Alexa Skill ID** (found in the Alexa Developer Console under the skill name) and click **Add**
+3. Copy your Lambda function's **ARN** from the top right of the Lambda page (looks like `arn:aws:lambda:us-east-1:123456789:function:VoiceLabelPrinter`)
+4. Back in the Alexa Developer Console, go to **Endpoint** in the left sidebar
+5. Select **AWS Lambda ARN** and paste your ARN into the **Default Region** field
+6. Click **Save Endpoints**, then rebuild the model one more time
+
+#### Step 5 — Test it
+
+Say *"Alexa, open label printer"* — she should respond *"Label printer ready."* If she says the skill isn't responding, double-check the Lambda ARN is correct and the Skill ID trigger is set up on the Lambda side.
 
 ---
 
