@@ -604,7 +604,17 @@ def _render_warning(text: str, w_px: int, h_px: int, dpi: int, text_case: str,
     icon_sz   = header_h - icon_pad * 2
     icon_lx   = ix1 + icon_pad * 2
     icon_ly   = iy1 + icon_pad
-    _draw_icon(img, "warning", icon_lx, icon_ly, icon_sz, color=WHITE, skip_noto=True)
+    # Draw a white rounded badge behind the icon so it reads clearly on the
+    # black header regardless of how the glyph renders — this is the white
+    # border the user expects to see around the ⚠ symbol.
+    badge_pad = max(2, icon_sz // 8)
+    draw.rounded_rectangle(
+        [icon_lx - badge_pad, icon_ly - badge_pad,
+         icon_lx + icon_sz + badge_pad, icon_ly + icon_sz + badge_pad],
+        radius=max(2, badge_pad),
+        fill=WHITE,
+    )
+    _draw_icon(img, "warning", icon_lx, icon_ly, icon_sz, color=BLACK)
 
     warn_text   = "WARNING"
     warn_x1     = icon_lx + icon_sz + icon_pad * 2
