@@ -3576,6 +3576,148 @@ _ICON_KEYWORDS = {
     "numpad":           "computer_keyboard",
     "number pad":       "computer_keyboard",
     "keypad":           "computer_keyboard",
+
+    # ── Animal keyword expansion ──────────────────────────────────────────────
+
+    # seal (had zero keywords!)
+    "seal":             "seal",
+    "seals":            "seal",
+    "sea lion":         "seal",
+    "sea lions":        "seal",
+    "harbor seal":      "seal",
+    "leopard seal":     "seal",
+
+    # fly / housefly
+    "fly":              "fly",
+    "flies":            "fly",
+    "housefly":         "fly",
+    "house fly":        "fly",
+    "horsefly":         "fly",
+    "fruit fly":        "fly",
+    "bluebottle":       "fly",
+    "blowfly":          "fly",
+
+    # mosquito (had only 1 keyword)
+    "mosquitos":        "mosquito",
+    "mosquitoes":       "mosquito",
+    "gnat":             "mosquito",
+    "gnats":            "mosquito",
+    "midge":            "mosquito",
+    "midges":           "mosquito",
+
+    # scorpion
+    "scorpion":         "scorpion",
+    "scorpions":        "scorpion",
+
+    # microbe / germ
+    "microbe":          "microbe",
+    "microbes":         "microbe",
+    "bacteria":         "microbe",
+    "bacterium":        "microbe",
+    "virus":            "microbe",
+    "viruses":          "microbe",
+    "germ":             "microbe",
+    "germs":            "microbe",
+    "pathogen":         "microbe",
+
+    # mammoth
+    "mammoth":          "mammoth",
+    "mammoths":         "mammoth",
+    "woolly mammoth":   "mammoth",
+    "mastodon":         "mammoth",
+
+    # donkey
+    "donkey":           "donkey",
+    "donkeys":          "donkey",
+    "mule":             "donkey",
+    "burro":            "donkey",
+
+    # t-rex
+    "t rex":            "trex",
+    "t-rex":            "trex",
+    "tyrannosaurus":    "trex",
+    "raptor":           "trex",
+    "velociraptor":     "trex",
+
+    # feather
+    "feather":          "feather",
+    "feathers":         "feather",
+    "plume":            "feather",
+    "quill":            "feather",
+
+    # thin animals — synonyms + common variants
+    "bats":             "bat",
+    "vampire bat":      "bat",
+    "fruit bat":        "bat",
+    "beavers":          "beaver",
+    "butterflies":      "butterfly",
+    "moths":            "butterfly",
+    "moth":             "butterfly",
+    "camels":           "camel",
+    "dromedary":        "camel",
+    "crabs":            "crab",
+    "hermit crab":      "crab",
+    "horseshoe crab":   "crab",
+    "crickets":         "cricket",
+    "dolphins":         "dolphin",
+    "porpoise":         "dolphin",
+    "bottlenose":       "dolphin",
+    "flamingos":        "flamingo",
+    "foxes":            "fox",
+    "vixen":            "fox",
+    "red fox":          "fox",
+    "arctic fox":       "fox",
+    "goose":            "goose",
+    "gosling":          "goose",
+    "gander":           "goose",
+    "porcupine":        "hedgehog",
+    "kangaroos":        "kangaroo",
+    "wallaby":          "kangaroo",
+    "joey":             "kangaroo",
+    "marsupial":        "kangaroo",
+    "koalas":           "koala",
+    "koala bear":       "koala",
+    "lobsters":         "lobster",
+    "crawfish":         "lobster",
+    "crayfish":         "lobster",
+    "crawdad":          "lobster",
+    "otters":           "otter",
+    "sea otter":        "otter",
+    "river otter":      "otter",
+    "giant panda":      "panda",
+    "peacocks":         "peacock",
+    "peahen":           "peacock",
+    "roosters":         "rooster",
+    "cock":             "rooster",
+    "seahorses":        "seahorse",
+    "sharks":           "shark",
+    "great white":      "shark",
+    "hammerhead":       "shark",
+    "bull shark":       "shark",
+    "shrimps":          "shrimp",
+    "prawn":            "shrimp",
+    "prawns":           "shrimp",
+    "skunks":           "skunk",
+    "polecat":          "skunk",
+    "sloths":           "sloth",
+    "snails":           "snail",
+    "slug":             "snail",
+    "slugs":            "snail",
+    "spiders":          "spider",
+    "tarantula":        "spider",
+    "arachnid":         "spider",
+    "squids":           "squid",
+    "calamari":         "squid",
+    "swans":            "swan",
+    "cygnet":           "swan",
+    "whales":           "whale",
+    "humpback":         "whale",
+    "blue whale":       "whale",
+    "sperm whale":      "whale",
+    "orca":             "whale",
+    "killer whale":     "whale",
+    "beluga":           "whale",
+    "zebras":           "zebra",
 }
 
 
@@ -3740,6 +3882,7 @@ _ICON_EMOJIS = {
     "crocodile":        "\U0001F40A",       # 🐊
     "frog":             "\U0001F438",       # 🐸
     "dinosaur":         "\U0001F995",       # 🦕
+    "trex":             "\U0001F996",       # 🦖
     "dragon":           "\U0001F409",       # 🐉
 
     # Animals — insects
@@ -3751,6 +3894,9 @@ _ICON_EMOJIS = {
     "spider":           "\U0001F577",       # 🕷
     "cricket":          "\U0001F997",       # 🦗
     "mosquito":         "\U0001F99F",       # 🦟
+    "fly":              "\U0001FAB0",       # 🪰
+    "scorpion":         "\U0001F982",       # 🦂
+    "microbe":          "\U0001F9A0",       # 🦠
     "snail":            "\U0001F40C",       # 🐌
 
     # Animals — farm / wild
@@ -3790,6 +3936,9 @@ _ICON_EMOJIS = {
     "badger":           "\U0001F9A1",       # 🦡
     "chipmunk":         "\U0001F43F",       # 🐿
     "bison":            "\U0001F9AC",       # 🦬
+    "mammoth":          "\U0001F9A3",       # 🦣
+    "donkey":           "\U0001FACF",       # 🫏
+    "feather":          "\U0001FAB6",       # 🪶
     "dodo":             "\U0001F9A4",       # 🦤
 
     # Nature / plants
