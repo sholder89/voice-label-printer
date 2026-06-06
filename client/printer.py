@@ -371,12 +371,10 @@ def print_label(
     hDC = win32ui.CreateDCFromHandle(hdc_raw)
 
     try:
-        off_x  = hDC.GetDeviceCaps(112)   # PHYSICALOFFSETX
-        off_y  = hDC.GetDeviceCaps(113)   # PHYSICALOFFSETY
-        dpi_x  = hDC.GetDeviceCaps(88)    # LOGPIXELSX
-        dpi_y  = hDC.GetDeviceCaps(90)    # LOGPIXELSY
-        phys_w = hDC.GetDeviceCaps(110)   # PHYSICALWIDTH  (actual label px)
-        phys_h = hDC.GetDeviceCaps(111)   # PHYSICALHEIGHT (actual label px)
+        off_x = hDC.GetDeviceCaps(112)   # PHYSICALOFFSETX
+        off_y = hDC.GetDeviceCaps(113)   # PHYSICALOFFSETY
+        dpi_x = hDC.GetDeviceCaps(88)    # LOGPIXELSX
+        dpi_y = hDC.GetDeviceCaps(90)    # LOGPIXELSY
 
         render_dpi = dpi_x or dpi
         render_w   = int(width_in  * render_dpi)
