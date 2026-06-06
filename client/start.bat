@@ -3,9 +3,9 @@ setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
 echo Installing/updating dependencies...
-pip install -r requirements.txt -q
+python -m pip install -r requirements.txt -q
 if errorlevel 1 (
-    echo ERROR: pip install failed. Make sure Python is installed.
+    echo ERROR: pip install failed. Make sure Python is installed and added to PATH.
     pause
     exit /b 1
 )
