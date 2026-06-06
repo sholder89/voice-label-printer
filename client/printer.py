@@ -378,17 +378,12 @@ def print_label(
         phys_w = hDC.GetDeviceCaps(110)   # PHYSICALWIDTH  (actual label px)
         phys_h = hDC.GetDeviceCaps(111)   # PHYSICALHEIGHT (actual label px)
 
-        # Use the calculated width (keeps driver happy — going wider causes
-        # band-split artefacts on some drivers).  Use physical height so the
-        # image matches the actual label height exactly, eliminating the top
-        # compression caused by the 203 px calc vs 200 px physical mismatch.
         render_dpi = dpi_x or dpi
-        render_w   = int(width_in * render_dpi)
-        exp_h      = int(height_in * (dpi_y or dpi))
-        render_h   = phys_h if 0.85 * exp_h <= phys_h <= 1.15 * exp_h else exp_h
+        render_w   = int(width_in  * render_dpi)
+        render_h   = int(height_in * (dpi_y or dpi))
 
-        img = render_label(text, render_w / render_dpi, render_h / render_dpi,
-                           render_dpi, font_style, border, icons, text_case,
+        img = render_label(text, width_in, height_in, dpi,
+                           font_style, border, icons, text_case,
                            style_preset, font_weight, qr_show_text)
 
         hDC.StartDoc("Label")
