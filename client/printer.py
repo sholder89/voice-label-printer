@@ -347,11 +347,18 @@ def print_label(
         pass
 
     width_in, height_in = LABEL_SIZES[size_key]
-    img = render_label(text, width_in, height_in, dpi, font_style, border, icons, text_case, style_preset, font_weight, qr_show_text)
 
-    dm_buf  = _get_devmode_buf(printer_name, width_in, height_in)
+    # Create the DC first so we can read the driver's actual physical page
+    # dimensions before rendering.  Many drivers ignore DEVMODE paper-size
+    # overrides and report their own native dimensions (e.g. a 51×25 mm label
+    # reports 408×200 px at 203 DPI, not the nominal 2"×1" = 406×203 px).
+    # Rendering at the wrong size causes compression/clipping artefacts.
+    #
+    # Brother QL drivers auto-detect the installed DK roll — forcing a custom
+    # DEVMODE causes the printer to blink red and reject the job.
+    _skip_devmode = "brother" in printer_name.lower()
+    dm_buf = None if _skip_devmode else _get_devmode_buf(printer_name, width_in, height_in)
 
-    # Try with custom DEVMODE (correct paper size); fall back to driver default
     hdc_raw = None
     if dm_buf is not None:
         hdc_raw = _gdi32.CreateDCW("WINSPOOL", printer_name, None, dm_buf)
@@ -364,18 +371,31 @@ def print_label(
     hDC = win32ui.CreateDCFromHandle(hdc_raw)
 
     try:
-        off_x    = hDC.GetDeviceCaps(112)
-        off_y    = hDC.GetDeviceCaps(113)
-        dpi_x    = hDC.GetDeviceCaps(88)
-        dpi_y    = hDC.GetDeviceCaps(90)
-        target_w = int(width_in  * dpi_x)
-        target_h = int(height_in * dpi_y)
+        off_x  = hDC.GetDeviceCaps(112)   # PHYSICALOFFSETX
+        off_y  = hDC.GetDeviceCaps(113)   # PHYSICALOFFSETY
+        dpi_x  = hDC.GetDeviceCaps(88)    # LOGPIXELSX
+        dpi_y  = hDC.GetDeviceCaps(90)    # LOGPIXELSY
+        phys_w = hDC.GetDeviceCaps(110)   # PHYSICALWIDTH  (actual label px)
+        phys_h = hDC.GetDeviceCaps(111)   # PHYSICALHEIGHT (actual label px)
+
+        # Use the calculated width (keeps driver happy — going wider causes
+        # band-split artefacts on some drivers).  Use physical height so the
+        # image matches the actual label height exactly, eliminating the top
+        # compression caused by the 203 px calc vs 200 px physical mismatch.
+        render_dpi = dpi_x or dpi
+        render_w   = int(width_in * render_dpi)
+        exp_h      = int(height_in * (dpi_y or dpi))
+        render_h   = phys_h if 0.85 * exp_h <= phys_h <= 1.15 * exp_h else exp_h
+
+        img = render_label(text, render_w / render_dpi, render_h / render_dpi,
+                           render_dpi, font_style, border, icons, text_case,
+                           style_preset, font_weight, qr_show_text)
 
         hDC.StartDoc("Label")
         hDC.StartPage()
         bmp = ImageWin.Dib(img)
         bmp.draw(hDC.GetHandleOutput(),
-                 (-off_x, -off_y, target_w - off_x, target_h - off_y))
+                 (-off_x, -off_y, render_w - off_x, render_h - off_y))
         hDC.EndPage()
         hDC.EndDoc()
     finally:
