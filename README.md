@@ -22,7 +22,7 @@ You (voice) → Alexa Skill → AWS Lambda → Relay Server (VPS) → Windows Cl
 ## Features
 
 ### 🖨️ Printing
-- Prints to any Windows printer — tested with **NIIMBOT B21 / Y813BT** via Bluetooth
+- Prints to any Windows printer — tested with **NULLTONEX** Bluetooth thermal label printer via Bluetooth
 - 203 DPI rendering via Pillow — what you see in the preview is exactly what prints
 - Multiple label sizes: **2×1**, **4×2**, **4×6**, **3×2**, **2×0.5** (inches)
 - Print multiple copies (up to 10) from the web UI
