@@ -232,7 +232,9 @@
             { "name": { "value": "4x2", "synonyms": ["four by two", "four by two inch", "large label"] } },
             { "name": { "value": "4x6", "synonyms": ["four by six", "four by six inch", "shipping label"] } },
             { "name": { "value": "3x2", "synonyms": ["three by two", "three by two inch"] } },
-            { "name": { "value": "2x0.5", "synonyms": ["two by half", "two by half inch", "tiny label", "two by point five"] } }
+            { "name": { "value": "2x0.5",  "synonyms": ["two by half", "two by half inch", "tiny label", "two by point five"] } },
+            { "name": { "value": "1.1x3.5", "synonyms": ["one by three and a half", "address label", "brother address", "twenty nine by ninety"] } },
+            { "name": { "value": "1.1x2.4", "synonyms": ["one by two and a half", "brother short", "twenty nine by sixty two"] } }
           ]
         }
       ]
