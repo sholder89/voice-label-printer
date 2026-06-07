@@ -152,7 +152,7 @@ def post_setting():
                           "address", "windows95", "price_tag", "cassette", "blueprint", "qr_code"},
         "font_weight":  {"normal", "bold", "italic", "bold_italic"},
         "icons":        {"true", "false"},
-        "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5"},
+        "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5", "1.1x3.5", "1.1x2.4"},
     }
     data  = request.get_json(silent=True) or {}
     key   = (data.get("key")   or "").strip()
