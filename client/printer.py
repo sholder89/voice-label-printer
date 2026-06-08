@@ -374,30 +374,34 @@ def print_label(
     hDC = win32ui.CreateDCFromHandle(hdc_raw)
 
     try:
-        off_x    = hDC.GetDeviceCaps(112)   # PHYSICALOFFSETX
-        off_y    = hDC.GetDeviceCaps(113)   # PHYSICALOFFSETY
-        dpi_x    = hDC.GetDeviceCaps(88)    # LOGPIXELSX
-        dpi_y    = hDC.GetDeviceCaps(90)    # LOGPIXELSY
-        horzres  = hDC.GetDeviceCaps(8)     # HORZRES  — printable width in dots
-        vertres  = hDC.GetDeviceCaps(10)    # VERTRES  — printable height in dots
+        off_x = hDC.GetDeviceCaps(112)   # PHYSICALOFFSETX
+        off_y = hDC.GetDeviceCaps(113)   # PHYSICALOFFSETY
+        dpi_x = hDC.GetDeviceCaps(88)    # LOGPIXELSX
+        dpi_y = hDC.GetDeviceCaps(90)    # LOGPIXELSY
 
         render_dpi = dpi_x or dpi
 
-        # Brother QL drivers report a printable width (HORZRES) that is narrower
-        # than the physical tape width — e.g. 29 mm tape has ~26 mm printable area
-        # (~307 px at 300 DPI).  Rendering wider than HORZRES causes the driver to
-        # reject the job (red blink).  Use HORZRES directly for Brother so the
-        # raster image always fits within the printable area.
-        if _skip_devmode and horzres:   # _skip_devmode is True for Brother
-            render_w = horzres
-        else:
-            render_w = int(width_in * render_dpi)
-
-        render_h = int(height_in * (dpi_y or dpi))
+        # calc_w / calc_h are the physical page dimensions (including margins)
+        # for our label size at the driver's reported DPI.
+        calc_w = int(width_in  * render_dpi)
+        calc_h = int(height_in * (dpi_y or dpi))
 
         img = render_label(text, width_in, height_in, dpi,
                            font_style, border, icons, text_case,
                            style_preset, font_weight, qr_show_text)
+
+        if _skip_devmode:
+            # Brother QL: the printing DC is landscape — X axis runs along the
+            # tape feed direction (label length) and Y axis runs across the tape
+            # width.  Our label is authored as portrait (width_in < height_in),
+            # so we rotate 90° CCW to orient text along the tape, then swap the
+            # draw-rect dimensions so length→X and width→Y.
+            img      = img.rotate(90, expand=True)   # portrait → landscape (CCW)
+            render_w = calc_h    # label length along tape feed (X)
+            render_h = calc_w    # tape width direction (Y)
+        else:
+            render_w = calc_w
+            render_h = calc_h
 
         hDC.StartDoc("Label")
         hDC.StartPage()
