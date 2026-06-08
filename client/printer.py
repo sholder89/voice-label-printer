@@ -374,14 +374,26 @@ def print_label(
     hDC = win32ui.CreateDCFromHandle(hdc_raw)
 
     try:
-        off_x = hDC.GetDeviceCaps(112)   # PHYSICALOFFSETX
-        off_y = hDC.GetDeviceCaps(113)   # PHYSICALOFFSETY
-        dpi_x = hDC.GetDeviceCaps(88)    # LOGPIXELSX
-        dpi_y = hDC.GetDeviceCaps(90)    # LOGPIXELSY
+        off_x    = hDC.GetDeviceCaps(112)   # PHYSICALOFFSETX
+        off_y    = hDC.GetDeviceCaps(113)   # PHYSICALOFFSETY
+        dpi_x    = hDC.GetDeviceCaps(88)    # LOGPIXELSX
+        dpi_y    = hDC.GetDeviceCaps(90)    # LOGPIXELSY
+        horzres  = hDC.GetDeviceCaps(8)     # HORZRES  — printable width in dots
+        vertres  = hDC.GetDeviceCaps(10)    # VERTRES  — printable height in dots
 
         render_dpi = dpi_x or dpi
-        render_w   = int(width_in  * render_dpi)
-        render_h   = int(height_in * (dpi_y or dpi))
+
+        # Brother QL drivers report a printable width (HORZRES) that is narrower
+        # than the physical tape width — e.g. 29 mm tape has ~26 mm printable area
+        # (~307 px at 300 DPI).  Rendering wider than HORZRES causes the driver to
+        # reject the job (red blink).  Use HORZRES directly for Brother so the
+        # raster image always fits within the printable area.
+        if _skip_devmode and horzres:   # _skip_devmode is True for Brother
+            render_w = horzres
+        else:
+            render_w = int(width_in * render_dpi)
+
+        render_h = int(height_in * (dpi_y or dpi))
 
         img = render_label(text, width_in, height_in, dpi,
                            font_style, border, icons, text_case,
