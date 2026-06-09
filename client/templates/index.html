@@ -467,6 +467,12 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
         {% endfor %}
       </select>
 
+      <div style="display:flex; gap:.5rem; margin-top:.5rem; flex-wrap:wrap;">
+        <button class="btn-icon" onclick="randomizeStyle()" title="Pick a random style">🎲 Randomize</button>
+        <button class="btn-icon" onclick="applyDefaultStyle()" title="Restore saved default style">↩ Default</button>
+        <button class="btn-icon" onclick="setDefaultStyle()" title="Save current style as default">📌 Set Default</button>
+      </div>
+
       <div id="individual-settings">
         <!-- Font + Border dimmed when a style preset overrides them -->
         <div id="style-overrides" style="transition: opacity .2s;">
@@ -1134,6 +1140,66 @@ function loadHistory() {
     _histRows = rows;
     renderHistPage();
   });
+}
+
+/* ── Style randomizer & default ───────────────────────────────────────── */
+function _randOption(selId) {
+  const opts = [...document.getElementById(selId).options];
+  return opts[Math.floor(Math.random() * opts.length)].value;
+}
+
+function randomizeStyle() {
+  const presetSel = document.getElementById('sel-style-preset');
+  const nonNone   = [...presetSel.options].filter(o => o.value !== 'none');
+  if (Math.random() < 0.5 && nonNone.length) {
+    // Pick a random non-"none" style preset
+    presetSel.value = nonNone[Math.floor(Math.random() * nonNone.length)].value;
+  } else {
+    // Reset to no preset, randomize individual controls
+    presetSel.value = 'none';
+    document.getElementById('sel-font-style').value  = _randOption('sel-font-style');
+    document.getElementById('sel-font-weight').value = _randOption('sel-font-weight');
+    document.getElementById('sel-border').value      = _randOption('sel-border');
+  }
+  onPresetChange();
+  saveConfig();
+  schedulePreview();
+}
+
+function _applyStyleFields(s) {
+  if (s.style_preset !== undefined) document.getElementById('sel-style-preset').value = s.style_preset;
+  if (s.font_style   !== undefined) document.getElementById('sel-font-style').value   = s.font_style;
+  if (s.font_weight  !== undefined) document.getElementById('sel-font-weight').value  = s.font_weight;
+  if (s.border       !== undefined) document.getElementById('sel-border').value       = s.border;
+  if (s.text_case    !== undefined) document.getElementById('sel-text-case').value    = s.text_case;
+  if (s.icons        !== undefined) document.getElementById('chk-icons').checked      = s.icons;
+  onPresetChange();
+  saveConfig();
+  schedulePreview();
+}
+
+function applyDefaultStyle() {
+  fetch('/style/default').then(r => r.json()).then(d => {
+    if (!d || d.error) { toast('No default style saved yet', true); return; }
+    _applyStyleFields(d);
+    toast('↩ Default style restored');
+  });
+}
+
+function setDefaultStyle() {
+  const s = getSettings();
+  fetch('/style/default', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({
+      style_preset: s.style_preset,
+      font_style:   s.font_style,
+      font_weight:  s.font_weight,
+      border:       s.border,
+      text_case:    s.text_case,
+      icons:        s.icons,
+    }),
+  }).then(() => toast('📌 Default style saved'));
 }
 
 /* ── Status poll ──────────────────────────────────────────────────────── */
