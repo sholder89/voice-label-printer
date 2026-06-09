@@ -1074,15 +1074,33 @@ function renderHistPage() {
 
   if (totalPages > 1) {
     pgDiv.style.display = 'flex';
-    let html = '';
-    for (let p = 0; p < totalPages; p++) {
-      const active = p === _histPage;
-      html += `<button class="btn-icon hist-page-num${active ? ' active' : ''}"`
-            + ` onclick="goHistPage(${p})"${active ? ' aria-current="page"' : ''}>${p + 1}</button>`;
+
+    // Build a compact page range: always show first, last, current ±1,
+    // and insert '…' where there are gaps larger than 1.
+    const cur = _histPage;
+    const show = new Set([0, totalPages - 1]);
+    for (let p = Math.max(0, cur - 1); p <= Math.min(totalPages - 1, cur + 1); p++) show.add(p);
+    const sorted = [...show].sort((a, b) => a - b);
+    const range = [];
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0 && sorted[i] - sorted[i - 1] > 1) range.push('…');
+      range.push(sorted[i]);
     }
+
+    let html = '';
+    range.forEach(p => {
+      if (p === '…') {
+        html += `<span style="padding:0 .2rem; color:#64748b; user-select:none">…</span>`;
+      } else {
+        const active = p === cur;
+        html += `<button class="btn-icon hist-page-num${active ? ' active' : ''}"`
+              + ` onclick="goHistPage(${p})"${active ? ' aria-current="page"' : ''}>${p + 1}</button>`;
+      }
+    });
+
     document.getElementById('hist-pages').innerHTML = html;
-    document.getElementById('hist-prev').disabled = _histPage === 0;
-    document.getElementById('hist-next').disabled = _histPage >= totalPages - 1;
+    document.getElementById('hist-prev').disabled = cur === 0;
+    document.getElementById('hist-next').disabled = cur >= totalPages - 1;
   } else {
     pgDiv.style.display = 'none';
   }
