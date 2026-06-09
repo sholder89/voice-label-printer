@@ -42,7 +42,7 @@ os.makedirs(_DATA_DIR, exist_ok=True)
 _SETTINGS_PATH   = os.path.join(_DATA_DIR, "settings.json")
 _HISTORY_PATH    = os.path.join(_DATA_DIR, "history.json")
 _ADDRESSES_PATH  = os.path.join(_DATA_DIR, "addresses.json")
-_HISTORY_MAX     = 100
+_HISTORY_MAX     = 500
 
 # One-time migration: copy settings.json from the old OneDrive location if it exists
 # and the new location doesn't yet
@@ -245,7 +245,7 @@ def manual_print():
 
 @app.route("/history")
 def history():
-    return jsonify(state["history"][:50])
+    return jsonify(state["history"])
 
 
 @app.route("/addresses")
