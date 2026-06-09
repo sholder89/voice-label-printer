@@ -245,7 +245,7 @@ def manual_print():
 
 @app.route("/history")
 def history():
-    return jsonify(state["history"][-50:])
+    return jsonify(state["history"][:50])
 
 
 @app.route("/addresses")
