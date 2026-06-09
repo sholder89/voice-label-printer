@@ -33,7 +33,7 @@ if _m:
     _TG_TOKEN, _TG_CHAT = _m.group(1), _m.group(2)
 
 # Keys persisted to / loaded from settings.json
-_SETTINGS_KEYS = ("printer", "size", "font_style", "font_weight", "border", "text_case", "icons", "style_preset", "qr_show_text")
+_SETTINGS_KEYS = ("printer", "size", "font_style", "font_weight", "border", "text_case", "icons", "style_preset", "qr_show_text", "default_style")
 _APP_DIR       = os.path.dirname(os.path.abspath(__file__))
 
 # Store data in %APPDATA%\LabelPrinter — avoids OneDrive sync interference
@@ -65,7 +65,8 @@ state = {
     "text_case":    os.environ.get("DEFAULT_TEXT_CASE", "none"),
     "style_preset": "none",
     "icons":        True,
-    "qr_show_text": True,
+    "qr_show_text":   True,
+    "default_style":  None,   # saved via POST /style/default
     "history":    [],
     "polling":    True,
 }
@@ -246,6 +247,23 @@ def manual_print():
 @app.route("/history")
 def history():
     return jsonify(state["history"])
+
+
+@app.route("/style/default", methods=["GET"])
+def get_default_style():
+    if state["default_style"] is None:
+        return jsonify({"error": "no default saved"}), 404
+    return jsonify(state["default_style"])
+
+
+@app.route("/style/default", methods=["POST"])
+def set_default_style():
+    data = request.get_json(force=True) or {}
+    allowed = {"style_preset", "font_style", "font_weight", "border", "text_case", "icons"}
+    style = {k: v for k, v in data.items() if k in allowed}
+    state["default_style"] = style
+    _save_settings()
+    return jsonify({"ok": True})
 
 
 @app.route("/addresses")
