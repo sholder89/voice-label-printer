@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
     print_label, list_printers, render_label, render_dimensions,
-    set_custom_emojis,
+    set_custom_emojis, set_custom_sizes, _BUILTIN_SIZE_KEYS,
     LABEL_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
     _IMAGE_BORDER_ENTRIES,
@@ -55,6 +55,7 @@ _HISTORY_PATH    = os.path.join(_DATA_DIR, "history.json")
 _ADDRESSES_PATH  = os.path.join(_DATA_DIR, "addresses.json")
 _CONFIG_PATH     = os.path.join(_DATA_DIR, "config.json")
 _CUSTOM_EMOJIS_PATH = os.path.join(_DATA_DIR, "custom_emojis.json")
+_CUSTOM_SIZES_PATH  = os.path.join(_DATA_DIR, "custom_sizes.json")
 _HISTORY_MAX     = 500
 
 # One-time migration: copy settings.json from the old OneDrive location if it exists
@@ -210,6 +211,81 @@ def _save_custom_emojis():
         pass
 
 
+# ── Custom label sizes ────────────────────────────────────────────────────────
+# User-defined label sizes, edited on the Advanced page. Stored with the unit the
+# user entered (in/mm/cm) so the UI round-trips; converted to inches for the
+# render/print pipeline. Form: [{"name": "Euro Tag", "unit": "mm", "width": 50, "height": 25}]
+_custom_sizes = []
+_SIZE_UNITS   = {"in": 1.0, "mm": 1.0 / 25.4, "cm": 1.0 / 2.54}
+
+
+def _normalize_sizes(raw):
+    """Validate/clean an incoming custom-size list. Drops invalid entries, rejects
+    names that collide with a built-in or another custom size (case-insensitive),
+    and requires dimensions that convert to 0.1–24 inches."""
+    builtin = {k.lower() for k in _BUILTIN_SIZE_KEYS}
+    out, seen = [], set()
+    for entry in (raw or [])[:50]:                        # cap entries
+        if not isinstance(entry, dict):
+            continue
+        name = (entry.get("name") or "").strip()[:40]
+        unit = (entry.get("unit") or "in").strip().lower()
+        if not name or unit not in _SIZE_UNITS:
+            continue
+        low = name.lower()
+        if low in builtin or low in seen:                 # no collisions / dupes
+            continue
+        try:
+            w = float(entry.get("width"))
+            h = float(entry.get("height"))
+        except (TypeError, ValueError):
+            continue
+        f = _SIZE_UNITS[unit]
+        if not (0.1 <= w * f <= 24 and 0.1 <= h * f <= 24):
+            continue
+        seen.add(low)
+        out.append({"name": name, "unit": unit, "width": w, "height": h})
+    return out
+
+
+def _apply_custom_sizes():
+    mapping = {s["name"]: (s["width"] * _SIZE_UNITS[s["unit"]],
+                           s["height"] * _SIZE_UNITS[s["unit"]]) for s in _custom_sizes}
+    set_custom_sizes(mapping)
+
+
+def _load_custom_sizes():
+    global _custom_sizes
+    try:
+        with open(_CUSTOM_SIZES_PATH, encoding="utf-8") as f:
+            _custom_sizes = _normalize_sizes(json.load(f))
+    except (FileNotFoundError, json.JSONDecodeError):
+        _custom_sizes = []
+    _apply_custom_sizes()
+
+
+def _save_custom_sizes():
+    try:
+        with open(_CUSTOM_SIZES_PATH, "w", encoding="utf-8") as f:
+            json.dump(_custom_sizes, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+
+def _size_options():
+    """[(key, label)] for the Print Settings dropdown — built-ins shown in inches,
+    custom sizes shown as 'Name (W × H unit)'."""
+    custom = {s["name"]: s for s in _custom_sizes}
+    opts = []
+    for key in LABEL_SIZES:
+        s = custom.get(key)
+        if s:
+            opts.append((key, f"{key} ({s['width']:g} × {s['height']:g} {s['unit']})"))
+        else:
+            opts.append((key, f"{key} inches"))
+    return opts
+
+
 def _load_addresses():
     """Load saved addresses from addresses.json."""
     try:
@@ -261,6 +337,7 @@ def index():
         "index.html",
         printers=list_printers(),
         sizes=list(LABEL_SIZES.keys()),
+        size_options=_size_options(),
         font_styles=FONT_STYLES,
         font_weights=FONT_WEIGHTS,
         border_styles=BORDER_STYLES,
@@ -358,6 +435,26 @@ def set_emojis():
     _save_custom_emojis()
     _apply_custom_emojis()      # live — applies to voice prints immediately
     return jsonify({"ok": True, "emojis": _custom_emojis})
+
+
+@app.route("/config/sizes", methods=["GET"])
+def get_sizes():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    return jsonify(_custom_sizes)
+
+
+@app.route("/config/sizes", methods=["POST"])
+def set_sizes():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    global _custom_sizes
+    data = request.get_json(silent=True) or {}
+    raw  = data.get("sizes") if isinstance(data, dict) else data
+    _custom_sizes = _normalize_sizes(raw)
+    _save_custom_sizes()
+    _apply_custom_sizes()       # live — registers into LABEL_SIZES immediately
+    return jsonify({"ok": True, "sizes": _custom_sizes})
 
 
 @app.route("/config", methods=["POST"])
@@ -689,6 +786,7 @@ if __name__ == "__main__":
     _load_history()
     _load_addresses()
     _load_custom_emojis()
+    _load_custom_sizes()
 
     printers = list_printers()
     if printers and not state["printer"]:

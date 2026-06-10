@@ -473,7 +473,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
   <!-- ── Printer Settings ──────────────────────────────────────────── -->
   <div class="card" id="settings-card">
     <div class="card-header" onclick="toggleSettings()" style="cursor:pointer; user-select:none">
-      <h2 style="white-space:nowrap"><span class="card-icon">⚙</span>Settings</h2>
+      <h2 style="white-space:nowrap"><span class="card-icon">⚙</span>Print Settings</h2>
       <span id="settings-summary" style="flex:1; margin:0 .75rem; font-size:.75rem; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:0; transition:opacity .2s;"></span>
       <span id="settings-chevron" style="font-size:.85rem; color:var(--text3); transition:transform .25s; flex-shrink:0">▲</span>
     </div>
@@ -494,8 +494,8 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
         <div>
           <label>Label Size</label>
           <select id="sel-size" onchange="saveConfig()">
-            {% for s in sizes %}
-            <option value="{{ s }}" {% if s == state.size %}selected{% endif %}>{{ s }} inches</option>
+            {% for key, label in size_options %}
+            <option value="{{ key }}" {% if key == state.size %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
           </select>
         </div>

@@ -59,6 +59,15 @@ button:active { transform:scale(.97); }
                 color:var(--error); border-radius:.5rem; padding:.5rem .7rem; font-weight:700; }
 .emoji-empty { font-size:.8rem; color:var(--text3); margin-bottom:.6rem; }
 
+/* Custom size rows */
+.size-row { display:flex; gap:.4rem; align-items:center; margin-bottom:.5rem; flex-wrap:wrap; }
+.size-row input, .size-row select { margin-bottom:0 !important; }
+.size-name { flex:1 1 9rem; min-width:7rem; }
+.size-dim  { flex:0 0 4.2rem; width:4.2rem; text-align:center; }
+.size-unit { flex:0 0 4.5rem; width:4.5rem; }
+.size-x    { color:var(--text3); flex:0 0 auto; }
+.size-empty { font-size:.8rem; color:var(--text3); margin-bottom:.6rem; }
+
 /* Emoji picker modal */
 .picker { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
           align-items:center; justify-content:center; padding:1rem; }
@@ -124,6 +133,21 @@ button:active { transform:scale(.97); }
       <button class="btn-primary" onclick="saveEmojis()">Save emojis</button>
     </div>
     <div class="note" id="emoji-note"></div>
+  </div>
+
+  <div class="card">
+    <h2>Custom Label Sizes</h2>
+    <p class="hint">Add your own label sizes by name. Choose inches (imperial) or mm/cm (metric);
+       they're converted internally and appear in the <b>Print Settings</b> size list on the main page.</p>
+
+    <div id="size-rows"></div>
+    <p class="size-empty" id="size-empty" style="display:none">No custom sizes yet.</p>
+
+    <div class="row">
+      <button class="btn-secondary" onclick="addSizeRow()">＋ Add size</button>
+      <button class="btn-primary" onclick="saveSizes()">Save sizes</button>
+    </div>
+    <div class="note" id="size-note"></div>
   </div>
 </main>
 
@@ -255,6 +279,75 @@ function saveEmojis() {
   }).catch(() => emojiNote('Save failed.', 'err'));
 }
 
+/* ── Custom label sizes ─────────────────────────────────────────────────── */
+function sizeNote(msg, kind) {
+  const n = document.getElementById('size-note');
+  n.textContent = msg;
+  n.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+function refreshSizeEmpty() {
+  const has = document.querySelectorAll('.size-row').length > 0;
+  document.getElementById('size-empty').style.display = has ? 'none' : 'block';
+}
+
+function addSizeRow(name, width, height, unit) {
+  const row = document.createElement('div');
+  row.className = 'size-row';
+  row.innerHTML =
+    '<input class="size-name" type="text" placeholder="Name (e.g. Euro Tag)">' +
+    '<input class="size-dim size-w" type="number" step="any" min="0" placeholder="W">' +
+    '<span class="size-x">×</span>' +
+    '<input class="size-dim size-h" type="number" step="any" min="0" placeholder="H">' +
+    '<select class="size-unit">' +
+      '<option value="in">in</option><option value="mm">mm</option><option value="cm">cm</option>' +
+    '</select>' +
+    '<button type="button" class="emoji-remove" title="Remove">✕</button>';
+  row.querySelector('.size-name').value = name || '';
+  if (width  != null) row.querySelector('.size-w').value = width;
+  if (height != null) row.querySelector('.size-h').value = height;
+  row.querySelector('.size-unit').value = unit || 'in';
+  row.querySelector('.emoji-remove').onclick = () => { row.remove(); refreshSizeEmpty(); };
+  document.getElementById('size-rows').appendChild(row);
+  refreshSizeEmpty();
+  return row;
+}
+
+function loadSizes() {
+  fetch('/config/sizes').then(r => r.json()).then(list => {
+    if (!Array.isArray(list)) return;
+    document.getElementById('size-rows').innerHTML = '';
+    list.forEach(s => addSizeRow(s.name, s.width, s.height, s.unit));
+    refreshSizeEmpty();
+  }).catch(() => sizeNote('Could not load custom sizes.', 'err'));
+}
+
+function saveSizes() {
+  const rows = [...document.querySelectorAll('.size-row')].map(r => ({
+    name:   r.querySelector('.size-name').value.trim(),
+    width:  parseFloat(r.querySelector('.size-w').value),
+    height: parseFloat(r.querySelector('.size-h').value),
+    unit:   r.querySelector('.size-unit').value,
+  }));
+  // Flag obviously-incomplete rows so they aren't silently dropped
+  const bad = rows.find(r => (r.name || r.width || r.height) &&
+                             (!r.name || !(r.width > 0) || !(r.height > 0)));
+  if (bad) { sizeNote('Each size needs a name and positive width & height.', 'err'); return; }
+  const clean = rows.filter(r => r.name && r.width > 0 && r.height > 0);
+  fetch('/config/sizes', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ sizes: clean }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { sizeNote(d.error, 'err'); return; }
+    if (d.sizes.length !== clean.length) {
+      sizeNote('Saved ✓ — some entries were rejected (duplicate/reserved name, or out of range).', 'err');
+    } else {
+      sizeNote('Saved ✓ — reload the main page to see them in Print Settings.', 'ok');
+    }
+    loadSizes();   // reflect the normalized result
+  }).catch(() => sizeNote('Save failed.', 'err'));
+}
+
 /* ── Emoji picker ───────────────────────────────────────────────────────── */
 let _emojiData = null, _activePick = null;
 
@@ -333,6 +426,7 @@ document.addEventListener('keydown', e => {
 
 load();
 loadEmojis();
+loadSizes();
 </script>
 </body>
 </html>
