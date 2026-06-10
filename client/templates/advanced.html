@@ -50,11 +50,13 @@ button:active { transform:scale(.97); }
 
 /* Custom emoji rows */
 .emoji-row { display:flex; gap:.5rem; align-items:center; margin-bottom:.5rem; }
+.emoji-toggle { flex:0 0 auto; width:1.05rem; height:1.05rem; accent-color:var(--accent); cursor:pointer; }
 .emoji-pick { flex:0 0 auto; width:3rem; height:2.7rem; font-size:1.4rem; line-height:1;
               background:var(--surface2); border:1px solid var(--border2); border-radius:.5rem;
               cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
 .emoji-pick.empty { font-size:1rem; color:var(--text3); }
 .emoji-keywords { flex:1 1 auto; margin-bottom:0 !important; min-width:0; }
+.emoji-row.disabled .emoji-pick, .emoji-row.disabled .emoji-keywords { opacity:.4; }
 .emoji-remove { flex:0 0 auto; background:transparent; border:1px solid var(--border2);
                 color:var(--error); border-radius:.5rem; padding:.5rem .7rem; font-weight:700; }
 .emoji-empty { font-size:.8rem; color:var(--text3); margin-bottom:.6rem; }
@@ -175,12 +177,6 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
     <p class="hint">Map your own keywords to an emoji. These <b>override</b> the built-in icons —
        e.g. <code>kitchen</code> → 🍕 beats the default. Pick an emoji, then list one or more
        keywords separated by commas. Matching is whole-word and case-insensitive.</p>
-
-    <label style="display:flex;align-items:center;gap:.55rem;margin-bottom:1rem;cursor:pointer;font-size:.9rem;font-weight:600;color:var(--text)">
-      <input type="checkbox" id="custom-emojis-enabled" style="width:1.1rem;height:1.1rem;accent-color:var(--accent)"
-             onchange="toggleCustomEmojis(this.checked)">
-      Enable custom emojis
-    </label>
 
     <div id="emoji-rows"></div>
     <p class="emoji-empty" id="emoji-empty" style="display:none">No custom emojis yet.</p>
@@ -361,9 +357,15 @@ function refreshEmptyHint() {
   document.getElementById('emoji-empty').style.display = has ? 'none' : 'block';
 }
 
-function addEmojiRow(emoji, keywords) {
+function addEmojiRow(emoji, keywords, enabled) {
   const row = document.createElement('div');
-  row.className = 'emoji-row';
+  row.className = 'emoji-row' + (enabled === false ? ' disabled' : '');
+  const tog = document.createElement('input');
+  tog.type = 'checkbox';
+  tog.className = 'emoji-toggle';
+  tog.checked = enabled !== false;
+  tog.title = 'Enable / disable';
+  tog.onchange = () => row.classList.toggle('disabled', !tog.checked);
   const pick = document.createElement('button');
   pick.type = 'button';
   pick.className = 'emoji-pick' + (emoji ? '' : ' empty');
@@ -381,45 +383,34 @@ function addEmojiRow(emoji, keywords) {
   rm.textContent = '✕';
   rm.title = 'Remove';
   rm.onclick = () => { row.remove(); refreshEmptyHint(); };
-  row.append(pick, kw, rm);
+  row.append(tog, pick, kw, rm);
   document.getElementById('emoji-rows').appendChild(row);
   refreshEmptyHint();
   return row;
 }
 
 function loadEmojis() {
-  fetch('/config/emojis').then(r => r.json()).then(d => {
-    const list    = Array.isArray(d) ? d : (d.emojis || []);
-    const enabled = Array.isArray(d) ? true : (d.enabled !== false);
-    document.getElementById('custom-emojis-enabled').checked = enabled;
+  fetch('/config/emojis').then(r => r.json()).then(list => {
+    if (!Array.isArray(list)) return;
     document.getElementById('emoji-rows').innerHTML = '';
-    list.forEach(e => addEmojiRow(e.emoji, (e.keywords || []).join(', ')));
+    list.forEach(e => addEmojiRow(e.emoji, (e.keywords || []).join(', '), e.enabled !== false));
     refreshEmptyHint();
   }).catch(() => emojiNote('Could not load custom emojis.', 'err'));
 }
 
-function toggleCustomEmojis(enabled) {
-  fetch('/config/emojis', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ enabled }),
-  }).then(r => r.json()).then(d => {
-    if (d.error) emojiNote(d.error, 'err');
-  }).catch(() => emojiNote('Could not update.', 'err'));
-}
-
 function saveEmojis() {
-  const enabled = document.getElementById('custom-emojis-enabled').checked;
   const rows = [...document.querySelectorAll('.emoji-row')].map(r => ({
-    emoji: r.querySelector('.emoji-pick').dataset.emoji || '',
+    emoji:    r.querySelector('.emoji-pick').dataset.emoji || '',
     keywords: r.querySelector('.emoji-keywords').value
                 .split(',').map(s => s.trim()).filter(Boolean),
+    enabled:  r.querySelector('.emoji-toggle').checked,
   }));
   const incomplete = rows.find(r => (r.emoji && !r.keywords.length) || (!r.emoji && r.keywords.length));
   if (incomplete) { emojiNote('Each row needs both an emoji and at least one keyword.', 'err'); return; }
   const clean = rows.filter(r => r.emoji && r.keywords.length);
   fetch('/config/emojis', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ enabled, emojis: clean }),
+    body: JSON.stringify({ emojis: clean }),
   }).then(r => r.json()).then(d => {
     if (d.error) { emojiNote(d.error, 'err'); return; }
     emojiNote('Saved ✓ — applies to voice prints immediately.', 'ok');
