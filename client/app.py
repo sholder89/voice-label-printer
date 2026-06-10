@@ -467,6 +467,31 @@ def set_sizes():
     return jsonify({"ok": True, "sizes": _custom_sizes})
 
 
+@app.route("/config/emoji-darkness/preview")
+def emoji_darkness_preview():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    import printer as _pm
+    pct = max(0, min(100, int(request.args.get("pct", 0))))
+    samples = ["😀", "🍕", "❤️", "⭐", "🔥"]
+    icon_sz = 52
+    pad = 10
+    w = pad + len(samples) * (icon_sz + pad)
+    h = icon_sz + pad * 2
+    preview_img = Image.new("RGB", (w, h), "white")
+    orig = _pm._EMOJI_DARKNESS
+    _pm.set_emoji_darkness(pct)
+    try:
+        for i, emoji in enumerate(samples):
+            _pm._draw_icon(preview_img, emoji, pad + i * (icon_sz + pad), pad, icon_sz)
+    finally:
+        _pm.set_emoji_darkness(orig)
+    buf = io.BytesIO()
+    preview_img.save(buf, format="PNG")
+    buf.seek(0)
+    return send_file(buf, mimetype="image/png", max_age=0)
+
+
 @app.route("/config/emoji-darkness", methods=["GET"])
 def get_emoji_darkness():
     if not _is_local_request():
