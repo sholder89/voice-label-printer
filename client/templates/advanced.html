@@ -50,7 +50,15 @@ button:active { transform:scale(.97); }
 
 /* Custom emoji rows */
 .emoji-row { display:flex; gap:.5rem; align-items:center; margin-bottom:.5rem; }
-.emoji-toggle { flex:0 0 auto; width:1.05rem; height:1.05rem; accent-color:var(--accent); cursor:pointer; }
+.emoji-toggle-wrap { flex:0 0 auto; position:relative; width:34px; height:20px; }
+.emoji-toggle-wrap input { opacity:0; width:0; height:0; position:absolute; }
+.emoji-toggle-slider { position:absolute; inset:0; background:var(--border2); border-radius:20px;
+                       cursor:pointer; transition:background .18s; }
+.emoji-toggle-slider::before { content:''; position:absolute; width:14px; height:14px;
+                                left:3px; top:3px; background:#fff; border-radius:50%;
+                                transition:transform .18s; }
+.emoji-toggle-wrap input:checked + .emoji-toggle-slider { background:var(--accent); }
+.emoji-toggle-wrap input:checked + .emoji-toggle-slider::before { transform:translateX(14px); }
 .emoji-pick { flex:0 0 auto; width:3rem; height:2.7rem; font-size:1.4rem; line-height:1;
               background:var(--surface2); border:1px solid var(--border2); border-radius:.5rem;
               cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
@@ -360,12 +368,17 @@ function refreshEmptyHint() {
 function addEmojiRow(emoji, keywords, enabled) {
   const row = document.createElement('div');
   row.className = 'emoji-row' + (enabled === false ? ' disabled' : '');
+  const wrap = document.createElement('label');
+  wrap.className = 'emoji-toggle-wrap';
+  wrap.title = 'Enable / disable';
   const tog = document.createElement('input');
   tog.type = 'checkbox';
   tog.className = 'emoji-toggle';
   tog.checked = enabled !== false;
-  tog.title = 'Enable / disable';
   tog.onchange = () => row.classList.toggle('disabled', !tog.checked);
+  const slider = document.createElement('span');
+  slider.className = 'emoji-toggle-slider';
+  wrap.append(tog, slider);
   const pick = document.createElement('button');
   pick.type = 'button';
   pick.className = 'emoji-pick' + (emoji ? '' : ' empty');
@@ -383,7 +396,7 @@ function addEmojiRow(emoji, keywords, enabled) {
   rm.textContent = '✕';
   rm.title = 'Remove';
   rm.onclick = () => { row.remove(); refreshEmptyHint(); };
-  row.append(tog, pick, kw, rm);
+  row.append(wrap, pick, kw, rm);
   document.getElementById('emoji-rows').appendChild(row);
   refreshEmptyHint();
   return row;
