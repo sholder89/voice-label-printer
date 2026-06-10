@@ -176,6 +176,12 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
        e.g. <code>kitchen</code> → 🍕 beats the default. Pick an emoji, then list one or more
        keywords separated by commas. Matching is whole-word and case-insensitive.</p>
 
+    <label style="display:flex;align-items:center;gap:.55rem;margin-bottom:1rem;cursor:pointer;font-size:.9rem;font-weight:600;color:var(--text)">
+      <input type="checkbox" id="custom-emojis-enabled" style="width:1.1rem;height:1.1rem;accent-color:var(--accent)"
+             onchange="toggleCustomEmojis(this.checked)">
+      Enable custom emojis
+    </label>
+
     <div id="emoji-rows"></div>
     <p class="emoji-empty" id="emoji-empty" style="display:none">No custom emojis yet.</p>
 
@@ -382,15 +388,27 @@ function addEmojiRow(emoji, keywords) {
 }
 
 function loadEmojis() {
-  fetch('/config/emojis').then(r => r.json()).then(list => {
-    if (!Array.isArray(list)) return;
+  fetch('/config/emojis').then(r => r.json()).then(d => {
+    const list    = Array.isArray(d) ? d : (d.emojis || []);
+    const enabled = Array.isArray(d) ? true : (d.enabled !== false);
+    document.getElementById('custom-emojis-enabled').checked = enabled;
     document.getElementById('emoji-rows').innerHTML = '';
     list.forEach(e => addEmojiRow(e.emoji, (e.keywords || []).join(', ')));
     refreshEmptyHint();
   }).catch(() => emojiNote('Could not load custom emojis.', 'err'));
 }
 
+function toggleCustomEmojis(enabled) {
+  fetch('/config/emojis', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ enabled }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) emojiNote(d.error, 'err');
+  }).catch(() => emojiNote('Could not update.', 'err'));
+}
+
 function saveEmojis() {
+  const enabled = document.getElementById('custom-emojis-enabled').checked;
   const rows = [...document.querySelectorAll('.emoji-row')].map(r => ({
     emoji: r.querySelector('.emoji-pick').dataset.emoji || '',
     keywords: r.querySelector('.emoji-keywords').value
@@ -401,7 +419,7 @@ function saveEmojis() {
   const clean = rows.filter(r => r.emoji && r.keywords.length);
   fetch('/config/emojis', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ emojis: clean }),
+    body: JSON.stringify({ enabled, emojis: clean }),
   }).then(r => r.json()).then(d => {
     if (d.error) { emojiNote(d.error, 'err'); return; }
     emojiNote('Saved ✓ — applies to voice prints immediately.', 'ok');
