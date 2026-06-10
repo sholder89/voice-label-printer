@@ -1176,12 +1176,13 @@ def _render_emoji_noto(emoji_char: str, target_size: int):
         img  = img.crop((left, top, left + side, top + side))
         img  = img.resize((target_size, target_size), Image.LANCZOS)
 
-        # Convert RGBA → L-mode (white=background, dark=ink) to match Segoe pipeline:
-        # composite grayscale emoji over white using alpha as mask
-        gray = img.convert('L')
+        # Use alpha channel as ink mask → solid black where alpha > 0.
+        # Converting color pixels to grayscale luminance makes yellow/light-colored
+        # emoji print faint on thermal printers; forcing full black avoids this.
         alpha = img.split()[3]
         bg = Image.new('L', img.size, 255)
-        result = Image.composite(gray, bg, alpha)
+        ink = Image.new('L', img.size, 0)
+        result = Image.composite(ink, bg, alpha)
         return result
 
     except Exception:
@@ -1344,12 +1345,12 @@ def _render_emoji_shaped(emoji_char: str, font_path: str, target_size: int):
             data = bytes(bm.buffer)
 
             if bm.pixel_mode == ft_lib.FT_PIXEL_MODE_BGRA:
-                # Color emoji (CBDT format): bytes are BGRA, Pillow reads as RGBA
-                raw           = Image.frombytes('RGBA', (bm.width, bm.rows), data)
-                ch0, ch1, ch2, ch3 = raw.split()   # ch0=actual_B, ch2=actual_R
-                gray  = Image.merge('RGBA', [ch2, ch1, ch0, ch3]).convert('L')
-                alpha = ch3
-                result.paste(gray, (ox, oy), mask=alpha)
+                # Color emoji (CBDT format): bytes are BGRA, Pillow reads as RGBA.
+                # Paste solid black masked by alpha — avoids light-colored emoji
+                # (e.g. yellow faces) printing faint on thermal printers.
+                raw   = Image.frombytes('RGBA', (bm.width, bm.rows), data)
+                alpha = raw.split()[3]
+                result.paste(Image.new('L', (bm.width, bm.rows), 0), (ox, oy), mask=alpha)
             elif bm.pixel_mode == ft_lib.FT_PIXEL_MODE_GRAY:
                 # Grayscale: 0=transparent, 255=ink — paste black using value as mask
                 mask = Image.frombytes('L', (bm.width, bm.rows), data)
