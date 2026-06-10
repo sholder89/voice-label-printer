@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
     print_label, list_printers, render_label, render_dimensions,
+    set_custom_emojis,
     LABEL_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
     _IMAGE_BORDER_ENTRIES,
@@ -53,6 +54,7 @@ _SETTINGS_PATH   = os.path.join(_DATA_DIR, "settings.json")
 _HISTORY_PATH    = os.path.join(_DATA_DIR, "history.json")
 _ADDRESSES_PATH  = os.path.join(_DATA_DIR, "addresses.json")
 _CONFIG_PATH     = os.path.join(_DATA_DIR, "config.json")
+_CUSTOM_EMOJIS_PATH = os.path.join(_DATA_DIR, "custom_emojis.json")
 _HISTORY_MAX     = 500
 
 # One-time migration: copy settings.json from the old OneDrive location if it exists
@@ -144,6 +146,66 @@ def _save_config():
         with open(_CONFIG_PATH, "w") as f:
             json.dump({"relay_url": runtime["relay_url"], "token": runtime["token"]},
                       f, indent=2)
+    except Exception:
+        pass
+
+
+# ── Custom emojis ─────────────────────────────────────────────────────────────
+# User-defined keyword → emoji overrides, edited on the Advanced page. Canonical
+# form groups keywords per emoji: [{"emoji": "🍕", "keywords": ["pizza", "friday"]}]
+_custom_emojis = []   # list of {emoji, keywords:[...]}
+
+
+def _normalize_emojis(raw):
+    """Validate/clean an incoming custom-emoji list. Drops entries with no emoji
+    or no keywords; lowercases, trims and de-dupes keywords."""
+    out = []
+    for entry in (raw or [])[:200]:                       # cap entries
+        if not isinstance(entry, dict):
+            continue
+        emoji = (entry.get("emoji") or "").strip()
+        if not emoji or len(emoji) > 16:                  # 16 covers ZWJ/flag seqs
+            continue
+        seen, kws = set(), []
+        for kw in (entry.get("keywords") or [])[:50]:     # cap keywords/entry
+            kw = (str(kw) or "").strip().lower()
+            if kw and kw not in seen:
+                seen.add(kw)
+                kws.append(kw)
+        if kws:
+            out.append({"emoji": emoji, "keywords": kws})
+    return out
+
+
+def _emoji_flat_map():
+    """Flatten _custom_emojis to {keyword: emoji} for the printer. Later entries
+    win if two map the same keyword."""
+    flat = {}
+    for entry in _custom_emojis:
+        for kw in entry["keywords"]:
+            flat[kw] = entry["emoji"]
+    return flat
+
+
+def _apply_custom_emojis():
+    set_custom_emojis(_emoji_flat_map())
+
+
+def _load_custom_emojis():
+    """Load custom_emojis.json into state and push it into the printer."""
+    global _custom_emojis
+    try:
+        with open(_CUSTOM_EMOJIS_PATH, encoding="utf-8") as f:
+            _custom_emojis = _normalize_emojis(json.load(f))
+    except (FileNotFoundError, json.JSONDecodeError):
+        _custom_emojis = []
+    _apply_custom_emojis()
+
+
+def _save_custom_emojis():
+    try:
+        with open(_CUSTOM_EMOJIS_PATH, "w", encoding="utf-8") as f:
+            json.dump(_custom_emojis, f, ensure_ascii=False, indent=2)
     except Exception:
         pass
 
@@ -275,6 +337,27 @@ def test_advanced():
         return jsonify({"ok": False,
                         "detail": "Reached the server, but the token was rejected (401)."})
     return jsonify({"ok": False, "detail": f"Server responded with HTTP {r.status_code}."})
+
+
+@app.route("/config/emojis", methods=["GET"])
+def get_emojis():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    return jsonify(_custom_emojis)
+
+
+@app.route("/config/emojis", methods=["POST"])
+def set_emojis():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    global _custom_emojis
+    data = request.get_json(silent=True) or {}
+    # Accept either a bare list or {"emojis": [...]}
+    raw  = data.get("emojis") if isinstance(data, dict) else data
+    _custom_emojis = _normalize_emojis(raw)
+    _save_custom_emojis()
+    _apply_custom_emojis()      # live — applies to voice prints immediately
+    return jsonify({"ok": True, "emojis": _custom_emojis})
 
 
 @app.route("/config", methods=["POST"])
@@ -605,6 +688,7 @@ if __name__ == "__main__":
     _load_settings()
     _load_history()
     _load_addresses()
+    _load_custom_emojis()
 
     printers = list_printers()
     if printers and not state["printer"]:

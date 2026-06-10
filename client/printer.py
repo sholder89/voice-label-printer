@@ -1177,6 +1177,35 @@ def _render_emoji_noto(emoji_char: str, target_size: int):
 _PHASE1_PATTERNS = None   # list of (compiled \bkeyword\b, keyword_len, icon)
 _PHASE2_PATTERNS = None   # list of (icon, [compiled patterns to try, in order])
 
+# User-defined keyword → emoji overrides (set via the Advanced page). These are
+# checked BEFORE the built-in keyword maps, so a custom "kitchen → 🍕" wins over
+# the built-in match. Each tuple is (compiled \bkeyword\b, keyword_len, emoji);
+# the emoji char is returned directly (not an icon_type key) and flows through
+# _draw_icon, which falls back to treating an unknown icon_type as a literal emoji.
+_CUSTOM_PATTERNS = []   # list of (compiled pattern, keyword_len, emoji_char)
+
+
+def set_custom_emojis(mapping):
+    """Install user keyword→emoji overrides. `mapping` is {keyword: emoji_char}.
+    Rebuilds the match list (longest keyword wins among custom entries)."""
+    global _CUSTOM_PATTERNS
+    patterns = []
+    for keyword, emoji in (mapping or {}).items():
+        kw = (keyword or "").strip().lower()
+        if not kw or not emoji:
+            continue
+        patterns.append((re.compile(r"\b" + re.escape(kw) + r"\b"), len(kw), emoji))
+    _CUSTOM_PATTERNS = patterns
+
+
+def _match_custom(lower: str):
+    """Return the custom emoji for the longest matching keyword, or None."""
+    best_len, best_emoji = -1, None
+    for pat, klen, emoji in _CUSTOM_PATTERNS:
+        if klen > best_len and pat.search(lower):
+            best_len, best_emoji = klen, emoji
+    return best_emoji
+
 
 def _build_icon_pattern_cache():
     """Pre-compile every keyword pattern once. ~0.9 MB, ~23x faster detection."""
@@ -1209,6 +1238,11 @@ def _detect_icon(text: str):
     if _PHASE1_PATTERNS is None:
         _build_icon_pattern_cache()
     lower = text.lower()
+
+    # Custom user emojis override everything built-in.
+    custom = _match_custom(lower)
+    if custom:
+        return custom
 
     # Phase 1: direct word-boundary matches — collect ALL matches and return
     # the one with the LONGEST keyword so "polar bear" beats "bear", etc.
@@ -1320,7 +1354,9 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
     skip_hb=True    — bypass HarfBuzz/FreeType, use basic Pillow text rendering.
     Both True       — force the Pillow fallback (simple outline, no colour data).
     """
-    emoji = _ICON_EMOJIS.get(icon_type)
+    # Built-in detection returns an icon_type key (looked up here); custom
+    # detection returns the emoji char directly, so an unknown key IS the emoji.
+    emoji = _ICON_EMOJIS.get(icon_type, icon_type)
     if not emoji:
         return
 

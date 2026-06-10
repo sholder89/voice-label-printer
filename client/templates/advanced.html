@@ -46,6 +46,41 @@ button:active { transform:scale(.97); }
 .badge { display:inline-block; font-size:.7rem; padding:.12rem .5rem; border-radius:999px;
          background:var(--surface2); border:1px solid var(--border); color:var(--text2);
          margin-left:.4rem; font-weight:600; vertical-align:.05em; }
+.card h2 { font-size:1.05rem; margin-bottom:.3rem; }
+
+/* Custom emoji rows */
+.emoji-row { display:flex; gap:.5rem; align-items:center; margin-bottom:.5rem; }
+.emoji-pick { flex:0 0 auto; width:3rem; height:2.7rem; font-size:1.4rem; line-height:1;
+              background:var(--surface2); border:1px solid var(--border2); border-radius:.5rem;
+              cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+.emoji-pick.empty { font-size:1rem; color:var(--text3); }
+.emoji-keywords { flex:1 1 auto; margin-bottom:0 !important; min-width:0; }
+.emoji-remove { flex:0 0 auto; background:transparent; border:1px solid var(--border2);
+                color:var(--error); border-radius:.5rem; padding:.5rem .7rem; font-weight:700; }
+.emoji-empty { font-size:.8rem; color:var(--text3); margin-bottom:.6rem; }
+
+/* Emoji picker modal */
+.picker { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+          align-items:center; justify-content:center; padding:1rem; }
+.picker-panel { background:var(--surface); border:1px solid var(--border); border-radius:1rem;
+                width:min(480px,100%); max-height:80vh; display:flex; flex-direction:column;
+                box-shadow:0 12px 40px rgba(0,0,0,.35); overflow:hidden; }
+.picker-head { display:flex; gap:.5rem; padding:.85rem; border-bottom:1px solid var(--border); }
+.picker-head input { margin-bottom:0 !important; }
+.picker-close { flex:0 0 auto; background:var(--btn-sec-bg); color:var(--btn-sec-txt);
+                border:none; border-radius:.5rem; padding:0 .8rem; cursor:pointer; font-size:1rem; }
+.picker-grid { overflow-y:auto; padding:.5rem .85rem 1rem; }
+.picker-group-h { position:sticky; top:0; background:var(--surface); font-size:.72rem;
+                  font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+                  color:var(--text3); padding:.5rem 0 .3rem; }
+.picker-cells { display:grid; grid-template-columns:repeat(auto-fill,minmax(2rem,1fr)); gap:.15rem; }
+.picker-cell { font-size:1.35rem; line-height:1; background:transparent; border:none;
+               border-radius:.4rem; cursor:pointer; padding:.25rem 0; }
+.picker-cell:hover { background:var(--surface2); }
+.picker-loading { display:flex; align-items:center; justify-content:center; min-height:260px; }
+.spinner { width:54px; height:54px; border:5px solid var(--border2); border-top-color:var(--accent);
+           border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -74,7 +109,34 @@ button:active { transform:scale(.97); }
     </div>
     <div class="note" id="note"></div>
   </div>
+
+  <div class="card">
+    <h2>Custom Emojis</h2>
+    <p class="hint">Map your own keywords to an emoji. These <b>override</b> the built-in icons —
+       e.g. <code>kitchen</code> → 🍕 beats the default. Pick an emoji, then list one or more
+       keywords separated by commas. Matching is whole-word and case-insensitive.</p>
+
+    <div id="emoji-rows"></div>
+    <p class="emoji-empty" id="emoji-empty" style="display:none">No custom emojis yet.</p>
+
+    <div class="row">
+      <button class="btn-secondary" onclick="addEmojiRow()">＋ Add emoji</button>
+      <button class="btn-primary" onclick="saveEmojis()">Save emojis</button>
+    </div>
+    <div class="note" id="emoji-note"></div>
+  </div>
 </main>
+
+<!-- Emoji picker modal -->
+<div class="picker" id="picker">
+  <div class="picker-panel">
+    <div class="picker-head">
+      <input type="text" id="picker-search" placeholder="Search emoji…" autocomplete="off" spellcheck="false">
+      <button class="picker-close" onclick="closePicker()" title="Close">✕</button>
+    </div>
+    <div class="picker-grid" id="picker-grid"><div class="picker-loading"><div class="spinner"></div></div></div>
+  </div>
+</div>
 
 <script>
 // Dark-mode parity with the main page (same localStorage key)
@@ -128,7 +190,149 @@ function testConn() {
   }).catch(() => setNote('Test failed.', 'err'));
 }
 
+/* ── Custom emojis ──────────────────────────────────────────────────────── */
+function emojiNote(msg, kind) {
+  const n = document.getElementById('emoji-note');
+  n.textContent = msg;
+  n.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+function refreshEmptyHint() {
+  const has = document.querySelectorAll('.emoji-row').length > 0;
+  document.getElementById('emoji-empty').style.display = has ? 'none' : 'block';
+}
+
+function addEmojiRow(emoji, keywords) {
+  const row = document.createElement('div');
+  row.className = 'emoji-row';
+  const pick = document.createElement('button');
+  pick.type = 'button';
+  pick.className = 'emoji-pick' + (emoji ? '' : ' empty');
+  pick.textContent = emoji || 'Pick';
+  if (emoji) pick.dataset.emoji = emoji;
+  pick.onclick = () => openPicker(pick);
+  const kw = document.createElement('input');
+  kw.type = 'text';
+  kw.className = 'emoji-keywords';
+  kw.placeholder = 'pizza, friday, dinner';
+  kw.value = keywords || '';
+  const rm = document.createElement('button');
+  rm.type = 'button';
+  rm.className = 'emoji-remove';
+  rm.textContent = '✕';
+  rm.title = 'Remove';
+  rm.onclick = () => { row.remove(); refreshEmptyHint(); };
+  row.append(pick, kw, rm);
+  document.getElementById('emoji-rows').appendChild(row);
+  refreshEmptyHint();
+  return row;
+}
+
+function loadEmojis() {
+  fetch('/config/emojis').then(r => r.json()).then(list => {
+    if (!Array.isArray(list)) return;
+    document.getElementById('emoji-rows').innerHTML = '';
+    list.forEach(e => addEmojiRow(e.emoji, (e.keywords || []).join(', ')));
+    refreshEmptyHint();
+  }).catch(() => emojiNote('Could not load custom emojis.', 'err'));
+}
+
+function saveEmojis() {
+  const rows = [...document.querySelectorAll('.emoji-row')].map(r => ({
+    emoji: r.querySelector('.emoji-pick').dataset.emoji || '',
+    keywords: r.querySelector('.emoji-keywords').value
+                .split(',').map(s => s.trim()).filter(Boolean),
+  }));
+  const incomplete = rows.find(r => (r.emoji && !r.keywords.length) || (!r.emoji && r.keywords.length));
+  if (incomplete) { emojiNote('Each row needs both an emoji and at least one keyword.', 'err'); return; }
+  const clean = rows.filter(r => r.emoji && r.keywords.length);
+  fetch('/config/emojis', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ emojis: clean }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { emojiNote(d.error, 'err'); return; }
+    emojiNote('Saved ✓ — applies to voice prints immediately.', 'ok');
+  }).catch(() => emojiNote('Save failed.', 'err'));
+}
+
+/* ── Emoji picker ───────────────────────────────────────────────────────── */
+let _emojiData = null, _activePick = null;
+
+function escAttr(s) {
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function buildGrid() {
+  const grid = document.getElementById('picker-grid');
+  grid.innerHTML = _emojiData.map(g =>
+    '<div class="picker-group"><div class="picker-group-h">' + escAttr(g.group) + '</div>' +
+    '<div class="picker-cells">' +
+    g.items.map(it =>
+      '<button type="button" class="picker-cell" title="' + escAttr(it.n) +
+      '" data-s="' + escAttr((it.n + ' ' + it.k).toLowerCase()) + '">' + it.e + '</button>'
+    ).join('') + '</div></div>'
+  ).join('');
+  grid.addEventListener('click', e => {
+    const cell = e.target.closest('.picker-cell');
+    if (cell) pickEmoji(cell.textContent);
+  });
+}
+
+function openPicker(btn) {
+  _activePick = btn;
+  document.getElementById('picker').style.display = 'flex';
+  const search = document.getElementById('picker-search');
+  search.value = '';
+  if (!_emojiData) {
+    document.getElementById('picker-grid').innerHTML =
+      '<div class="picker-loading"><div class="spinner"></div></div>';
+    fetch('/static/emoji-list.json').then(r => r.json()).then(d => {
+      _emojiData = d;
+      setTimeout(() => { buildGrid(); filterGrid(''); }, 0);   // let the spinner paint before the build
+    }).catch(() => { document.getElementById('picker-grid').textContent = 'Could not load emoji list.'; });
+  } else {
+    filterGrid('');
+  }
+  setTimeout(() => search.focus(), 0);
+}
+
+function closePicker() {
+  document.getElementById('picker').style.display = 'none';
+  _activePick = null;
+}
+
+function pickEmoji(emoji) {
+  if (_activePick) {
+    _activePick.textContent = emoji;
+    _activePick.dataset.emoji = emoji;
+    _activePick.classList.remove('empty');
+  }
+  closePicker();
+}
+
+function filterGrid(q) {
+  q = (q || '').trim().toLowerCase();
+  document.querySelectorAll('#picker-grid .picker-group').forEach(group => {
+    let any = false;
+    group.querySelectorAll('.picker-cell').forEach(c => {
+      const show = !q || c.dataset.s.indexOf(q) !== -1;
+      c.style.display = show ? '' : 'none';
+      if (show) any = true;
+    });
+    group.style.display = any ? '' : 'none';
+  });
+}
+
+document.getElementById('picker-search').addEventListener('input', e => filterGrid(e.target.value));
+document.getElementById('picker').addEventListener('click', e => {
+  if (e.target.id === 'picker') closePicker();   // click backdrop to close
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('picker').style.display === 'flex') closePicker();
+});
+
 load();
+loadEmojis();
 </script>
 </body>
 </html>

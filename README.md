@@ -37,6 +37,7 @@ You (voice) → Alexa Skill → AWS Lambda → Relay Server (VPS) → Windows Cl
 - Rendered via **Noto Color Emoji** (fonttools PNG extraction) with HarfBuzz + FreeType as fallback — correctly handles ZWJ sequences (🧑‍✈️ pilot, 🧑‍🔬 scientist) and country flags (🇺🇸 🇬🇧 🇯🇵 and all others)
 - Icons can be toggled on/off per label or globally
 - **Longest-match detection** — "polar bear" correctly picks 🐻‍❄️ over just 🐻
+- **Custom emojis** — map your own keywords to any emoji on the Advanced page (🔧 icon, PC-only). Custom mappings **override** the built-in ones, pick from a searchable grid of all 1,870 emojis, and apply live to voice prints. Stored in `custom_emojis.json`.
 
 ### 🎨 Style Presets
 Choose a style to completely change the look of a label:
