@@ -33,6 +33,30 @@ LABEL_SIZES = {
     "1.1x2.4": (1.142, 2.441),   # 29 mm × 62 mm — short label
 }
 
+# Brother QL prints on continuous tape that feeds skinny-side-first.  The
+# natural reading orientation for these labels is LANDSCAPE (text along the long
+# axis), so we RENDER them wide — both in the web preview and for printing — and
+# then rotate 90° at print time to lay the design onto the physically-narrow
+# tape.  This keeps the preview and the printed output looking identical.
+_BROTHER_TAPE_SIZES = {"1.1x3.5", "1.1x2.4"}
+
+# Rotation applied to the landscape render to map it onto the tape at print time.
+# -90 = 90° clockwise.  If a printed label comes out upside-down, flip to 90.
+_BROTHER_ROTATE = -90
+
+
+def is_brother_tape(size_key: str) -> bool:
+    return size_key in _BROTHER_TAPE_SIZES
+
+
+def render_dimensions(size_key: str) -> tuple:
+    """(width_in, height_in) to RENDER at — swapped to landscape for Brother tape
+    so text reads along the long axis.  Used by the preview so what you see on
+    screen matches what prints."""
+    w, h = LABEL_SIZES[size_key]
+    return (h, w) if is_brother_tape(size_key) else (w, h)
+
+
 DEFAULT_DPI = 203
 
 # ── Style constants ───────────────────────────────────────────────────────────
@@ -382,27 +406,27 @@ def print_label(
         render_dpi = dpi_x or dpi
 
         # calc_w / calc_h are the physical page dimensions (including margins)
-        # for our label size at the driver's reported DPI.
+        # for our label size at the driver's reported DPI.  The DC is portrait
+        # for every size: X = label width, Y = label length/feed direction.
         calc_w = int(width_in  * render_dpi)
         calc_h = int(height_in * (dpi_y or dpi))
 
-        img = render_label(text, width_in, height_in, dpi,
-                           font_style, border, icons, text_case,
-                           style_preset, font_weight, qr_show_text)
-
         if _skip_devmode:
-            # Brother QL: DC is landscape (X=tape feed/length, Y=tape width).
-            # Render portrait then rotate 90° CW so:
-            #   portrait-bottom (text, large Y) → landscape-left (small X) → tape top ✓
-            #   portrait-top  (icon, small Y) → landscape-right (large X) → tape bottom ✓
-            # Text appears rotated 90° CW on the physical tape — readable when
-            # the tape is applied horizontally.
-            img      = img.rotate(-90, expand=True)  # 90° CW
-            render_w = calc_h    # tape length along X
-            render_h = calc_w    # tape width along Y
+            # Brother continuous tape feeds skinny-side-first, so render the
+            # label LANDSCAPE (text along the 3.5" length — note width/height are
+            # swapped here) then rotate 90° to lay it onto the physically-narrow
+            # (1.1") tape.  The portrait DC dimensions are unchanged.
+            img = render_label(text, height_in, width_in, dpi,
+                               font_style, border, icons, text_case,
+                               style_preset, font_weight, qr_show_text)
+            img = img.rotate(_BROTHER_ROTATE, expand=True)
         else:
-            render_w = calc_w
-            render_h = calc_h
+            img = render_label(text, width_in, height_in, dpi,
+                               font_style, border, icons, text_case,
+                               style_preset, font_weight, qr_show_text)
+
+        render_w = calc_w
+        render_h = calc_h
 
         hDC.StartDoc("Label")
         hDC.StartPage()
