@@ -117,7 +117,7 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
        <code>http://127.0.0.1:5001</code>.</p>
 
     <label for="token">Relay token <span id="token-badge" class="badge">…</span></label>
-    <input type="password" id="token" placeholder="Leave blank to keep current token" autocomplete="off">
+    <input type="password" id="token" placeholder="Leave blank to keep current token" autocomplete="new-password">
     <p class="hint">The shared <code>LABEL_TOKEN</code>. For security it is never displayed —
        type a new value only when you want to change it.</p>
 
@@ -231,11 +231,12 @@ function save() {
 
 function testConn() {
   const relay = document.getElementById('relay-url').value.trim();
-  const token = document.getElementById('token').value;
   setNote('Testing…', '');
+  // Token is intentionally omitted — the server uses its saved runtime token.
+  // Sending the (empty) password field risks browser-autofilled values interfering.
   fetch('/config/advanced/test', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ relay_url: relay, token: token }),
+    body: JSON.stringify({ relay_url: relay }),
   }).then(r => r.json()).then(d => {
     setNote(d.detail, d.ok ? 'ok' : 'err');
   }).catch(() => setNote('Test failed.', 'err'));
