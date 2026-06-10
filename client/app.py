@@ -504,7 +504,7 @@ if __name__ == "__main__":
         # pystray must own the main thread on Windows, so Flask runs in a thread
         flask_thread = threading.Thread(
             target=lambda: app.run(
-                host="127.0.0.1", port=5000, debug=False, use_reloader=False
+                host="0.0.0.0", port=5000, debug=False, use_reloader=False
             ),
             daemon=True,
         )
@@ -520,4 +520,4 @@ if __name__ == "__main__":
         print(f"Polling {RELAY_URL} every {POLL_SECS}s")
         if _TG_TOKEN:
             print(f"Telegram notifications → chat {_TG_CHAT}")
-        app.run(host="127.0.0.1", port=5000, debug=False)
+        app.run(host="0.0.0.0", port=5000, debug=False)
