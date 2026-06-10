@@ -95,6 +95,10 @@ button:active { transform:scale(.97); }
 .slider-row { display:flex; align-items:center; gap:.75rem; margin:.4rem 0 .2rem; }
 input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:pointer; }
 .slider-val { font-size:.88rem; font-weight:700; color:var(--accent); min-width:2.5rem; text-align:right; }
+.darkness-preview { background:#fff; border:1px solid var(--border); border-radius:.6rem;
+                    padding:.6rem; display:flex; align-items:center; justify-content:center;
+                    margin:.65rem 0 .25rem; min-height:72px; }
+.darkness-preview img { height:52px; display:block; image-rendering:auto; }
 </style>
 </head>
 <body>
@@ -130,8 +134,11 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
        darken them without changing how they look on screen.</p>
     <div class="slider-row">
       <input type="range" id="emoji-darkness" min="0" max="100" step="1" value="0"
-             oninput="document.getElementById('darkness-val').textContent=this.value+'%'">
+             oninput="onDarknessSlider(this.value)">
       <span class="slider-val" id="darkness-val">0%</span>
+    </div>
+    <div class="darkness-preview">
+      <img id="darkness-preview" src="/config/emoji-darkness/preview?pct=0" alt="Emoji preview">
     </div>
     <div class="row" style="margin-top:.6rem">
       <button class="btn-primary" onclick="saveDarkness()">Save</button>
@@ -240,12 +247,24 @@ function darknessNote(msg, kind) {
   n.textContent = msg; n.className = 'note' + (kind ? ' ' + kind : '');
 }
 
+let _darknessTimer = null;
+function onDarknessSlider(v) {
+  document.getElementById('darkness-val').textContent = v + '%';
+  clearTimeout(_darknessTimer);
+  _darknessTimer = setTimeout(() => {
+    document.getElementById('darkness-preview').src =
+      '/config/emoji-darkness/preview?pct=' + v + '&t=' + Date.now();
+  }, 120);
+}
+
 function loadDarkness() {
   fetch('/config/emoji-darkness').then(r => r.json()).then(d => {
     if (d.error) return;
     const v = d.emoji_darkness || 0;
     document.getElementById('emoji-darkness').value = v;
     document.getElementById('darkness-val').textContent = v + '%';
+    document.getElementById('darkness-preview').src =
+      '/config/emoji-darkness/preview?pct=' + v + '&t=' + Date.now();
   }).catch(() => {});
 }
 
