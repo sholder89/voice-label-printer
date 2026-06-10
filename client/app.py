@@ -33,9 +33,11 @@ POLL_SECS    = int(os.environ.get("POLL_SECS", "3"))
 runtime = {"relay_url": RELAY_URL, "token": TOKEN}
 SHOUTRRR_URL = os.environ.get("SHOUTRRR_URL", "")
 
-# Parse Telegram credentials from Shoutrrr URL:
-# telegram://<bot_token>@telegram?chats=<chat_id>
-_TG_TOKEN = _TG_CHAT = None
+# Telegram credentials — initially parsed from SHOUTRRR_URL, overridable via
+# config.json and the Advanced Settings page without restarting.
+_TG_TOKEN   = None
+_TG_CHAT    = None
+_TG_ENABLED = True
 _m = re.match(r"telegram://([^@]+)@telegram\?chats=(\d+)", SHOUTRRR_URL)
 if _m:
     _TG_TOKEN, _TG_CHAT = _m.group(1), _m.group(2)
@@ -130,9 +132,9 @@ _emoji_darkness = 0   # 0–100, persisted in config.json
 
 
 def _load_config():
-    """Load relay endpoint/token overrides (set via the Advanced page) into
-    `runtime`. A saved value wins over the .env/default; missing keys keep it."""
-    global _emoji_darkness
+    """Load runtime overrides (set via the Advanced page). Saved values win
+    over .env defaults; missing keys keep their current value."""
+    global _emoji_darkness, _TG_TOKEN, _TG_CHAT, _TG_ENABLED
     try:
         with open(_CONFIG_PATH) as f:
             cfg = json.load(f)
@@ -143,19 +145,27 @@ def _load_config():
         if "emoji_darkness" in cfg:
             _emoji_darkness = max(0, min(100, int(cfg["emoji_darkness"])))
             set_emoji_darkness(_emoji_darkness)
+        if cfg.get("tg_token"):
+            _TG_TOKEN = cfg["tg_token"]
+        if "tg_chat" in cfg:
+            _TG_CHAT = cfg["tg_chat"] or None
+        if "tg_enabled" in cfg:
+            _TG_ENABLED = bool(cfg["tg_enabled"])
     except (FileNotFoundError, json.JSONDecodeError):
         pass
 
 
 def _save_config():
-    """Persist relay endpoint/token overrides to config.json. Stored in
-    %APPDATA% (per-user, not OneDrive-synced) — same plaintext posture as .env."""
+    """Persist runtime overrides to config.json (%APPDATA%\\LabelPrinter)."""
     try:
         with open(_CONFIG_PATH, "w") as f:
             json.dump({
-                "relay_url": runtime["relay_url"],
-                "token": runtime["token"],
+                "relay_url":      runtime["relay_url"],
+                "token":          runtime["token"],
                 "emoji_darkness": _emoji_darkness,
+                "tg_token":       _TG_TOKEN or "",
+                "tg_chat":        _TG_CHAT  or "",
+                "tg_enabled":     _TG_ENABLED,
             }, f, indent=2)
     except Exception:
         pass
@@ -317,8 +327,8 @@ def _save_addresses():
 # ── Telegram notification ─────────────────────────────────────────────────────
 
 def _notify(text, size, source="manual", error=None):
-    """Fire-and-forget Telegram message. Silently skipped if not configured."""
-    if not (_TG_TOKEN and _TG_CHAT):
+    """Fire-and-forget Telegram message. Silently skipped if not configured or disabled."""
+    if not (_TG_TOKEN and _TG_CHAT and _TG_ENABLED):
         return
     icon   = "🎙" if source == "voice" else "🖥"
     prefix = "❌" if error else "🖨"
@@ -512,6 +522,56 @@ def post_emoji_darkness():
     set_emoji_darkness(_emoji_darkness)
     _save_config()
     return jsonify({"ok": True, "emoji_darkness": _emoji_darkness})
+
+
+@app.route("/config/telegram", methods=["GET"])
+def get_telegram():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    return jsonify({
+        "tg_enabled":   _TG_ENABLED,
+        "tg_token_set": bool(_TG_TOKEN),
+        "tg_chat":      _TG_CHAT or "",
+    })
+
+
+@app.route("/config/telegram", methods=["POST"])
+def set_telegram():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    global _TG_TOKEN, _TG_CHAT, _TG_ENABLED
+    data = request.get_json(silent=True) or {}
+    if "tg_enabled" in data:
+        _TG_ENABLED = bool(data["tg_enabled"])
+    tg_token = (data.get("tg_token") or "").strip()
+    if tg_token:
+        _TG_TOKEN = tg_token
+    if "tg_chat" in data:
+        _TG_CHAT = (data["tg_chat"] or "").strip() or None
+    _save_config()
+    return jsonify({"ok": True, "tg_enabled": _TG_ENABLED,
+                    "tg_token_set": bool(_TG_TOKEN), "tg_chat": _TG_CHAT or ""})
+
+
+@app.route("/config/telegram/test", methods=["POST"])
+def test_telegram():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    if not (_TG_TOKEN and _TG_CHAT):
+        return jsonify({"ok": False, "detail": "No Telegram bot configured yet."})
+    try:
+        r = requests.post(
+            f"https://api.telegram.org/bot{_TG_TOKEN}/sendMessage",
+            json={"chat_id": _TG_CHAT, "text": "🖨 Label Printer — test message ✓"},
+            timeout=8,
+        )
+        if r.ok:
+            return jsonify({"ok": True, "detail": "Test message sent ✓"})
+        desc = r.json().get("description", f"HTTP {r.status_code}")
+        return jsonify({"ok": False, "detail": f"Telegram error: {desc}"})
+    except Exception as e:
+        return jsonify({"ok": False,
+                        "detail": f"Could not reach Telegram ({e.__class__.__name__})."})
 
 
 @app.route("/config", methods=["POST"])

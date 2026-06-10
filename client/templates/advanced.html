@@ -110,6 +110,30 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
     <p class="warn">Editable only from this computer. Changes apply immediately — no restart needed.</p>
   </div>
 
+  <div class="card" id="tg-card">
+    <h2>Telegram Notifications</h2>
+    <p class="hint">Sends a message to a Telegram bot each time a label prints.
+       Obtain a bot token from <code>@BotFather</code> and find your chat ID via <code>@userinfobot</code>.</p>
+
+    <label style="display:flex;align-items:center;gap:.55rem;margin-bottom:1.1rem;cursor:pointer;font-size:.9rem;font-weight:600;color:var(--text)">
+      <input type="checkbox" id="tg-enabled" style="width:1.1rem;height:1.1rem;accent-color:var(--accent)">
+      Enable notifications
+    </label>
+
+    <label for="tg-token">Bot token <span id="tg-token-badge" class="badge">…</span></label>
+    <input type="password" id="tg-token" placeholder="Leave blank to keep current token" autocomplete="new-password">
+
+    <label for="tg-chat">Chat ID</label>
+    <input type="text" id="tg-chat" placeholder="e.g. -1001234567890" autocomplete="off" spellcheck="false">
+    <p class="hint" style="margin-top:-.2rem">Negative numbers are groups/channels; positive are personal chats.</p>
+
+    <div class="row">
+      <button class="btn-primary" onclick="saveTelegram()">Save</button>
+      <button class="btn-secondary" onclick="testTelegram()">Send test message</button>
+    </div>
+    <div class="note" id="tg-note"></div>
+  </div>
+
   <div class="card">
     <label for="relay-url">Relay server URL</label>
     <input type="text" id="relay-url" placeholder="http://127.0.0.1:5001" autocomplete="off" spellcheck="false">
@@ -240,6 +264,45 @@ function testConn() {
   }).then(r => r.json()).then(d => {
     setNote(d.detail, d.ok ? 'ok' : 'err');
   }).catch(() => setNote('Test failed.', 'err'));
+}
+
+/* ── Telegram ───────────────────────────────────────────────────────────── */
+function tgNote(msg, kind) {
+  const n = document.getElementById('tg-note');
+  n.textContent = msg; n.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+function loadTelegram() {
+  fetch('/config/telegram').then(r => r.json()).then(d => {
+    if (d.error) return;
+    document.getElementById('tg-enabled').checked = d.tg_enabled;
+    document.getElementById('tg-token-badge').textContent = d.tg_token_set ? 'set' : 'not set';
+    document.getElementById('tg-chat').value = d.tg_chat || '';
+  }).catch(() => {});
+}
+
+function saveTelegram() {
+  const enabled = document.getElementById('tg-enabled').checked;
+  const token   = document.getElementById('tg-token').value;
+  const chat    = document.getElementById('tg-chat').value.trim();
+  const body    = { tg_enabled: enabled, tg_chat: chat };
+  if (token) body.tg_token = token;
+  fetch('/config/telegram', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { tgNote(d.error, 'err'); return; }
+    document.getElementById('tg-token').value = '';
+    document.getElementById('tg-token-badge').textContent = d.tg_token_set ? 'set' : 'not set';
+    tgNote('Saved ✓ — applies immediately.', 'ok');
+  }).catch(() => tgNote('Save failed.', 'err'));
+}
+
+function testTelegram() {
+  tgNote('Sending…', '');
+  fetch('/config/telegram/test', { method: 'POST' })
+    .then(r => r.json()).then(d => tgNote(d.detail, d.ok ? 'ok' : 'err'))
+    .catch(() => tgNote('Test failed.', 'err'));
 }
 
 /* ── Emoji darkness ─────────────────────────────────────────────────────── */
@@ -491,6 +554,7 @@ document.addEventListener('keydown', e => {
 });
 
 load();
+loadTelegram();
 loadDarkness();
 loadEmojis();
 loadSizes();
