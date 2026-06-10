@@ -134,7 +134,7 @@ _emoji_darkness = 0   # 0–100, persisted in config.json
 def _load_config():
     """Load runtime overrides (set via the Advanced page). Saved values win
     over .env defaults; missing keys keep their current value."""
-    global _emoji_darkness, _TG_TOKEN, _TG_CHAT, _TG_ENABLED
+    global _emoji_darkness, _TG_TOKEN, _TG_CHAT, _TG_ENABLED, _custom_emojis_enabled
     try:
         with open(_CONFIG_PATH) as f:
             cfg = json.load(f)
@@ -151,6 +151,8 @@ def _load_config():
             _TG_CHAT = cfg["tg_chat"] or None
         if "tg_enabled" in cfg:
             _TG_ENABLED = bool(cfg["tg_enabled"])
+        if "custom_emojis_enabled" in cfg:
+            _custom_emojis_enabled = bool(cfg["custom_emojis_enabled"])
     except (FileNotFoundError, json.JSONDecodeError):
         pass
 
@@ -163,9 +165,10 @@ def _save_config():
                 "relay_url":      runtime["relay_url"],
                 "token":          runtime["token"],
                 "emoji_darkness": _emoji_darkness,
-                "tg_token":       _TG_TOKEN or "",
-                "tg_chat":        _TG_CHAT  or "",
-                "tg_enabled":     _TG_ENABLED,
+                "tg_token":              _TG_TOKEN or "",
+                "tg_chat":               _TG_CHAT  or "",
+                "tg_enabled":            _TG_ENABLED,
+                "custom_emojis_enabled": _custom_emojis_enabled,
             }, f, indent=2)
     except Exception:
         pass
@@ -174,7 +177,8 @@ def _save_config():
 # ── Custom emojis ─────────────────────────────────────────────────────────────
 # User-defined keyword → emoji overrides, edited on the Advanced page. Canonical
 # form groups keywords per emoji: [{"emoji": "🍕", "keywords": ["pizza", "friday"]}]
-_custom_emojis = []   # list of {emoji, keywords:[...]}
+_custom_emojis         = []   # list of {emoji, keywords:[...]}
+_custom_emojis_enabled = True
 
 
 def _normalize_emojis(raw):
@@ -209,7 +213,7 @@ def _emoji_flat_map():
 
 
 def _apply_custom_emojis():
-    set_custom_emojis(_emoji_flat_map())
+    set_custom_emojis(_emoji_flat_map() if _custom_emojis_enabled else {})
 
 
 def _load_custom_emojis():
@@ -440,21 +444,24 @@ def test_advanced():
 def get_emojis():
     if not _is_local_request():
         return jsonify({"error": "forbidden"}), 403
-    return jsonify(_custom_emojis)
+    return jsonify({"enabled": _custom_emojis_enabled, "emojis": _custom_emojis})
 
 
 @app.route("/config/emojis", methods=["POST"])
 def set_emojis():
     if not _is_local_request():
         return jsonify({"error": "forbidden"}), 403
-    global _custom_emojis
+    global _custom_emojis, _custom_emojis_enabled
     data = request.get_json(silent=True) or {}
-    # Accept either a bare list or {"emojis": [...]}
-    raw  = data.get("emojis") if isinstance(data, dict) else data
-    _custom_emojis = _normalize_emojis(raw)
-    _save_custom_emojis()
-    _apply_custom_emojis()      # live — applies to voice prints immediately
-    return jsonify({"ok": True, "emojis": _custom_emojis})
+    if "enabled" in data:
+        _custom_emojis_enabled = bool(data["enabled"])
+        _save_config()
+    if "emojis" in data or isinstance(data, list):
+        raw = data.get("emojis") if isinstance(data, dict) else data
+        _custom_emojis = _normalize_emojis(raw)
+        _save_custom_emojis()
+    _apply_custom_emojis()
+    return jsonify({"ok": True, "enabled": _custom_emojis_enabled, "emojis": _custom_emojis})
 
 
 @app.route("/config/sizes", methods=["GET"])
