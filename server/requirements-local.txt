@@ -1,0 +1,7 @@
+# Dependencies for running the relay server locally on Windows (run_local.py).
+# The Docker image uses requirements.txt instead (which pins gunicorn, a
+# Unix-only WSGI server). pillow + pystray power the system-tray icon.
+flask>=3.0
+flask-limiter>=3.5
+pillow>=10.0
+pystray>=0.19
