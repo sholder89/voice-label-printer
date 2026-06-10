@@ -235,6 +235,53 @@ and http.user_agent eq "AlexaLabelPrinter/1.0"
 and (http.request.uri.path eq "/webhook" or http.request.uri.path eq "/settings")
 ```
 
+---
+
+#### Option D: All-local on Windows (no cloud, no Docker)
+
+Run the relay server **on the same Windows PC as the client** and drive it entirely from **Siri** over your home Wi-Fi. Nothing leaves your network and there's no VPS or container to maintain. This works because the server is plain Flask + SQLite — Docker is just one way to run it.
+
+> Best for a Siri-only setup. Alexa still needs an internet-reachable server (Options A–C), since Amazon's cloud calls your webhook from outside your network.
+
+**One-time setup:**
+
+1. Make sure Python is installed (same requirement as the client).
+2. Put your shared secret in the project-root `.env` (the client reads it too):
+   ```
+   LABEL_TOKEN=your-secret-token
+   ```
+3. Right-click **`setup-windows.ps1` → Run with PowerShell**. It adds a login auto-start shortcut (no admin needed).
+   - **Firewall:** you usually don't need to touch it — Windows prompts to allow Python the first time the server accepts a connection, or your Private network already permits LAN traffic. **Only** if another device (your phone) can't reach the apps, open an **admin** PowerShell and run:
+     ```
+     powershell -ExecutionPolicy Bypass -File setup-windows.ps1 -Firewall
+     ```
+     That adds inbound rules for ports `5001` (server) and `5000` (client) on the Private profile.
+
+**Run it:**
+
+- **`start-all.bat`** — installs dependencies and launches both the server and client (each lives in the system tray). Use this the first time and after updates.
+- After auto-start is set up, both launch automatically at login (via `run-all.bat`, which skips the dependency check for a fast boot).
+- To run only the server: **`server/start-local.bat`**.
+
+**Point Siri at it:** open the server's tray icon → **Open setup page** (or browse to `http://localhost:5001/`). It shows your PC's LAN webhook URL (e.g. `http://192.168.1.50:5001/webhook`), the exact `X-Token` header value, and copy-paste Siri Shortcut steps. Set the Shortcut's `RELAY_URL` equivalent to that LAN URL instead of a public one.
+
+**Client config:** set the client's `RELAY_URL` to the local server:
+```
+RELAY_URL=http://127.0.0.1:5001
+```
+
+> ⚠️ **The client web UI (port 5000) has no password.** Anyone on your home Wi-Fi who opens `http://<your-pc-ip>:5000/` can print labels, change settings, and clear history. The relay server (port 5001) *is* protected by `LABEL_TOKEN`, but the client UI is intentionally open so you can reach it from your phone. On a trusted home network this is usually fine — but don't port-forward `5000` to the internet, and only add the firewall rule above if you actually need LAN access.
+
+| | All-local (Option D) | Cloud (Options A–C) |
+|---|---|---|
+| Works with Siri | ✅ on home Wi-Fi | ✅ anywhere |
+| Works with Alexa | ❌ (needs public URL) | ✅ |
+| Works away from home | ❌ | ✅ |
+| Cost / maintenance | none | VPS or free tier |
+| HTTPS needed | no (plain HTTP on LAN) | yes |
+
+The server DB is stored at `%APPDATA%\LabelPrinter\jobs.db` (kept out of the OneDrive-synced project folder). Local runs use Flask's built-in server via `requirements-local.txt`; the Docker image keeps using gunicorn (`requirements.txt`), which is Unix-only.
+
 ### Alexa Skill + AWS Lambda
 
 The Alexa skill is what listens for your voice commands. When you speak, Alexa calls an AWS Lambda function (a small piece of code that runs in the cloud) which forwards the job to your relay server. You'll need free accounts on both the [Alexa Developer Console](https://developer.amazon.com/alexa/console/ask) and [AWS](https://aws.amazon.com).
@@ -336,6 +383,9 @@ The app lives in the Windows system tray when running:
 ## Project Structure
 
 ```
+├── start-all.bat          # All-local: install deps + launch server & client (Option D)
+├── run-all.bat            # All-local: fast launch (no deps), used by auto-start
+├── setup-windows.ps1      # All-local: firewall rules + login auto-start (one-time)
 ├── client/
 │   ├── app.py              # Flask web UI + background polling thread + tray icon
 │   ├── printer.py          # Label rendering (Pillow) + Windows GDI printing
@@ -346,10 +396,13 @@ The app lives in the Windows system tray when running:
 │   └── templates/
 │       └── index.html      # Single-page web UI
 ├── server/
-│   ├── app.py              # Flask relay server
+│   ├── app.py              # Flask relay server (shared by Docker + local)
+│   ├── run_local.py        # All-local Windows launcher: tray + setup page (Option D)
+│   ├── start-local.bat     # Install deps + launch server only
+│   ├── requirements.txt        # Docker deps (gunicorn)
+│   ├── requirements-local.txt  # Local Windows deps (Flask dev server + tray)
 │   ├── Dockerfile
-│   ├── docker-compose.yml
-│   └── requirements.txt
+│   └── docker-compose.yml
 └── alexa-skill/
     ├── lambda_function.py  # AWS Lambda handler
     └── interaction_model.json
@@ -365,6 +418,11 @@ The app lives in the Windows system tray when running:
 - The relay server has rate limiting on all endpoints to prevent abuse
 - The server only accepts a known allowlist of setting keys and values — arbitrary data can't be injected
 - `server/.env` and `client/.env` are **gitignored** — never commit them
+
+### The client web UI is unauthenticated
+The client UI (port `5000`) has **no password**. By default it binds to `0.0.0.0` so you can open it from your phone, which means anyone on the same network can reach it and print/change settings. This is a deliberate convenience tradeoff for a trusted home LAN. To lock it down:
+- **Don't** port-forward `5000` to the internet (only the token-protected relay on `5001` is safe to expose, and even then prefer the cloud options).
+- If you don't need phone access, you can bind the client to localhost only — change its `app.run(host="0.0.0.0", …)` to `host="127.0.0.1"`.
 
 ### Use a strong token
 The token is the only thing standing between your printer and the internet. Use something long and random — not a word or phrase. A good way to generate one:
