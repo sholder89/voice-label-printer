@@ -24,6 +24,12 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 RELAY_URL    = os.environ.get("RELAY_URL", "https://yourserver.com")
 TOKEN        = os.environ.get("LABEL_TOKEN", "changeme")
 POLL_SECS    = int(os.environ.get("POLL_SECS", "3"))
+
+# Live connection config, editable from the (localhost-only) Advanced page and
+# persisted to config.json. Effective value = saved override, else the .env
+# default above. The poll loop reads this fresh each cycle, so changes apply
+# without a restart.
+runtime = {"relay_url": RELAY_URL, "token": TOKEN}
 SHOUTRRR_URL = os.environ.get("SHOUTRRR_URL", "")
 
 # Parse Telegram credentials from Shoutrrr URL:
@@ -37,12 +43,16 @@ if _m:
 _SETTINGS_KEYS = ("printer", "size", "font_style", "font_weight", "border", "text_case", "icons", "style_preset", "qr_show_text", "default_style")
 _APP_DIR       = os.path.dirname(os.path.abspath(__file__))
 
-# Store data in %APPDATA%\LabelPrinter — avoids OneDrive sync interference
-_DATA_DIR      = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "LabelPrinter")
+# Store data in %APPDATA%\LabelPrinter — avoids OneDrive sync interference.
+# LABEL_DATA_DIR overrides the location (used by tests so they never touch the
+# live settings/history/config under %APPDATA%).
+_DATA_DIR      = os.environ.get("LABEL_DATA_DIR") or os.path.join(
+    os.environ.get("APPDATA", os.path.expanduser("~")), "LabelPrinter")
 os.makedirs(_DATA_DIR, exist_ok=True)
 _SETTINGS_PATH   = os.path.join(_DATA_DIR, "settings.json")
 _HISTORY_PATH    = os.path.join(_DATA_DIR, "history.json")
 _ADDRESSES_PATH  = os.path.join(_DATA_DIR, "addresses.json")
+_CONFIG_PATH     = os.path.join(_DATA_DIR, "config.json")
 _HISTORY_MAX     = 500
 
 # One-time migration: copy settings.json from the old OneDrive location if it exists
@@ -113,6 +123,31 @@ def _save_history():
         pass
 
 
+def _load_config():
+    """Load relay endpoint/token overrides (set via the Advanced page) into
+    `runtime`. A saved value wins over the .env/default; missing keys keep it."""
+    try:
+        with open(_CONFIG_PATH) as f:
+            cfg = json.load(f)
+        if cfg.get("relay_url"):
+            runtime["relay_url"] = cfg["relay_url"]
+        if cfg.get("token"):
+            runtime["token"] = cfg["token"]
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+
+
+def _save_config():
+    """Persist relay endpoint/token overrides to config.json. Stored in
+    %APPDATA% (per-user, not OneDrive-synced) — same plaintext posture as .env."""
+    try:
+        with open(_CONFIG_PATH, "w") as f:
+            json.dump({"relay_url": runtime["relay_url"], "token": runtime["token"]},
+                      f, indent=2)
+    except Exception:
+        pass
+
+
 def _load_addresses():
     """Load saved addresses from addresses.json."""
     try:
@@ -152,6 +187,12 @@ def _notify(text, size, source="manual", error=None):
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
+def _is_local_request():
+    """True only for requests from this PC. The Advanced page edits the relay
+    token, so it must never be reachable from other LAN devices."""
+    return request.remote_addr in ("127.0.0.1", "::1")
+
+
 @app.route("/")
 def index():
     return render_template(
@@ -166,7 +207,74 @@ def index():
         style_presets=STYLE_PRESETS,
         style_preset_groups=STYLE_PRESET_GROUPS,
         state=state,
+        is_local=_is_local_request(),
     )
+
+
+# ── Advanced settings (localhost only) ────────────────────────────────────────
+
+@app.route("/advanced")
+def advanced_page():
+    if not _is_local_request():
+        return ("Advanced settings can only be opened on the computer running "
+                "Label Printer."), 403
+    return render_template("advanced.html")
+
+
+@app.route("/config/advanced", methods=["GET"])
+def get_advanced():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    # Never return the token itself — only whether one is set (write-only field).
+    return jsonify({
+        "relay_url": runtime["relay_url"],
+        "token_set": bool(runtime["token"]),
+    })
+
+
+@app.route("/config/advanced", methods=["POST"])
+def set_advanced():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    data  = request.get_json(silent=True) or {}
+
+    relay = (data.get("relay_url") or "").strip().rstrip("/")
+    if relay:
+        if not (relay.startswith("http://") or relay.startswith("https://")):
+            return jsonify({"error": "Relay URL must start with http:// or https://"}), 400
+        runtime["relay_url"] = relay
+
+    # Write-only token: only overwrite when a non-empty value is supplied, so an
+    # empty field means "keep the current token".
+    token = (data.get("token") or "").strip()
+    if token:
+        runtime["token"] = token
+
+    _save_config()
+    return jsonify({"ok": True, "relay_url": runtime["relay_url"],
+                    "token_set": bool(runtime["token"])})
+
+
+@app.route("/config/advanced/test", methods=["POST"])
+def test_advanced():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    data  = request.get_json(silent=True) or {}
+    relay = (data.get("relay_url") or runtime["relay_url"] or "").strip().rstrip("/")
+    token = (data.get("token") or "").strip() or runtime["token"]
+    if not relay:
+        return jsonify({"ok": False, "detail": "No relay URL set."})
+    try:
+        r = requests.get(f"{relay}/jobs/pending", headers={"X-Token": token}, timeout=8)
+    except requests.RequestException as e:
+        return jsonify({"ok": False,
+                        "detail": f"Could not reach {relay} ({e.__class__.__name__})."})
+    if r.status_code == 200:
+        return jsonify({"ok": True, "detail": "Connected and authorized ✓"})
+    if r.status_code == 401:
+        return jsonify({"ok": False,
+                        "detail": "Reached the server, but the token was rejected (401)."})
+    return jsonify({"ok": False, "detail": f"Server responded with HTTP {r.status_code}."})
 
 
 @app.route("/config", methods=["POST"])
@@ -327,7 +435,7 @@ def status():
         "icons":        state["icons"],
         "qr_show_text": state["qr_show_text"],
         "polling":    state["polling"],
-        "relay":      RELAY_URL,
+        "relay":      runtime["relay_url"],
         "win32":      WIN32_AVAILABLE,
         "telegram":   bool(_TG_TOKEN),
     })
@@ -355,13 +463,15 @@ def _record(text, size, status, *, font_style=None, font_weight=None, border=Non
 
 
 def poll_loop():
-    # Send the token as a header, never as a URL query param — query strings get
-    # written to server/proxy access logs, which would leak the secret.
-    headers = {"X-Token": TOKEN}
     while state["polling"]:
+        # Read connection config fresh each cycle so Advanced-page edits apply
+        # without a restart. Token always rides in the X-Token header — never the
+        # URL query string, which would leak it into access logs.
+        relay   = runtime["relay_url"]
+        headers = {"X-Token": runtime["token"]}
         try:
             # ── Settings changes ──────────────────────────────────────────
-            rs = requests.get(f"{RELAY_URL}/settings/pending", headers=headers, timeout=10)
+            rs = requests.get(f"{relay}/settings/pending", headers=headers, timeout=10)
             if rs.ok:
                 for change in rs.json():
                     key, value, cid = change["key"], change["value"], change["id"]
@@ -371,14 +481,14 @@ def poll_loop():
                     elif key == "icons":
                         state["icons"] = (value == "true")
                         _save_settings()
-                    requests.post(f"{RELAY_URL}/settings/{cid}/complete",
+                    requests.post(f"{relay}/settings/{cid}/complete",
                                   headers=headers, timeout=5)
         except Exception:
             pass
 
         try:
             # ── Print jobs ────────────────────────────────────────────────
-            r = requests.get(f"{RELAY_URL}/jobs/pending", headers=headers, timeout=10)
+            r = requests.get(f"{relay}/jobs/pending", headers=headers, timeout=10)
             if r.ok:
                 for job in r.json():
                     job_id  = job["id"]
@@ -395,7 +505,7 @@ def poll_loop():
                             text_case=state["text_case"],
                             style_preset=state["style_preset"],
                         )
-                        requests.post(f"{RELAY_URL}/jobs/{job_id}/complete",
+                        requests.post(f"{relay}/jobs/{job_id}/complete",
                                       headers=headers, timeout=5)
                         _record(text, state["size"], "ok (voice)",
                                 font_style=state["font_style"], border=state["border"],
@@ -407,7 +517,7 @@ def poll_loop():
                             daemon=True,
                         ).start()
                     except Exception as e:
-                        requests.post(f"{RELAY_URL}/jobs/{job_id}/fail",
+                        requests.post(f"{relay}/jobs/{job_id}/fail",
                                       headers=headers, timeout=5)
                         _record(text, state["size"], f"error: {e}",
                                 font_style=state["font_style"], border=state["border"],
@@ -491,6 +601,7 @@ def _run_tray():
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    _load_config()
     _load_settings()
     _load_history()
     _load_addresses()
@@ -521,7 +632,7 @@ if __name__ == "__main__":
     except ImportError:
         # pystray not installed — fall back to normal terminal mode
         print(f"Label Printer UI → http://localhost:5000")
-        print(f"Polling {RELAY_URL} every {POLL_SECS}s")
+        print(f"Polling {runtime['relay_url']} every {POLL_SECS}s")
         if _TG_TOKEN:
             print(f"Telegram notifications → chat {_TG_CHAT}")
         app.run(host="0.0.0.0", port=5000, debug=False)

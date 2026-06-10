@@ -170,6 +170,8 @@ You can name the shortcut anything — whatever you name it is what you say to S
    ```
    The web UI opens at `http://localhost:5000` and a printer icon appears in the system tray. The UI is also accessible from other devices on the same network at `http://<this-pc-ip>:5000`.
 
+> **Tip — Advanced Settings:** `RELAY_URL` and `LABEL_TOKEN` from `.env` are just the startup defaults. Once running, click the **🔧** icon in the header (visible **only on this PC**, not from phones/other devices) to change the relay endpoint or rotate the token live — no restart, no editing `.env`. The token is write-only there: it's never displayed back, only overwritten when you type a new one. There's also a **Test connection** button to verify the endpoint + token before relying on them.
+
 **Optional fonts** — place these in `C:\Users\<you>\AppData\Local\Microsoft\Windows\Fonts\`:
 - `BurbankBigCondensed-Bold.otf` — enables the Burbank font style
 - `W95F.otf` (W95FA) — enables the authentic pixel font for Windows 95 style
