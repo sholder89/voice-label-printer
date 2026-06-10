@@ -386,19 +386,21 @@ def print_label(
         calc_w = int(width_in  * render_dpi)
         calc_h = int(height_in * (dpi_y or dpi))
 
+        img = render_label(text, width_in, height_in, dpi,
+                           font_style, border, icons, text_case,
+                           style_preset, font_weight, qr_show_text)
+
         if _skip_devmode:
-            # Brother QL: DC is landscape — X=tape feed (label length), Y=tape width.
-            # Render directly as landscape (swap dims) so text fills the tape length
-            # and reads left-to-right along the feed direction.  No rotation needed.
-            img = render_label(text, height_in, width_in, dpi,
-                               font_style, border, icons, text_case,
-                               style_preset, font_weight, qr_show_text)
+            # Brother QL: DC is landscape (X=tape feed/length, Y=tape width).
+            # Render portrait then rotate 90° CW so:
+            #   portrait-bottom (text, large Y) → landscape-left (small X) → tape top ✓
+            #   portrait-top  (icon, small Y) → landscape-right (large X) → tape bottom ✓
+            # Text appears rotated 90° CW on the physical tape — readable when
+            # the tape is applied horizontally.
+            img      = img.rotate(-90, expand=True)  # 90° CW
             render_w = calc_h    # tape length along X
             render_h = calc_w    # tape width along Y
         else:
-            img = render_label(text, width_in, height_in, dpi,
-                               font_style, border, icons, text_case,
-                               style_preset, font_weight, qr_show_text)
             render_w = calc_w
             render_h = calc_h
 
