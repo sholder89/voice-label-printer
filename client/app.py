@@ -18,6 +18,7 @@ from printer import (
 )
 
 app = Flask(__name__)
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # ── Config ───────────────────────────────────────────────────────────────────
 RELAY_URL    = os.environ.get("RELAY_URL", "https://yourserver.com")
