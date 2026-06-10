@@ -1,4 +1,5 @@
-# 🖨️ Voice Label Printer
+![Voice Label Printer](client/static/logo-light.png#gh-light-mode-only)
+![Voice Label Printer](client/static/logo-dark.png#gh-dark-mode-only)
 
 > ⚠️ **Heads up:** This app is fully vibe coded. I'm a database guy, not a developer. Use at your own risk.
 
