@@ -57,6 +57,22 @@ def render_dimensions(size_key: str) -> tuple:
     return (h, w) if is_brother_tape(size_key) else (w, h)
 
 
+# Built-in size keys, captured before any custom sizes are merged in, so custom
+# (user-defined) sizes can be cleanly distinguished and replaced.
+_BUILTIN_SIZE_KEYS = set(LABEL_SIZES)
+
+
+def set_custom_sizes(sizes):
+    """Merge user-defined sizes into LABEL_SIZES (in place, so all references see
+    them). `sizes` is {name: (width_in, height_in)}. Previously-registered custom
+    sizes are removed first, so this fully replaces the custom set."""
+    for key in [k for k in LABEL_SIZES if k not in _BUILTIN_SIZE_KEYS]:
+        del LABEL_SIZES[key]
+    for name, (w_in, h_in) in (sizes or {}).items():
+        if name and name not in _BUILTIN_SIZE_KEYS:
+            LABEL_SIZES[name] = (float(w_in), float(h_in))
+
+
 DEFAULT_DPI = 203
 
 # ── Style constants ───────────────────────────────────────────────────────────
@@ -373,7 +389,9 @@ def print_label(
     except Exception:
         pass
 
-    width_in, height_in = LABEL_SIZES[size_key]
+    # Fall back to a safe default if the size was deleted (e.g. a removed custom
+    # size that was still selected) rather than crashing the print.
+    width_in, height_in = LABEL_SIZES.get(size_key, LABEL_SIZES["2x1"])
 
     # Create the DC first so we can read the driver's actual physical page
     # dimensions before rendering.  Many drivers ignore DEVMODE paper-size
