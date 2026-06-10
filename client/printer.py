@@ -75,6 +75,15 @@ def set_custom_sizes(sizes):
 
 DEFAULT_DPI = 203
 
+# Emoji print darkness (0 = no change, 100 = maximum darkening). Applied in
+# _draw_icon after resize. Controlled from the Advanced Settings page.
+_EMOJI_DARKNESS = 0
+
+
+def set_emoji_darkness(pct: int):
+    global _EMOJI_DARKNESS
+    _EMOJI_DARKNESS = max(0, min(100, int(pct)))
+
 # ── Style constants ───────────────────────────────────────────────────────────
 
 FONT_STYLES   = ["standard", "enhanced", "impact", "serif", "narrow", "mono", "burbank"]
@@ -1425,11 +1434,11 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
         )
         ew, eh = emoji_img.size
 
-    # Threshold to pure black/white for thermal printing. Grayscale luminance
-    # maps light-colored emoji (e.g. yellow faces, ~200/255) to mid-gray, which
-    # prints faint. Any pixel that isn't near-pure-white becomes solid black;
-    # truly white features (eye whites, teeth) are preserved as white gaps.
-    emoji_img = emoji_img.point(lambda x: 0 if x < 250 else 255)
+    # Optional darkness boost: shifts ink pixels toward black while leaving the
+    # pure-white background untouched. factor 1.0 = no change; 4.0 = near-black.
+    if _EMOJI_DARKNESS:
+        factor = 1.0 + (_EMOJI_DARKNESS / 100) * 3.0
+        emoji_img = emoji_img.point(lambda x: max(0, 255 - int((255 - x) * factor)))
 
     # Paste centered: invert L mask so 255=opaque ink, 0=transparent
     mask      = ImageChops.invert(emoji_img)

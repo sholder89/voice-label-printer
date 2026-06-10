@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
     print_label, list_printers, render_label, render_dimensions,
-    set_custom_emojis, set_custom_sizes, _BUILTIN_SIZE_KEYS,
+    set_custom_emojis, set_custom_sizes, set_emoji_darkness, _BUILTIN_SIZE_KEYS,
     LABEL_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
     _IMAGE_BORDER_ENTRIES,
@@ -126,9 +126,13 @@ def _save_history():
         pass
 
 
+_emoji_darkness = 0   # 0–100, persisted in config.json
+
+
 def _load_config():
     """Load relay endpoint/token overrides (set via the Advanced page) into
     `runtime`. A saved value wins over the .env/default; missing keys keep it."""
+    global _emoji_darkness
     try:
         with open(_CONFIG_PATH) as f:
             cfg = json.load(f)
@@ -136,6 +140,9 @@ def _load_config():
             runtime["relay_url"] = cfg["relay_url"]
         if cfg.get("token"):
             runtime["token"] = cfg["token"]
+        if "emoji_darkness" in cfg:
+            _emoji_darkness = max(0, min(100, int(cfg["emoji_darkness"])))
+            set_emoji_darkness(_emoji_darkness)
     except (FileNotFoundError, json.JSONDecodeError):
         pass
 
@@ -145,8 +152,11 @@ def _save_config():
     %APPDATA% (per-user, not OneDrive-synced) — same plaintext posture as .env."""
     try:
         with open(_CONFIG_PATH, "w") as f:
-            json.dump({"relay_url": runtime["relay_url"], "token": runtime["token"]},
-                      f, indent=2)
+            json.dump({
+                "relay_url": runtime["relay_url"],
+                "token": runtime["token"],
+                "emoji_darkness": _emoji_darkness,
+            }, f, indent=2)
     except Exception:
         pass
 
@@ -455,6 +465,28 @@ def set_sizes():
     _save_custom_sizes()
     _apply_custom_sizes()       # live — registers into LABEL_SIZES immediately
     return jsonify({"ok": True, "sizes": _custom_sizes})
+
+
+@app.route("/config/emoji-darkness", methods=["GET"])
+def get_emoji_darkness():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    return jsonify({"emoji_darkness": _emoji_darkness})
+
+
+@app.route("/config/emoji-darkness", methods=["POST"])
+def post_emoji_darkness():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    global _emoji_darkness
+    data = request.get_json(silent=True) or {}
+    val  = data.get("emoji_darkness")
+    if val is None:
+        return jsonify({"error": "emoji_darkness required"}), 400
+    _emoji_darkness = max(0, min(100, int(val)))
+    set_emoji_darkness(_emoji_darkness)
+    _save_config()
+    return jsonify({"ok": True, "emoji_darkness": _emoji_darkness})
 
 
 @app.route("/config", methods=["POST"])

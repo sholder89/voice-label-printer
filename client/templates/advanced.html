@@ -90,6 +90,11 @@ button:active { transform:scale(.97); }
 .spinner { width:54px; height:54px; border:5px solid var(--border2); border-top-color:var(--accent);
            border-radius:50%; animation:spin .8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
+
+/* Emoji darkness slider */
+.slider-row { display:flex; align-items:center; gap:.75rem; margin:.4rem 0 .2rem; }
+input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:pointer; }
+.slider-val { font-size:.88rem; font-weight:700; color:var(--accent); min-width:2.5rem; text-align:right; }
 </style>
 </head>
 <body>
@@ -117,6 +122,21 @@ button:active { transform:scale(.97); }
       <button class="btn-secondary" onclick="testConn()">Test connection</button>
     </div>
     <div class="note" id="note"></div>
+  </div>
+
+  <div class="card">
+    <h2>Emoji Print Darkness</h2>
+    <p class="hint">Color emojis can print faint on some thermal printers. Increase this to
+       darken them without changing how they look on screen.</p>
+    <div class="slider-row">
+      <input type="range" id="emoji-darkness" min="0" max="100" step="1" value="0"
+             oninput="document.getElementById('darkness-val').textContent=this.value+'%'">
+      <span class="slider-val" id="darkness-val">0%</span>
+    </div>
+    <div class="row" style="margin-top:.6rem">
+      <button class="btn-primary" onclick="saveDarkness()">Save</button>
+    </div>
+    <div class="note" id="darkness-note"></div>
   </div>
 
   <div class="card">
@@ -212,6 +232,32 @@ function testConn() {
   }).then(r => r.json()).then(d => {
     setNote(d.detail, d.ok ? 'ok' : 'err');
   }).catch(() => setNote('Test failed.', 'err'));
+}
+
+/* ── Emoji darkness ─────────────────────────────────────────────────────── */
+function darknessNote(msg, kind) {
+  const n = document.getElementById('darkness-note');
+  n.textContent = msg; n.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+function loadDarkness() {
+  fetch('/config/emoji-darkness').then(r => r.json()).then(d => {
+    if (d.error) return;
+    const v = d.emoji_darkness || 0;
+    document.getElementById('emoji-darkness').value = v;
+    document.getElementById('darkness-val').textContent = v + '%';
+  }).catch(() => {});
+}
+
+function saveDarkness() {
+  const v = parseInt(document.getElementById('emoji-darkness').value, 10);
+  fetch('/config/emoji-darkness', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ emoji_darkness: v }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { darknessNote(d.error, 'err'); return; }
+    darknessNote('Saved ✓ — applies to the next print.', 'ok');
+  }).catch(() => darknessNote('Save failed.', 'err'));
 }
 
 /* ── Custom emojis ──────────────────────────────────────────────────────── */
@@ -425,6 +471,7 @@ document.addEventListener('keydown', e => {
 });
 
 load();
+loadDarkness();
 loadEmojis();
 loadSizes();
 </script>
