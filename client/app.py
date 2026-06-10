@@ -798,15 +798,18 @@ def poll_loop():
                         print_label(
                             text, printer, state["size"],
                             font_style=state["font_style"],
+                            font_weight=state["font_weight"],
                             border=state["border"],
                             icons=state["icons"],
                             text_case=state["text_case"],
                             style_preset=state["style_preset"],
+                            qr_show_text=state["qr_show_text"],
                         )
                         requests.post(f"{relay}/jobs/{job_id}/complete",
                                       headers=headers, timeout=5)
                         _record(text, state["size"], "ok (voice)",
-                                font_style=state["font_style"], border=state["border"],
+                                font_style=state["font_style"], font_weight=state["font_weight"],
+                                border=state["border"],
                                 text_case=state["text_case"], style_preset=state["style_preset"],
                                 icons=state["icons"])
                         threading.Thread(
@@ -818,7 +821,8 @@ def poll_loop():
                         requests.post(f"{relay}/jobs/{job_id}/fail",
                                       headers=headers, timeout=5)
                         _record(text, state["size"], f"error: {e}",
-                                font_style=state["font_style"], border=state["border"],
+                                font_style=state["font_style"], font_weight=state["font_weight"],
+                                border=state["border"],
                                 text_case=state["text_case"], style_preset=state["style_preset"],
                                 icons=state["icons"])
                         threading.Thread(
