@@ -11,7 +11,7 @@ import requests
 from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
-    print_label, list_printers, render_label,
+    print_label, list_printers, render_label, render_dimensions,
     LABEL_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
     _IMAGE_BORDER_ENTRIES,
@@ -196,7 +196,8 @@ def preview():
     qr_show_text = request.args.get("qr_show_text", str(state["qr_show_text"])).lower() not in ("false", "0")
     if size not in LABEL_SIZES:
         size = "2x1"
-    w, h = LABEL_SIZES[size]
+    # Brother tape renders landscape so the preview matches the printed output
+    w, h = render_dimensions(size)
     img  = render_label(text, w, h, dpi=203, font_style=font_style, border=border,
                         icons=icons, text_case=text_case, style_preset=style_preset,
                         font_weight=font_weight, qr_show_text=qr_show_text)
@@ -354,11 +355,13 @@ def _record(text, size, status, *, font_style=None, font_weight=None, border=Non
 
 
 def poll_loop():
-    params = {"token": TOKEN}
+    # Send the token as a header, never as a URL query param — query strings get
+    # written to server/proxy access logs, which would leak the secret.
+    headers = {"X-Token": TOKEN}
     while state["polling"]:
         try:
             # ── Settings changes ──────────────────────────────────────────
-            rs = requests.get(f"{RELAY_URL}/settings/pending", params=params, timeout=10)
+            rs = requests.get(f"{RELAY_URL}/settings/pending", headers=headers, timeout=10)
             if rs.ok:
                 for change in rs.json():
                     key, value, cid = change["key"], change["value"], change["id"]
@@ -369,13 +372,13 @@ def poll_loop():
                         state["icons"] = (value == "true")
                         _save_settings()
                     requests.post(f"{RELAY_URL}/settings/{cid}/complete",
-                                  params=params, timeout=5)
+                                  headers=headers, timeout=5)
         except Exception:
             pass
 
         try:
             # ── Print jobs ────────────────────────────────────────────────
-            r = requests.get(f"{RELAY_URL}/jobs/pending", params=params, timeout=10)
+            r = requests.get(f"{RELAY_URL}/jobs/pending", headers=headers, timeout=10)
             if r.ok:
                 for job in r.json():
                     job_id  = job["id"]
@@ -393,7 +396,7 @@ def poll_loop():
                             style_preset=state["style_preset"],
                         )
                         requests.post(f"{RELAY_URL}/jobs/{job_id}/complete",
-                                      params=params, timeout=5)
+                                      headers=headers, timeout=5)
                         _record(text, state["size"], "ok (voice)",
                                 font_style=state["font_style"], border=state["border"],
                                 text_case=state["text_case"], style_preset=state["style_preset"],
@@ -405,7 +408,7 @@ def poll_loop():
                         ).start()
                     except Exception as e:
                         requests.post(f"{RELAY_URL}/jobs/{job_id}/fail",
-                                      params=params, timeout=5)
+                                      headers=headers, timeout=5)
                         _record(text, state["size"], f"error: {e}",
                                 font_style=state["font_style"], border=state["border"],
                                 text_case=state["text_case"], style_preset=state["style_preset"],
