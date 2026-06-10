@@ -2,29 +2,31 @@
 
 > ⚠️ **Heads up:** This app is fully vibe coded. I'm a database guy, not a developer. Use at your own risk.
 
-Print labels with your voice. Say *"Alexa, print kitchen supplies"* and a label rolls out of your NIIMBOT printer — complete with an automatically matched emoji icon.
+Print labels with your voice. Say *"Alexa, print kitchen supplies"* or *"Hey Siri, print label"* and a label rolls out of your thermal printer — complete with an automatically matched emoji icon.
 
 ---
 
 ## How It Works
 
 ```
-You (voice) → Alexa Skill → AWS Lambda → Relay Server (VPS) → Windows Client → NIIMBOT Printer
+You (voice) → Alexa Skill → AWS Lambda → Relay Server (VPS) → Windows Client → Thermal Printer
+         or → Siri Shortcut ──────────────────────────────↗
 ```
 
-1. You speak a command to Alexa.
-2. An AWS Lambda function posts the job to a relay server hosted on your VPS.
+1. You speak a command to Alexa or Siri.
+2. For Alexa: an AWS Lambda function posts the job to a relay server hosted on your VPS.  
+   For Siri: the Shortcut posts directly to the relay server (no IFTTT or Lambda needed).
 3. The Windows client polls the relay every few seconds, picks up the job, renders a label image, and sends it to the printer via the Windows print queue.
-4. You can also type and print directly through the local web UI at `http://localhost:5000`.
+4. You can also type and print directly through the local web UI at `http://localhost:5000` (also accessible from other devices on your network).
 
 ---
 
 ## Features
 
 ### 🖨️ Printing
-- Prints to any Windows printer — tested with **NULLTONEX** Bluetooth thermal label printer via Bluetooth
+- Prints to any Windows printer — tested with **NULLTONEX** Bluetooth thermal label printer and **Brother QL-710W**
 - 203 DPI rendering via Pillow — what you see in the preview is exactly what prints
-- Multiple label sizes: **2×1**, **4×2**, **4×6**, **3×2**, **2×0.5** (inches)
+- Multiple label sizes: **2×1**, **4×2**, **4×6**, **3×2**, **2×0.5** (inches), **1.1×3.5**, **1.1×2.4** (Brother QL 29mm tape)
 - Print multiple copies (up to 10) from the web UI
 
 ### 😀 Automatic Emoji Icons
@@ -53,6 +55,11 @@ Choose a style to completely change the look of a label:
 | Themed | **Blueprint** | Black background, grey grid lines |
 | Themed | **Warning** | ⚠ hazard header, diagonal stripes, icon + body text |
 
+Three quick-action buttons sit below the Style Preset dropdown:
+- **🎲 Randomize** — picks a random preset, or randomises font/border/weight individually
+- **↩ Default** — restores your saved default style
+- **📌 Set Default** — saves the current style as your default (persists across restarts)
+
 ### 🔤 Fonts & Weights
 - **Font styles:** Standard (Arial), Enhanced (Segoe UI), Impact, Serif (Georgia), Narrow (Arial Narrow), Mono (Courier New), Burbank (Burbank Big Condensed Bold)
 - **Font weights:** Normal, Bold, Italic, Bold Italic — each with proper fallback fonts
@@ -68,8 +75,8 @@ Built-in border styles: **None, Thin, Thick, Double, Dashed, Rounded, Corners**
 Transform label text automatically: **None, UPPERCASE, lowercase, Title Case, Sentence case**
 
 ### 📜 Print History
-- Last 100 prints stored in `%APPDATA%\LabelPrinter\history.json`
-- Paginated display (10 per page)
+- Last 500 prints stored in `%APPDATA%\LabelPrinter\history.json`
+- Paginated display (10 per page) with windowed ellipsis page numbers
 - **Hover** over a history row to preview the label image
 - **Reprint** any past label with its original settings
 - **Load** a past label back into the form to edit it
@@ -106,12 +113,43 @@ telegram://<bot_token>@telegram?chats=<chat_id>
 
 ---
 
+## Voice Commands (Siri)
+
+Siri control uses Apple Shortcuts — no IFTTT, no Lambda, no skill setup required. The Shortcut posts directly to the relay server.
+
+### Setup
+
+1. Open the **Shortcuts** app on your iPhone/iPad/Mac
+2. Tap **+** to create a new shortcut, name it **"Print Label"**
+3. Add these actions in order:
+
+   **Action 1 — Ask for Input**
+   - Input type: **Text**
+   - Prompt: *"What should the label say?"*
+
+   **Action 2 — Get Contents of URL**
+   - URL: `https://your-relay-server.com/webhook`
+   - Method: **POST**
+   - Headers: add `X-Token` → `your-label-token`
+   - Request Body: **JSON**
+     - Add field: `value1` → select **Provided Input** from step 1
+
+4. Tap **Done**
+
+### Usage
+
+Say **"Hey Siri, Print Label"** → Siri asks what to print → you reply → label prints.
+
+You can name the shortcut anything — whatever you name it is what you say to Siri.
+
+---
+
 ## Setup
 
 ### Requirements
 - Windows 10/11 (printing uses the Windows GDI/win32 APIs)
 - Python 3.11+
-- A NIIMBOT or similar label printer installed as a Windows printer
+- Any Windows-compatible thermal label printer
 
 ### Client (Windows)
 
@@ -129,7 +167,7 @@ telegram://<bot_token>@telegram?chats=<chat_id>
    ```
    python app.py
    ```
-   The web UI opens at `http://localhost:5000` and a printer icon appears in the system tray.
+   The web UI opens at `http://localhost:5000` and a printer icon appears in the system tray. The UI is also accessible from other devices on the same network at `http://<this-pc-ip>:5000`.
 
 **Optional fonts** — place these in `C:\Users\<you>\AppData\Local\Microsoft\Windows\Fonts\`:
 - `BurbankBigCondensed-Bold.otf` — enables the Burbank font style
@@ -138,7 +176,7 @@ telegram://<bot_token>@telegram?chats=<chat_id>
 
 ### Server
 
-The relay server brokers jobs between Alexa and the Windows client. It needs to be reachable from the internet with a public HTTPS URL. Pick whichever deployment option suits you:
+The relay server brokers jobs between Alexa/Siri and the Windows client. It needs to be reachable from the internet with a public HTTPS URL. Pick whichever deployment option suits you:
 
 ---
 
@@ -273,8 +311,8 @@ All user data is stored in `%APPDATA%\LabelPrinter\` (i.e. `C:\Users\<you>\AppDa
 
 | File | Contents |
 |---|---|
-| `settings.json` | Current printer, size, font, border, style preset, etc. |
-| `history.json` | Print history (last 100) with full render settings |
+| `settings.json` | Current printer, size, font, border, style preset, saved default style, etc. |
+| `history.json` | Print history (last 500) with full render settings |
 | `addresses.json` | Saved address book entries |
 
 Settings survive restarts and app updates automatically.
@@ -336,12 +374,13 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 This produces something like `3Kx9mP2vL8nQ4wRjF7tYcZ1oBsHdEuAg` — use this as your `LABEL_TOKEN` in all three places (server, client, Lambda).
 
-### The same token goes in three places
+### The same token goes in multiple places
 | Where | How |
 |---|---|
 | Relay server | `LABEL_TOKEN` env var (Railway/Render dashboard or `server/.env`) |
 | Windows client | `LABEL_TOKEN` in `client/.env` |
 | AWS Lambda | `LABEL_TOKEN` env var in Lambda configuration |
+| Siri Shortcut | `X-Token` header in the **Get Contents of URL** action |
 
 If any one of these doesn't match, that component stops working — which is a useful way to rotate the token if you ever think it's been compromised.
 
