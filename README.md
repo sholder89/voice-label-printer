@@ -90,13 +90,29 @@ Transform label text automatically: **None, UPPERCASE, lowercase, Title Case, Se
 - Uses the Address Label style preset automatically
 
 ### 🌙 Dark Mode
-Full dark/light mode toggle with persistent preference. CSS custom properties handle theming throughout.
+Full dark/light mode toggle with persistent preference. CSS custom properties handle theming throughout. The **Appearance** section of the Advanced page also offers an explicit **Light / Dark / Follow System** selector — "Follow System" tracks your OS theme.
 
 ### 🔔 Notifications
-Optional Telegram notifications on every print. Configure via `SHOUTRRR_URL` environment variable:
+Optional Telegram notifications on every print (a message per label, with a 🎙/🖥 marker showing whether it came from voice or the UI). Configure it live from the **Advanced page** (enable toggle, bot token, chat ID, and a **Send test message** button) — no restart needed. As a fallback you can also seed credentials from the `SHOUTRRR_URL` environment variable:
 ```
 telegram://<bot_token>@telegram?chats=<chat_id>
 ```
+The bot token is write-only in the UI — it's never displayed back, only overwritten when you type a new one.
+
+---
+
+## Advanced Settings (PC-only)
+
+Click the **🔧** icon in the header — visible **only on the PC running the client**, never from phones or other LAN devices — to open a tabbed settings page. Every option here applies live, with no restart:
+
+| Section | What it does |
+|---|---|
+| **Connection** | Change the relay URL or rotate the `LABEL_TOKEN` (write-only), with a **Test connection** button |
+| **Telegram** | Enable/disable print notifications and configure the bot token + chat ID |
+| **Emoji Darkness** | A 0–100% slider that darkens emoji icons for faint thermal printers, with a live preview strip — preserves full grayscale detail rather than flattening to black |
+| **Custom Emojis** | Map your own keywords to any emoji (searchable picker of all 1,870), with a per-row toggle to enable/disable each mapping without deleting it |
+| **Custom Label Sizes** | Define named sizes in inches, mm, or cm — they appear in the Print Settings size list |
+| **Appearance** | Light / Dark / Follow System theme selector |
 
 ---
 
@@ -365,6 +381,9 @@ All user data is stored in `%APPDATA%\LabelPrinter\` (i.e. `C:\Users\<you>\AppDa
 | `settings.json` | Current printer, size, font, border, style preset, saved default style, etc. |
 | `history.json` | Print history (last 500) with full render settings |
 | `addresses.json` | Saved address book entries |
+| `config.json` | Advanced-page overrides: relay URL, token, Telegram credentials, emoji darkness |
+| `custom_emojis.json` | Custom keyword → emoji mappings (with per-entry enabled flag) |
+| `custom_sizes.json` | User-defined label sizes (name + dimensions + unit) |
 
 Settings survive restarts and app updates automatically.
 
@@ -397,7 +416,8 @@ The app lives in the Windows system tray when running:
 │   ├── images/             # Drop custom border images here (border_<name>.png)
 │   ├── static/             # favicon.ico, favicon.png
 │   └── templates/
-│       └── index.html      # Single-page web UI
+│       ├── index.html      # Single-page web UI
+│       └── advanced.html   # PC-only Advanced Settings page (tabbed)
 ├── server/
 │   ├── app.py              # Flask relay server (shared by Docker + local)
 │   ├── run_local.py        # All-local Windows launcher: tray + setup page (Option D)
