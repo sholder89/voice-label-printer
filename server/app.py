@@ -67,7 +67,10 @@ def init_db():
 def require_token(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.args.get("token") or request.headers.get("X-Token")
+        # Header only — never accept the token via query string, which would
+        # write the secret into access logs. All callers (client, Lambda, Siri)
+        # send the X-Token header.
+        token = request.headers.get("X-Token")
         if not token or not hmac.compare_digest(token, TOKEN):
             return jsonify({"error": "unauthorized"}), 401
         return f(*args, **kwargs)
