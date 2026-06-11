@@ -623,7 +623,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
              oninput="schedulePreview(); updateCharCount()"
              onkeydown="if(event.key==='Enter' && !event.repeat) doPrint()" />
       <div class="char-count" id="char-count">0 / 200</div>
-      <p class="hint">💡 Mention keywords like <em>kitchen, tools, travel, music, fragile, warning</em> to auto-add an emoji.</p>
+      <p class="hint">💡 Use <code>\n</code> for a new line. Mention keywords like <em>kitchen, tools, travel, music, fragile, warning</em> to auto-add an emoji.</p>
     </div>
 
     <!-- Caption option — shown when the QR Code or Barcode preset is active -->
@@ -903,7 +903,7 @@ function getAddressText() {
 
 function getPrintText() {
   if (document.getElementById('sel-style-preset').value === 'address') return getAddressText();
-  return document.getElementById('print-text').value.trim() || 'Label Printer';
+  return (document.getElementById('print-text').value.trim() || 'Label Printer').replace(/\\n/g, '\n');
 }
 
 function refreshPreview() {

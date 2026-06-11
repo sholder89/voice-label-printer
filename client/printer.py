@@ -1322,7 +1322,15 @@ def _render_chalkboard(text: str, w_px: int, h_px: int, dpi: int,
 
 def _fit_text(text, max_w, max_h, font_style="standard", fill=0.85, font_weight="bold"):
     font_path = _find_font_path(font_style, font_weight)
-    words     = text.split()
+
+    # If the text contains explicit newlines, honour them as forced line breaks
+    # and just find the best font size for that fixed arrangement.
+    if "\n" in text:
+        forced = [l.strip() for l in text.split("\n")]
+        font, _ = _largest_font_for("\n".join(forced), max_w, max_h, font_path, fill)
+        return forced, font
+
+    words = text.split()
     # Try every split from 1 line up to one-word-per-line; pick the biggest font.
     max_n      = min(len(words), 5)
     best_font  = ImageFont.load_default()
