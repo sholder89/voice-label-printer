@@ -473,28 +473,41 @@ def print_label(
 
         render_dpi = dpi_x or dpi
 
-        # calc_w / calc_h are the physical page dimensions (including margins)
-        # for our label size at the driver's reported DPI.  The DC is portrait
-        # for every size: X = label width, Y = label length/feed direction.
+        # calc_w / calc_h are the physical page dimensions for our label size
+        # at the driver's reported DPI, used as the draw-target rect.
         calc_w = int(width_in  * render_dpi)
         calc_h = int(height_in * (dpi_y or dpi))
 
         if _skip_devmode:
-            # Brother continuous tape feeds skinny-side-first, so render the
-            # label LANDSCAPE (text along the 3.5" length — note width/height are
-            # swapped here) then rotate 90° to lay it onto the physically-narrow
-            # (1.1") tape.  The portrait DC dimensions are unchanged.
+            # Brother QL drivers auto-detect the installed DK roll and bypass
+            # DEVMODE.  Different models (and driver versions) present the DC in
+            # either portrait (narrow side = X) or landscape (long side = X).
+            # Read the physical DC dimensions to tell which we have, then render
+            # and orient accordingly so the content always reads along the label.
+            dc_phys_w = hDC.GetDeviceCaps(110)   # PHYSICALWIDTH  (device px)
+            dc_phys_h = hDC.GetDeviceCaps(111)   # PHYSICALHEIGHT (device px)
+            dc_landscape = dc_phys_w >= dc_phys_h
+
+            # Always render landscape (long side as image width, text fills it).
             img = render_label(text, height_in, width_in, dpi,
                                font_style, border, icons, text_case,
                                style_preset, font_weight, qr_show_text)
-            img = img.rotate(_BROTHER_ROTATE, expand=True)
+
+            if dc_landscape:
+                # DC is already landscape — draw directly, no rotation needed.
+                render_w = int(height_in * (dpi_x or dpi))
+                render_h = int(width_in  * (dpi_y or dpi))
+            else:
+                # DC is portrait — rotate landscape image to match.
+                img = img.rotate(_BROTHER_ROTATE, expand=True)
+                render_w = calc_w
+                render_h = calc_h
         else:
             img = render_label(text, width_in, height_in, dpi,
                                font_style, border, icons, text_case,
                                style_preset, font_weight, qr_show_text)
-
-        render_w = calc_w
-        render_h = calc_h
+            render_w = calc_w
+            render_h = calc_h
 
         hDC.StartDoc("Label")
         hDC.StartPage()
