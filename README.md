@@ -53,9 +53,13 @@ Choose a style to completely change the look of a label:
 | Layouts | **Price Tag** | Eyelet hole on left, vertical divider, text on right |
 | Layouts | **Cassette** | Black end blocks, white center spine |
 | Layouts | **QR Code** | Generates a scannable QR code from the label text |
+| Layouts | **Barcode** | Scannable Code 128 barcode with a human-readable caption (best on wider labels) |
+| Layouts | **Name Tag** | Classic "HELLO my name is" banner with the name large below |
+| Layouts | **Receipt** | Centered monospace text framed by dashed rules — thermal-receipt look |
 | Themed | **Windows 95** | Classic raised-button gray UI chrome |
 | Themed | **Blueprint** | Black background, grey grid lines |
 | Themed | **Warning** | ⚠ hazard header, diagonal stripes, icon + body text |
+| Themed | **Chalkboard** | Black board with white handwriting (Ink Free) and a chalk frame |
 
 Three quick-action buttons sit below the Style Preset dropdown:
 - **🎲 Randomize** — picks a random preset, or randomises font/border/weight individually
@@ -63,13 +67,13 @@ Three quick-action buttons sit below the Style Preset dropdown:
 - **📌 Set Default** — saves the current style as your default (persists across restarts)
 
 ### 🔤 Fonts & Weights
-- **Font styles:** Standard (Arial), Enhanced (Segoe UI), Impact, Serif (Georgia), Narrow (Arial Narrow), Mono (Courier New), Burbank (Burbank Big Condensed Bold)
+- **Font styles:** Standard (Arial), Enhanced (Segoe UI), Impact, Serif (Georgia), Narrow (Arial Narrow), Mono (Courier New), Consolas, Bahnschrift (condensed — great for fitting more text), Burbank (Burbank Big Condensed Bold), Ink Free (handwriting)
 - **Font weights:** Normal, Bold, Italic, Bold Italic — each with proper fallback fonts
 - **W95FA pixel font** used for Windows 95 style
 - Text automatically scales to fill the available label area — tries every line-break combination to find the biggest font size that fits
 
 ### 🔲 Borders
-Built-in border styles: **None, Thin, Thick, Double, Dashed, Rounded, Corners**
+Built-in border styles: **None, Thin, Thick, Double, Dashed, Dotted, Wave (scalloped), Ticket (perforated), Inset (3D), Rounded, Corners**
 
 **Custom image borders** — drop any PNG/WebP/JPG named `border_<name>.png` into `client/images/` and it appears automatically in the dropdown after a restart.
 
@@ -479,6 +483,7 @@ If any one of these doesn't match, that component stops working — which is a u
 | `pystray` | System tray icon |
 | `requests` | Polling the relay server |
 | `qrcode[pil]` | QR Code style preset |
+| `python-barcode` | Code 128 Barcode style preset |
 | `uharfbuzz` | HarfBuzz text shaping for ZWJ emoji sequences |
 | `freetype-py` | FreeType rendering of color emoji bitmaps |
 | `fonttools` | PNG bitmap extraction from Noto Color Emoji (country flags + Unicode 15) |
