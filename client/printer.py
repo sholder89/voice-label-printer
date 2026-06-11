@@ -314,6 +314,7 @@ def render_label(
     style_preset: str = "none",
     font_weight: str = "bold",
     qr_show_text: bool = True,
+    text_align: str = "center",
 ) -> Image.Image:
     w_px = int(width_in * dpi)
     h_px = int(height_in * dpi)
@@ -399,10 +400,17 @@ def render_label(
     wrapped, font = _fit_text(text, text_area_w, text_area_h, font_style, fill, font_weight)
     joined  = "\n".join(wrapped)
 
-    bb = draw.multiline_textbbox((0, 0), joined, font=font, align="center")
-    x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-    y  = text_y0 + (text_area_h - (bb[3] - bb[1])) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill="black", font=font, align="center")
+    align = text_align if text_align in ("left", "center", "right") else "center"
+    bb  = draw.multiline_textbbox((0, 0), joined, font=font, align=align)
+    bw, bh = bb[2] - bb[0], bb[3] - bb[1]
+    if align == "left":
+        x = text_x0
+    elif align == "right":
+        x = text_x0 + text_area_w - bw
+    else:
+        x = text_x0 + (text_area_w - bw) / 2 - bb[0]
+    y = text_y0 + (text_area_h - bh) / 2 - bb[1]
+    draw.multiline_text((x, y), joined, fill="black", font=font, align=align)
 
     if icon:
         _draw_icon(img, icon, icon_x, icon_y, icon_size)
@@ -426,6 +434,7 @@ def print_label(
     style_preset: str = "none",
     font_weight: str = "bold",
     qr_show_text: bool = True,
+    text_align: str = "center",
 ):
     if not WIN32_AVAILABLE:
         raise RuntimeError("pywin32 is not installed — cannot print")
@@ -491,7 +500,8 @@ def print_label(
             # Always render landscape (long side as image width, text fills it).
             img = render_label(text, height_in, width_in, dpi,
                                font_style, border, icons, text_case,
-                               style_preset, font_weight, qr_show_text)
+                               style_preset, font_weight, qr_show_text,
+                               text_align)
 
             if dc_landscape:
                 # DC is already landscape — draw directly, no rotation needed.
@@ -505,7 +515,8 @@ def print_label(
         else:
             img = render_label(text, width_in, height_in, dpi,
                                font_style, border, icons, text_case,
-                               style_preset, font_weight, qr_show_text)
+                               style_preset, font_weight, qr_show_text,
+                               text_align)
             render_w = calc_w
             render_h = calc_h
 
@@ -825,7 +836,7 @@ def _smart_title(text: str) -> str:
             return word
         # Only raise the first character — don't touch the rest
         return word[0].upper() + word[1:].lower()
-    return " ".join(_cap(w) for w in text.split())
+    return "\n".join(" ".join(_cap(w) for w in line.split()) for line in text.split("\n"))
 
 
 def _apply_case(text: str, case: str) -> str:

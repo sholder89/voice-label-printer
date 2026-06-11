@@ -43,7 +43,7 @@ if _m:
     _TG_TOKEN, _TG_CHAT = _m.group(1), _m.group(2)
 
 # Keys persisted to / loaded from settings.json
-_SETTINGS_KEYS = ("printer", "size", "font_style", "font_weight", "border", "text_case", "icons", "style_preset", "qr_show_text", "default_style")
+_SETTINGS_KEYS = ("printer", "size", "font_style", "font_weight", "border", "text_case", "text_align", "icons", "style_preset", "qr_show_text", "default_style")
 _APP_DIR       = os.path.dirname(os.path.abspath(__file__))
 
 # Store data in %APPDATA%\LabelPrinter — avoids OneDrive sync interference.
@@ -79,6 +79,7 @@ state = {
     "font_weight":  os.environ.get("DEFAULT_FONT_WEIGHT", "bold"),
     "border":       os.environ.get("DEFAULT_BORDER", "none"),
     "text_case":    os.environ.get("DEFAULT_TEXT_CASE", "none"),
+    "text_align":   "center",
     "style_preset": "none",
     "icons":        True,
     "qr_show_text":   True,
@@ -578,7 +579,7 @@ def test_telegram():
 @app.route("/config", methods=["POST"])
 def set_config():
     data = request.get_json(silent=True) or {}
-    for key in ("printer", "size", "font_style", "font_weight", "border", "text_case", "style_preset"):
+    for key in ("printer", "size", "font_style", "font_weight", "border", "text_case", "text_align", "style_preset"):
         if key in data:
             state[key] = data[key]
     if "icons" in data:
@@ -597,6 +598,7 @@ def preview():
     font_weight  = request.args.get("font_weight",  state["font_weight"])
     border       = request.args.get("border",       state["border"])
     text_case    = request.args.get("text_case",    state["text_case"])
+    text_align   = request.args.get("text_align",   state["text_align"])
     style_preset = request.args.get("style_preset", state["style_preset"])
     icons        = request.args.get("icons", str(state["icons"])).lower() not in ("false", "0")
     qr_show_text = request.args.get("qr_show_text", str(state["qr_show_text"])).lower() not in ("false", "0")
@@ -606,7 +608,8 @@ def preview():
     w, h = render_dimensions(size)
     img  = render_label(text, w, h, dpi=203, font_style=font_style, border=border,
                         icons=icons, text_case=text_case, style_preset=style_preset,
-                        font_weight=font_weight, qr_show_text=qr_show_text)
+                        font_weight=font_weight, qr_show_text=qr_show_text,
+                        text_align=text_align)
     buf  = io.BytesIO()
     img.save(buf, format="PNG")
     buf.seek(0)
@@ -623,6 +626,7 @@ def manual_print():
     font_weight = data.get("font_weight", state["font_weight"])
     border       = data.get("border",       state["border"])
     text_case    = data.get("text_case",    state["text_case"])
+    text_align   = data.get("text_align",   state["text_align"])
     style_preset = data.get("style_preset", state["style_preset"])
     icons        = data.get("icons",        state["icons"])
     qr_show_text = data.get("qr_show_text", state["qr_show_text"])
@@ -638,7 +642,7 @@ def manual_print():
                 time.sleep(0.5)
             print_label(text, printer, size, font_style=font_style, font_weight=font_weight,
                         border=border, icons=icons, text_case=text_case, style_preset=style_preset,
-                        qr_show_text=qr_show_text)
+                        qr_show_text=qr_show_text, text_align=text_align)
         status_label = "ok" if copies == 1 else f"ok ×{copies}"
         _record(text, size, status_label, font_style=font_style, font_weight=font_weight,
                 border=border, text_case=text_case, style_preset=style_preset, icons=icons)
@@ -667,7 +671,7 @@ def get_default_style():
 @app.route("/style/default", methods=["POST"])
 def set_default_style():
     data = request.get_json(force=True) or {}
-    allowed = {"style_preset", "font_style", "font_weight", "border", "text_case", "icons"}
+    allowed = {"style_preset", "font_style", "font_weight", "border", "text_case", "text_align", "icons"}
     style = {k: v for k, v in data.items() if k in allowed}
     state["default_style"] = style
     _save_settings()
@@ -729,6 +733,7 @@ def status():
         "font_weight": state["font_weight"],
         "border":      state["border"],
         "text_case":    state["text_case"],
+        "text_align":   state["text_align"],
         "style_preset": state["style_preset"],
         "icons":        state["icons"],
         "qr_show_text": state["qr_show_text"],
@@ -802,6 +807,7 @@ def poll_loop():
                             border=state["border"],
                             icons=state["icons"],
                             text_case=state["text_case"],
+                            text_align=state["text_align"],
                             style_preset=state["style_preset"],
                             qr_show_text=state["qr_show_text"],
                         )
