@@ -194,6 +194,17 @@ select:focus, input:focus {
 }
 
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.align-btns { display:flex; margin-bottom:.85rem; }
+.align-btns button {
+  flex:1; padding:.48rem .5rem; font-size:.82rem; font-weight:600;
+  background:var(--surface); color:var(--text2);
+  border:1px solid var(--border2); cursor:pointer; transition:background .15s, color .15s;
+}
+.align-btns button:first-child { border-radius:.6rem 0 0 .6rem; }
+.align-btns button:last-child  { border-radius:0 .6rem .6rem 0; }
+.align-btns button:not(:first-child) { border-left:none; }
+.align-btns button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.align-btns button:hover:not(.active) { background:var(--btn-sec-bg); }
 
 /* ── Buttons ──────────────────────────────────────────────────────────── */
 button {
@@ -567,6 +578,16 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
         </div>
       </div><!-- end #style-overrides -->
 
+      <!-- Alignment -->
+      <div>
+        <label>Alignment</label>
+        <div class="align-btns" id="align-btns">
+          <button data-align="left"   onclick="setTextAlign('left')"   {% if state.text_align == 'left'   %}class="active"{% endif %}>&#8592; Left</button>
+          <button data-align="center" onclick="setTextAlign('center')" {% if state.text_align != 'left' and state.text_align != 'right' %}class="active"{% endif %}>Center</button>
+          <button data-align="right"  onclick="setTextAlign('right')"  {% if state.text_align == 'right'  %}class="active"{% endif %}>Right &#8594;</button>
+        </div>
+      </div>
+
       <!-- Text Case + Font Weight always available regardless of preset -->
       <div class="grid-2">
         <div>
@@ -805,6 +826,15 @@ function updateCharCount() {
 }
 
 /* ── Settings ─────────────────────────────────────────────────────────── */
+function getTextAlign() {
+  return document.querySelector('#align-btns button.active')?.dataset.align || 'center';
+}
+function setTextAlign(val) {
+  document.querySelectorAll('#align-btns button').forEach(b =>
+    b.classList.toggle('active', b.dataset.align === val));
+  saveConfig();
+}
+
 function getSettings() {
   return {
     printer:      document.getElementById('sel-printer').value,
@@ -813,6 +843,7 @@ function getSettings() {
     font_weight:  document.getElementById('sel-font-weight').value,
     border:       document.getElementById('sel-border').value,
     text_case:    document.getElementById('sel-text-case').value,
+    text_align:   getTextAlign(),
     style_preset: document.getElementById('sel-style-preset').value,
     icons:        document.getElementById('chk-icons').checked,
     qr_show_text: document.getElementById('chk-qr-text').checked,
@@ -910,7 +941,7 @@ function refreshPreview() {
   const s    = getSettings();
   const text = getPrintText();
   document.getElementById('preview-img').src =
-    `/preview?text=${encodeURIComponent(text)}&size=${s.size}&font_style=${s.font_style}&font_weight=${s.font_weight}&border=${s.border}&text_case=${s.text_case}&style_preset=${s.style_preset}&icons=${s.icons}&qr_show_text=${s.qr_show_text}&t=${Date.now()}`;
+    `/preview?text=${encodeURIComponent(text)}&size=${s.size}&font_style=${s.font_style}&font_weight=${s.font_weight}&border=${s.border}&text_case=${s.text_case}&text_align=${s.text_align}&style_preset=${s.style_preset}&icons=${s.icons}&qr_show_text=${s.qr_show_text}&t=${Date.now()}`;
 }
 
 function saveConfig() {
@@ -1233,6 +1264,7 @@ function _applyStyleFields(s) {
   if (s.font_weight  !== undefined) document.getElementById('sel-font-weight').value  = s.font_weight;
   if (s.border       !== undefined) document.getElementById('sel-border').value       = s.border;
   if (s.text_case    !== undefined) document.getElementById('sel-text-case').value    = s.text_case;
+  if (s.text_align   !== undefined) setTextAlign(s.text_align);
   if (s.icons        !== undefined) document.getElementById('chk-icons').checked      = s.icons;
   onPresetChange();
   saveConfig();
@@ -1258,6 +1290,7 @@ function setDefaultStyle() {
       font_weight:  s.font_weight,
       border:       s.border,
       text_case:    s.text_case,
+      text_align:   s.text_align,
       icons:        s.icons,
     }),
   }).then(() => toast('📌 Default style saved'));

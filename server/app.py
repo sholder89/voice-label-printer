@@ -153,6 +153,7 @@ def post_setting():
         "border":       {"none", "thin", "thick", "double", "dashed", "dotted", "wave",
                           "ticket", "inset", "rounded", "corners"},
         "text_case":    {"none", "uppercase", "lowercase", "title", "sentence"},
+        "text_align":   {"left", "center", "right"},
         "style_preset": {"none", "bold", "elegant", "retro", "minimal", "warning",
                           "address", "windows95", "price_tag", "cassette", "blueprint", "qr_code",
                           "barcode", "name_tag", "receipt", "chalkboard"},
