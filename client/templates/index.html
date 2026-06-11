@@ -646,7 +646,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
                onkeydown="if(event.key==='Enter' && !event.repeat) doPrint()"
                style="flex:1; min-width:0" />
         <button type="button" title="Insert new line" onclick="insertNewLine()"
-                style="flex-shrink:0; padding:.38rem .6rem; font-size:.8rem; white-space:nowrap; border:1px solid var(--border); border-radius:6px; background:var(--card); color:var(--text2); cursor:pointer">↵ New line</button>
+                style="flex-shrink:0; align-self:stretch; padding:0 .7rem; font-size:.8rem; white-space:nowrap; border:1px solid var(--border); border-radius:6px; background:var(--card); color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center">↵ New line</button>
       </div>
       <div class="char-count" id="char-count">0 / 200</div>
       <p class="hint">💡 Mention keywords like <em>kitchen, tools, travel, music, fragile, warning</em> to auto-add an emoji.</p>
