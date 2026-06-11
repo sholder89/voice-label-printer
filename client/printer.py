@@ -591,23 +591,28 @@ def _render_win95(text: str, w_px: int, h_px: int, dpi: int, text_case: str,
     display_text = _apply_case(text, text_case)
     font_path    = next((p for p in _WIN95_FONTS if os.path.exists(p)), None)
 
-    words = display_text.split()
-    max_n = min(len(words), 5)
-    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
-    for n in range(1, min(max_n, 5) + 1):
-        lines = _split_words(words, n)
-        font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h,
-                                       font_path, fill=0.85)
-        if size > best_size:
-            best_size, best_font, best_lines = size, font, lines
+    if _has_inline_emoji(display_text):
+        _render_inline_text(img, draw, display_text, text_x0, by1 + pad,
+                            text_area_w, text_area_h, font_path=font_path,
+                            fill=0.85, color=(0, 0, 0))
+    else:
+      words = display_text.split()
+      max_n = min(len(words), 5)
+      best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+      for n in range(1, min(max_n, 5) + 1):
+          lines = _split_words(words, n)
+          font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h,
+                                         font_path, fill=0.85)
+          if size > best_size:
+              best_size, best_font, best_lines = size, font, lines
 
-    joined = "\n".join(best_lines)
-    stroke = 1 if font_weight in ("bold", "bold_italic") else 0
-    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center",
-                                 stroke_width=stroke)
-    x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-    y  = by1 + (bh - (bb[3] - bb[1])) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill="#000000", font=best_font, align="center",
+      joined = "\n".join(best_lines)
+      stroke = 1 if font_weight in ("bold", "bold_italic") else 0
+      bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center",
+                                   stroke_width=stroke)
+      x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+      y  = by1 + (bh - (bb[3] - bb[1])) / 2 - bb[1]
+      draw.multiline_text((x, y), joined, fill="#000000", font=best_font, align="center",
                         stroke_width=stroke, stroke_fill="#000000")
 
     if icon:
@@ -685,7 +690,12 @@ def _render_address(text: str, w_px: int, h_px: int, dpi: int,
     y   = pad_y + (avail_h - th) // 2
 
     for line in lines:
-        draw.text((pad_x, y), line, fill=BLACK, font=best_font)
+        if _has_inline_emoji(line):
+            _render_inline_text(img, draw, line, pad_x, y,
+                                avail_w, lh, font_path=font_path,
+                                fill=0.95, align="left", color=BLACK)
+        else:
+            draw.text((pad_x, y), line, fill=BLACK, font=best_font)
         y += lh + gap
 
     # Draw border using the shared renderer — same pad formula as render_label
@@ -804,21 +814,26 @@ def _render_warning(text: str, w_px: int, h_px: int, dpi: int, text_case: str,
         text_x0 = body_x1
 
     text_area_w = ix2 - text_x0 - pad
-    words = display_text.split()
-    max_n = min(len(words), 5)
-    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
-    for n in range(1, min(max_n, 5) + 1):
-        lines = _split_words(words, n)
-        font, size = _largest_font_for("\n".join(lines), text_area_w, body_h,
-                                       font_path, fill=0.85)
-        if size > best_size:
-            best_size, best_font, best_lines = size, font, lines
+    if _has_inline_emoji(display_text):
+        _render_inline_text(img, draw, display_text, text_x0, body_y1,
+                            text_area_w, body_h, font_path=font_path,
+                            fill=0.85, color=BLACK)
+    else:
+        words = display_text.split()
+        max_n = min(len(words), 5)
+        best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+        for n in range(1, min(max_n, 5) + 1):
+            lines = _split_words(words, n)
+            font, size = _largest_font_for("\n".join(lines), text_area_w, body_h,
+                                           font_path, fill=0.85)
+            if size > best_size:
+                best_size, best_font, best_lines = size, font, lines
 
-    joined = "\n".join(best_lines)
-    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
-    x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-    y  = body_y1  + (body_h     - (bb[3] - bb[1])) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill=BLACK, font=best_font, align="center")
+        joined = "\n".join(best_lines)
+        bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
+        x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+        y  = body_y1  + (body_h     - (bb[3] - bb[1])) / 2 - bb[1]
+        draw.multiline_text((x, y), joined, fill=BLACK, font=best_font, align="center")
 
     if body_icon:
         _draw_icon(img, body_icon, bi_x, bi_y, bi_size)
@@ -895,22 +910,27 @@ def _render_price_tag(text: str, w_px: int, h_px: int, dpi: int,
     display_text = _apply_case(text, text_case)
     font_path    = _find_font_path("standard", font_weight)
 
-    words = display_text.split()
-    max_n = min(len(words), 5)
-    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
-    for n in range(1, min(max_n, 5) + 1):
-        lines = _split_words(words, n)
-        font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
-        if size > best_size:
-            best_size, best_font, best_lines = size, font, lines
+    if _has_inline_emoji(display_text):
+        _render_inline_text(img, draw, display_text, text_x0, pad,
+                            text_area_w, text_area_h, font_path=font_path,
+                            fill=0.85, color=(0, 0, 0))
+    else:
+        words = display_text.split()
+        max_n = min(len(words), 5)
+        best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+        for n in range(1, min(max_n, 5) + 1):
+            lines = _split_words(words, n)
+            font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
+            if size > best_size:
+                best_size, best_font, best_lines = size, font, lines
 
-    joined = "\n".join(best_lines)
-    stroke = 1 if font_weight in ("bold", "bold_italic") else 0
-    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center", stroke_width=stroke)
-    x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-    y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center",
-                        stroke_width=stroke, stroke_fill="black")
+        joined = "\n".join(best_lines)
+        stroke = 1 if font_weight in ("bold", "bold_italic") else 0
+        bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center", stroke_width=stroke)
+        x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+        y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
+        draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center",
+                            stroke_width=stroke, stroke_fill="black")
     return img
 
 
@@ -950,20 +970,25 @@ def _render_cassette(text: str, w_px: int, h_px: int, dpi: int,
     display_text = _apply_case(text, text_case)
     font_path    = _find_font_path("narrow", font_weight)
 
-    words = display_text.split()
-    max_n = min(len(words), 5)
-    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
-    for n in range(1, min(max_n, 5) + 1):
-        lines = _split_words(words, n)
-        font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.90)
-        if size > best_size:
-            best_size, best_font, best_lines = size, font, lines
+    if _has_inline_emoji(display_text):
+        _render_inline_text(img, draw, display_text, text_x0, pad,
+                            text_area_w, text_area_h, font_path=font_path,
+                            fill=0.90, color=(0, 0, 0))
+    else:
+        words = display_text.split()
+        max_n = min(len(words), 5)
+        best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+        for n in range(1, min(max_n, 5) + 1):
+            lines = _split_words(words, n)
+            font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.90)
+            if size > best_size:
+                best_size, best_font, best_lines = size, font, lines
 
-    joined = "\n".join(best_lines)
-    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
-    x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-    y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center")
+        joined = "\n".join(best_lines)
+        bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
+        x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+        y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
+        draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center")
 
     # Outer border
     draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=max(2, lw))
@@ -1021,22 +1046,27 @@ def _render_blueprint(text: str, w_px: int, h_px: int, dpi: int,
     display_text = _apply_case(text, text_case)
     font_path    = _find_font_path("mono", font_weight)
 
-    words = display_text.split()
-    max_n = min(len(words), 5)
-    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
-    for n in range(1, min(max_n, 5) + 1):
-        lines = _split_words(words, n)
-        font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
-        if size > best_size:
-            best_size, best_font, best_lines = size, font, lines
+    if _has_inline_emoji(display_text):
+        _render_inline_text(img, draw, display_text, text_x0, pad,
+                            text_area_w, text_area_h, font_path=font_path,
+                            fill=0.85, color=FG)
+    else:
+        words = display_text.split()
+        max_n = min(len(words), 5)
+        best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+        for n in range(1, min(max_n, 5) + 1):
+            lines = _split_words(words, n)
+            font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
+            if size > best_size:
+                best_size, best_font, best_lines = size, font, lines
 
-    joined = "\n".join(best_lines)
-    stroke = 1 if font_weight in ("bold", "bold_italic") else 0
-    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center", stroke_width=stroke)
-    x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-    y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill=FG, font=best_font, align="center",
-                        stroke_width=stroke, stroke_fill=FG)
+        joined = "\n".join(best_lines)
+        stroke = 1 if font_weight in ("bold", "bold_italic") else 0
+        bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center", stroke_width=stroke)
+        x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+        y  = (h_px - (bb[3] - bb[1])) / 2 - bb[1]
+        draw.multiline_text((x, y), joined, fill=FG, font=best_font, align="center",
+                            stroke_width=stroke, stroke_fill=FG)
 
     if icon:
         _draw_icon(img, icon, icon_x, icon_y, icon_size, color=FG)
@@ -1107,21 +1137,28 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
 
     display_text = _apply_case(text, text_case)
     font_path    = _find_font_path("enhanced", font_weight)
-    words        = display_text.split()
-    max_n        = min(len(words), 5)
-    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
-    for n in range(1, min(max_n, 4) + 1):
-        lines = _split_words(words, n)
-        font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
-        if size > best_size:
-            best_size, best_font, best_lines = size, font, lines
+    cap_y0 = 0 if text_y_center else text_y0
+    cap_h  = h_px if text_y_center else text_area_h
+    if _has_inline_emoji(display_text):
+        _render_inline_text(img, draw, display_text, text_x0, cap_y0,
+                            text_area_w, cap_h, font_path=font_path,
+                            fill=0.85, align=align, color=(0, 0, 0))
+    else:
+        words        = display_text.split()
+        max_n        = min(len(words), 5)
+        best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+        for n in range(1, min(max_n, 4) + 1):
+            lines = _split_words(words, n)
+            font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
+            if size > best_size:
+                best_size, best_font, best_lines = size, font, lines
 
-    joined = "\n".join(best_lines)
-    bb     = draw.multiline_textbbox((0, 0), joined, font=best_font, align=align)
-    tw, th = bb[2] - bb[0], bb[3] - bb[1]
-    x = text_x0 + (text_area_w - tw) / 2 - bb[0] if align == "center" else text_x0
-    y = (h_px - th) / 2 - bb[1] if text_y_center else text_y0
-    draw.multiline_text((x, y), joined, fill="black", font=best_font, align=align)
+        joined = "\n".join(best_lines)
+        bb     = draw.multiline_textbbox((0, 0), joined, font=best_font, align=align)
+        tw, th = bb[2] - bb[0], bb[3] - bb[1]
+        x = text_x0 + (text_area_w - tw) / 2 - bb[0] if align == "center" else text_x0
+        y = (h_px - th) / 2 - bb[1] if text_y_center else text_y0
+        draw.multiline_text((x, y), joined, fill="black", font=best_font, align=align)
 
     draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
     return img
@@ -1223,18 +1260,23 @@ def _render_name_tag(text: str, w_px: int, h_px: int, dpi: int,
     area_w  = w_px - pad * 2
     area_y0 = banner_h + pad
     area_h  = h_px - area_y0 - pad
-    words   = name.split()
-    best_font, best_size, best_lines = ImageFont.load_default(), 8, [name]
-    for n in range(1, min(len(words), 3) + 1):
-        lines = _split_words(words, n)
-        f, size = _largest_font_for("\n".join(lines), area_w, area_h, nf_path, 0.9)
-        if size > best_size:
-            best_size, best_font, best_lines = size, f, lines
-    joined = "\n".join(best_lines)
-    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
-    x = (w_px - (bb[2] - bb[0])) / 2 - bb[0]
-    y = area_y0 + (area_h - (bb[3] - bb[1])) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill=BLACK, font=best_font, align="center")
+    if _has_inline_emoji(name):
+        _render_inline_text(img, draw, name, pad, area_y0,
+                            area_w, area_h, font_path=nf_path,
+                            fill=0.9, color=BLACK)
+    else:
+        words   = name.split()
+        best_font, best_size, best_lines = ImageFont.load_default(), 8, [name]
+        for n in range(1, min(len(words), 3) + 1):
+            lines = _split_words(words, n)
+            f, size = _largest_font_for("\n".join(lines), area_w, area_h, nf_path, 0.9)
+            if size > best_size:
+                best_size, best_font, best_lines = size, f, lines
+        joined = "\n".join(best_lines)
+        bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
+        x = (w_px - (bb[2] - bb[0])) / 2 - bb[0]
+        y = area_y0 + (area_h - (bb[3] - bb[1])) / 2 - bb[1]
+        draw.multiline_text((x, y), joined, fill=BLACK, font=best_font, align="center")
     return img
 
 
@@ -1263,18 +1305,23 @@ def _render_receipt(text: str, w_px: int, h_px: int, dpi: int,
     area_y0 = top_y + pad // 2
     area_h  = bot_y - top_y - pad
     display = _apply_case(text, text_case)
-    words   = display.split()
-    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display]
-    for n in range(1, min(len(words), 5) + 1):
-        lines = _split_words(words, n)
-        f, size = _largest_font_for("\n".join(lines), area_w, area_h, font_path, 0.9)
-        if size > best_size:
-            best_size, best_font, best_lines = size, f, lines
-    joined = "\n".join(best_lines)
-    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
-    x = (w_px - (bb[2] - bb[0])) / 2 - bb[0]
-    y = area_y0 + (area_h - (bb[3] - bb[1])) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center")
+    if _has_inline_emoji(display):
+        _render_inline_text(img, draw, display, pad, area_y0,
+                            area_w, area_h, font_path=font_path,
+                            fill=0.9, color=(0, 0, 0))
+    else:
+        words   = display.split()
+        best_font, best_size, best_lines = ImageFont.load_default(), 8, [display]
+        for n in range(1, min(len(words), 5) + 1):
+            lines = _split_words(words, n)
+            f, size = _largest_font_for("\n".join(lines), area_w, area_h, font_path, 0.9)
+            if size > best_size:
+                best_size, best_font, best_lines = size, f, lines
+        joined = "\n".join(best_lines)
+        bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
+        x = (w_px - (bb[2] - bb[0])) / 2 - bb[0]
+        y = area_y0 + (area_h - (bb[3] - bb[1])) / 2 - bb[1]
+        draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center")
     return img
 
 
@@ -1319,18 +1366,23 @@ def _render_chalkboard(text: str, w_px: int, h_px: int, dpi: int,
     text_area_h = max(1, h_px - text_y0 - pad)
     display   = _apply_case(text, text_case)
     font_path = _find_font_path("inkfree", font_weight) or _find_font_path("enhanced", font_weight)
-    words     = display.split()
-    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display]
-    for n in range(1, min(len(words), 5) + 1):
-        lines = _split_words(words, n)
-        f, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
-        if size > best_size:
-            best_size, best_font, best_lines = size, f, lines
-    joined = "\n".join(best_lines)
-    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
-    x = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-    y = text_y0 + (text_area_h - (bb[3] - bb[1])) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill=FG, font=best_font, align="center")
+    if _has_inline_emoji(display):
+        _render_inline_text(img, draw, display, text_x0, text_y0,
+                            text_area_w, text_area_h, font_path=font_path,
+                            fill=0.85, color=FG)
+    else:
+        words     = display.split()
+        best_font, best_size, best_lines = ImageFont.load_default(), 8, [display]
+        for n in range(1, min(len(words), 5) + 1):
+            lines = _split_words(words, n)
+            f, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
+            if size > best_size:
+                best_size, best_font, best_lines = size, f, lines
+        joined = "\n".join(best_lines)
+        bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
+        x = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+        y = text_y0 + (text_area_h - (bb[3] - bb[1])) / 2 - bb[1]
+        draw.multiline_text((x, y), joined, fill=FG, font=best_font, align="center")
     if icon:
         _draw_icon(img, icon, icon_x, icon_y, icon_size, color=FG)
     return img
@@ -1515,11 +1567,14 @@ def _measure_tokens(toks, font, em, space_w):
 
 
 def _render_inline_text(img, draw, text, x0, y0, area_w, area_h,
-                        font_style, fill, font_weight, align, color=(0, 0, 0)):
+                        font_style="standard", fill=0.85, font_weight="bold",
+                        align="center", color=(0, 0, 0), font_path=None):
     """Lay out and draw text that contains literal emoji within the given box.
     Mirrors _fit_text's wrap-and-grow behaviour but measures emoji as square
-    boxes and paints them with the shared emoji pipeline (_draw_icon)."""
-    font_path = _find_font_path(font_style, font_weight)
+    boxes and paints them with the shared emoji pipeline (_draw_icon).
+    font_path overrides font_style/font_weight when provided directly."""
+    if font_path is None:
+        font_path = _find_font_path(font_style, font_weight)
     if not font_path:
         return
 
