@@ -66,6 +66,20 @@ _TIMEOUT     = 8
 #       turn {onOff} emoji
 #       auto icons {onOff}
 #
+#   ChangeAlignmentIntent
+#     Slots:  textAlign  (custom slot type: TextAlign)
+#     Sample utterances:
+#       set alignment to {textAlign}
+#       change alignment to {textAlign}
+#       align {textAlign}
+#       set text alignment to {textAlign}
+#       {textAlign} align
+#       {textAlign} alignment
+#     Slot values for TextAlign:
+#       left, left align, left aligned, align left
+#       center, centred, centered, centre, middle
+#       right, right align, right aligned, align right
+#
 # UPDATED INTENTS:
 #
 #   ChangeFontIntent — add Burbank slot values:
@@ -283,6 +297,29 @@ _SIZE_LABELS = {
     "2x0.5": "two by half",
 }
 
+_ALIGN_MAP = {
+    "left":          "left",
+    "left align":    "left",
+    "left aligned":  "left",
+    "align left":    "left",
+    "center":        "center",
+    "centred":       "center",
+    "centered":      "center",
+    "centre":        "center",
+    "middle":        "center",
+    "align center":  "center",
+    "right":         "right",
+    "right align":   "right",
+    "right aligned": "right",
+    "align right":   "right",
+}
+
+_ALIGN_LABELS = {
+    "left":   "left aligned",
+    "center": "centered",
+    "right":  "right aligned",
+}
+
 
 # ── Lambda entry point ────────────────────────────────────────────────────────
 
@@ -376,6 +413,22 @@ def _handle_intent(intent):
         try:
             _post_setting("text_case", val)
             return _respond(f"Text case set to {_CASE_LABELS[val]}.")
+        except Exception as e:
+            logger.error("Settings failed: %s", e)
+            return _respond("Sorry, I couldn't update the setting. Please try again.")
+
+    # ── Text alignment ─────────────────────────────────────────────────────────
+    if name == "ChangeAlignmentIntent":
+        raw = _slot_value(intent, "textAlign")
+        val = _ALIGN_MAP.get(raw.lower()) if raw else None
+        if val is None:
+            return _respond(
+                "I didn't recognise that alignment. Options are: left, center, and right.",
+                end=False,
+            )
+        try:
+            _post_setting("text_align", val)
+            return _respond(f"Text alignment set to {_ALIGN_LABELS[val]}.")
         except Exception as e:
             logger.error("Settings failed: %s", e)
             return _respond("Sorry, I couldn't update the setting. Please try again.")

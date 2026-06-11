@@ -145,6 +145,24 @@
           ]
         },
         {
+          "name": "ChangeAlignmentIntent",
+          "slots": [
+            {
+              "name": "textAlign",
+              "type": "TextAlign"
+            }
+          ],
+          "samples": [
+            "set alignment to {textAlign}",
+            "change alignment to {textAlign}",
+            "align {textAlign}",
+            "set text alignment to {textAlign}",
+            "change text alignment to {textAlign}",
+            "{textAlign} align",
+            "{textAlign} alignment"
+          ]
+        },
+        {
           "name": "AMAZON.HelpIntent",
           "samples": []
         },
@@ -574,6 +592,43 @@
                   "disabled",
                   "no",
                   "deactivate"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TextAlign",
+          "values": [
+            {
+              "name": {
+                "value": "left",
+                "synonyms": [
+                  "left align",
+                  "left aligned",
+                  "align left"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "center",
+                "synonyms": [
+                  "centred",
+                  "centered",
+                  "centre",
+                  "middle",
+                  "align center"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "right",
+                "synonyms": [
+                  "right align",
+                  "right aligned",
+                  "align right"
                 ]
               }
             }
