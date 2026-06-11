@@ -793,6 +793,10 @@ function updateSettingsSummary() {
     parts.push(lbl[tc] || tc);
   }
 
+  const align = getTextAlign();
+  const alignLabel = {left: 'left align', center: 'centered', right: 'right align'};
+  parts.push(alignLabel[align] || align);
+
   const icons = document.getElementById('chk-icons')?.checked;
   if (icons) parts.push('icons on');
 
