@@ -397,20 +397,27 @@ def render_label(
     text_area_h = h_px - text_y0 - pad
 
     fill    = _FILL.get(font_style, 0.85)
-    wrapped, font = _fit_text(text, text_area_w, text_area_h, font_style, fill, font_weight)
-    joined  = "\n".join(wrapped)
+    align   = text_align if text_align in ("left", "center", "right") else "center"
 
-    align = text_align if text_align in ("left", "center", "right") else "center"
-    bb  = draw.multiline_textbbox((0, 0), joined, font=font, align=align)
-    bw, bh = bb[2] - bb[0], bb[3] - bb[1]
-    if align == "left":
-        x = text_x0
-    elif align == "right":
-        x = text_x0 + text_area_w - bw
+    if _has_inline_emoji(text):
+        # Literal emoji in the text — render segment-by-segment so they print as
+        # (mono) emoji graphics instead of missing-glyph boxes.
+        _render_inline_text(img, draw, text, text_x0, text_y0,
+                            text_area_w, text_area_h,
+                            font_style, fill, font_weight, align)
     else:
-        x = text_x0 + (text_area_w - bw) / 2 - bb[0]
-    y = text_y0 + (text_area_h - bh) / 2 - bb[1]
-    draw.multiline_text((x, y), joined, fill="black", font=font, align=align)
+        wrapped, font = _fit_text(text, text_area_w, text_area_h, font_style, fill, font_weight)
+        joined  = "\n".join(wrapped)
+        bb  = draw.multiline_textbbox((0, 0), joined, font=font, align=align)
+        bw, bh = bb[2] - bb[0], bb[3] - bb[1]
+        if align == "left":
+            x = text_x0
+        elif align == "right":
+            x = text_x0 + text_area_w - bw
+        else:
+            x = text_x0 + (text_area_w - bw) / 2 - bb[0]
+        y = text_y0 + (text_area_h - bh) / 2 - bb[1]
+        draw.multiline_text((x, y), joined, fill="black", font=font, align=align)
 
     if icon:
         _draw_icon(img, icon, icon_x, icon_y, icon_size)
@@ -1402,6 +1409,192 @@ def _find_font_path(font_style="standard", font_weight="bold"):
     style_variants = _FONT_MAP.get(font_style, _FONT_MAP["standard"])
     candidates = style_variants.get(font_weight, style_variants.get("bold", []))
     return next((p for p in candidates if os.path.exists(p)), None)
+
+# ── Inline emoji rendering ─────────────────────────────────────────────────────
+# Lets literal emoji typed/pasted into the label text render as (monochrome)
+# emoji graphics inline with the words, instead of font "tofu" boxes.  This is
+# independent of the keyword auto-icon feature and the icons on/off setting.
+
+_EMOJI_ZWJ    = 0x200D
+_EMOJI_VS16   = 0xFE0F
+_EMOJI_VS15   = 0xFE0E
+_EMOJI_KEYCAP = 0x20E3
+
+
+def _is_regional(o):
+    return 0x1F1E6 <= o <= 0x1F1FF
+
+
+def _is_skin_tone(o):
+    return 0x1F3FB <= o <= 0x1F3FF
+
+
+def _is_emoji_cp(o):
+    """True if a codepoint should be drawn via the emoji pipeline rather than
+    the text font."""
+    return (
+        0x1F300 <= o <= 0x1FAFF or   # pictographs, emoticons, transport, ext-A
+        0x1F000 <= o <= 0x1F0FF or   # mahjong / dominoes / cards
+        0x2600  <= o <= 0x27BF  or   # misc symbols + dingbats (☕ ✂ ✅ …)
+        0x2B00  <= o <= 0x2BFF  or   # arrows / stars block (⬛ ⭐ …)
+        0x23E9  <= o <= 0x23FA  or   # media controls, alarm clock, hourglass
+        _is_regional(o)         or
+        o in (0x231A, 0x231B, 0x2328, 0x24C2, 0x25AA, 0x25AB, 0x25B6,
+              0x25C0, 0x2122, 0x2139, 0x203C, 0x2049, 0x2934, 0x2935)
+    )
+
+
+def _has_inline_emoji(text):
+    return any(_is_emoji_cp(ord(c)) for c in text)
+
+
+def _split_text_emoji(s):
+    """Split a string into [(kind, value)] tokens, kind ∈ {'text','emoji'}.
+    Each 'emoji' token is a single render cluster — ZWJ sequences, flag pairs and
+    base+modifier/variation-selector combos are kept together so HarfBuzz can
+    shape them into one glyph."""
+    out, buf = [], []
+    i, n = 0, len(s)
+
+    def flush():
+        if buf:
+            out.append(("text", "".join(buf)))
+            buf.clear()
+
+    while i < n:
+        o = ord(s[i])
+        if not _is_emoji_cp(o):
+            buf.append(s[i])
+            i += 1
+            continue
+        flush()
+        start = i
+        if _is_regional(o):
+            # regional indicators combine in pairs → one flag
+            i += 1
+            if i < n and _is_regional(ord(s[i])):
+                i += 1
+            out.append(("emoji", s[start:i]))
+            continue
+        i += 1
+        while i < n:                       # absorb modifiers / VS / ZWJ chains
+            oc = ord(s[i])
+            if oc in (_EMOJI_VS16, _EMOJI_VS15, _EMOJI_KEYCAP) or _is_skin_tone(oc):
+                i += 1
+            elif oc == _EMOJI_ZWJ:
+                i += 1
+                if i < n:                  # pull in the emoji following the ZWJ
+                    i += 1
+            else:
+                break
+        out.append(("emoji", s[start:i]))
+    flush()
+    return out
+
+
+def _line_tokens(words):
+    """Flatten a list of words into render tokens with explicit spaces between."""
+    toks = []
+    for j, word in enumerate(words):
+        if j:
+            toks.append(("space", " "))
+        toks.extend(_split_text_emoji(word))
+    return toks
+
+
+def _measure_tokens(toks, font, em, space_w):
+    w = 0.0
+    for kind, val in toks:
+        if kind == "emoji":
+            w += em
+        elif kind == "space":
+            w += space_w
+        else:
+            w += font.getlength(val)
+    return w
+
+
+def _render_inline_text(img, draw, text, x0, y0, area_w, area_h,
+                        font_style, fill, font_weight, align, color=(0, 0, 0)):
+    """Lay out and draw text that contains literal emoji within the given box.
+    Mirrors _fit_text's wrap-and-grow behaviour but measures emoji as square
+    boxes and paints them with the shared emoji pipeline (_draw_icon)."""
+    font_path = _find_font_path(font_style, font_weight)
+    if not font_path:
+        return
+
+    # Candidate line arrangements: honour explicit newlines, else try 1..5 lines.
+    if "\n" in text:
+        arrangements = [[ln.split() for ln in text.split("\n")]]
+    else:
+        words = text.split()
+        if not words:
+            return
+        max_n = min(len(words), 5)
+        arrangements = [[w.split() for w in _split_words(words, n)]
+                        for n in range(1, max_n + 1)]
+
+    # Tokens are font-independent — build them once, reuse across size probes.
+    arr_tokens = [[_line_tokens(w) for w in lines] for lines in arrangements]
+
+    best = None        # (font, idx, em, spacing, ascent, lh)
+    best_size = -1
+    for size in range(8, 400, 2):
+        try:
+            font = ImageFont.truetype(font_path, size)
+        except OSError:
+            break
+        ascent, descent = font.getmetrics()
+        lh      = ascent + descent
+        em      = lh
+        spacing = max(2, round(lh * 0.08))
+        space_w = font.getlength(" ")
+
+        fit_idx = None
+        for idx, toks_lines in enumerate(arr_tokens):
+            block_w = max((_measure_tokens(t, font, em, space_w) for t in toks_lines),
+                          default=0.0)
+            block_h = lh * len(toks_lines) + spacing * (len(toks_lines) - 1)
+            if block_w <= area_w * fill and block_h <= area_h * fill:
+                fit_idx = idx
+                break
+        if fit_idx is not None:
+            best = (font, fit_idx, em, spacing, ascent, lh)
+            best_size = size
+        elif best_size >= 0:
+            break          # blocks only grow with size — nothing larger will fit
+
+    if best is None:       # fall back to the smallest size, first arrangement
+        font = ImageFont.truetype(font_path, 8)
+        ascent, descent = font.getmetrics()
+        lh = ascent + descent
+        best = (font, 0, lh, max(2, round(lh * 0.08)), ascent, lh)
+
+    font, idx, em, spacing, ascent, lh = best
+    toks_lines = arr_tokens[idx]
+    space_w    = font.getlength(" ")
+    block_h    = lh * len(toks_lines) + spacing * (len(toks_lines) - 1)
+    y          = y0 + (area_h - block_h) / 2
+
+    for toks in toks_lines:
+        line_w = _measure_tokens(toks, font, em, space_w)
+        if align == "left":
+            lx = x0
+        elif align == "right":
+            lx = x0 + area_w - line_w
+        else:
+            lx = x0 + (area_w - line_w) / 2
+        baseline = y + ascent
+        for kind, val in toks:
+            if kind == "emoji":
+                _draw_icon(img, val, int(round(lx)), int(round(y)), int(em), color=color)
+                lx += em
+            elif kind == "space":
+                lx += space_w
+            else:
+                draw.text((lx, baseline), val, font=font, fill=color, anchor="ls")
+                lx += font.getlength(val)
+        y += lh + spacing
 
 # ── Icon detection & drawing ──────────────────────────────────────────────────
 
