@@ -1,6 +1,7 @@
 """Label rendering and printing via Windows GDI."""
 import ctypes
 import glob
+import math
 import os
 import re
 import struct
@@ -86,7 +87,8 @@ def set_emoji_darkness(pct: int):
 
 # ── Style constants ───────────────────────────────────────────────────────────
 
-FONT_STYLES   = ["standard", "enhanced", "impact", "serif", "narrow", "mono", "burbank"]
+FONT_STYLES   = ["standard", "enhanced", "impact", "serif", "narrow", "mono",
+                 "consolas", "bahnschrift", "burbank", "inkfree"]
 FONT_WEIGHTS  = ["normal", "bold", "italic", "bold_italic"]
 # ── Image-based borders ───────────────────────────────────────────────────────
 # Any file named  client/images/border_<name>.png  is auto-detected and added
@@ -114,7 +116,8 @@ def _scan_image_borders():
 _IMAGE_BORDER_ENTRIES = _scan_image_borders()          # [(key, label), ...]
 _IMAGE_BORDERS        = [k for k, _ in _IMAGE_BORDER_ENTRIES]
 
-BORDER_STYLES = ["none", "thin", "thick", "double", "dashed", "rounded", "corners"] + _IMAGE_BORDERS
+BORDER_STYLES = ["none", "thin", "thick", "double", "dashed", "dotted", "wave",
+                 "ticket", "inset", "rounded", "corners"] + _IMAGE_BORDERS
 TEXT_CASES    = ["none", "uppercase", "lowercase", "title", "sentence"]
 
 # Style presets — each overrides individual settings when active.
@@ -134,11 +137,15 @@ STYLE_PRESETS = {
     "price_tag":  {"label": "🏷 Price Tag"},
     "cassette":   {"label": "📼 Cassette"},
     "qr_code":    {"label": "⬛ QR Code"},
+    "barcode":    {"label": "▌▏ Barcode"},
+    "name_tag":   {"label": "👋 Name Tag"},
+    "receipt":    {"label": "🧾 Receipt"},
 
     # ── Themed ────────────────────────────────────────────────────────────────
     "windows95":  {"label": "🖥 Windows 95"},
     "blueprint":  {"label": "📐 Blueprint"},
     "warning":    {"label": "⚠ Warning"},
+    "chalkboard": {"label": "🖍 Chalkboard"},
 }
 
 # Ordered groups for the UI dropdown — (group_label, [preset_keys])
@@ -146,8 +153,8 @@ STYLE_PRESETS = {
 STYLE_PRESET_GROUPS = [
     (None,         ["none"]),
     ("Typography", ["minimal", "bold", "elegant", "retro"]),
-    ("Layouts",    ["address", "price_tag", "cassette", "qr_code"]),
-    ("Themed",     ["windows95", "blueprint", "warning"]),
+    ("Layouts",    ["address", "price_tag", "cassette", "qr_code", "barcode", "name_tag", "receipt"]),
+    ("Themed",     ["windows95", "blueprint", "warning", "chalkboard"]),
 ]
 
 # Fonts for the Windows 95 style (regular weight, not bold)
@@ -166,13 +173,16 @@ _WARNING_FONTS = [
 ]
 
 _FILL = {
-    "standard": 0.85,
-    "enhanced": 0.90,
-    "impact":   0.92,
-    "serif":    0.85,
-    "narrow":   0.92,
-    "mono":     0.85,
-    "burbank":  0.95,
+    "standard":   0.85,
+    "enhanced":   0.90,
+    "impact":     0.92,
+    "serif":      0.85,
+    "narrow":     0.92,
+    "mono":       0.85,
+    "consolas":   0.88,
+    "bahnschrift":0.92,
+    "burbank":    0.95,
+    "inkfree":    0.85,
 }
 
 _BURBANK_PATH = os.path.join(_USER_FONTS, "BurbankBigCondensed-Bold.otf")
@@ -216,6 +226,27 @@ _FONT_MAP = {
         "bold":        [r"C:\Windows\Fonts\courbd.ttf"],
         "italic":      [r"C:\Windows\Fonts\couri.ttf",     r"C:\Windows\Fonts\cour.ttf"],
         "bold_italic": [r"C:\Windows\Fonts\courbi.ttf",    r"C:\Windows\Fonts\courbd.ttf"],
+    },
+    "consolas": {
+        "normal":      [r"C:\Windows\Fonts\consola.ttf"],
+        "bold":        [r"C:\Windows\Fonts\consolab.ttf", r"C:\Windows\Fonts\consola.ttf"],
+        "italic":      [r"C:\Windows\Fonts\consolai.ttf", r"C:\Windows\Fonts\consola.ttf"],
+        "bold_italic": [r"C:\Windows\Fonts\consolaz.ttf", r"C:\Windows\Fonts\consolab.ttf"],
+    },
+    # Bahnschrift is a single variable-font file (no static bold/italic faces),
+    # so every weight maps to it; condensed Arial Narrow is the closest fallback.
+    "bahnschrift": {
+        "normal":      [r"C:\Windows\Fonts\bahnschrift.ttf", r"C:\Windows\Fonts\arialn.ttf",   r"C:\Windows\Fonts\arial.ttf"],
+        "bold":        [r"C:\Windows\Fonts\bahnschrift.ttf", r"C:\Windows\Fonts\ARIALNB.TTF",  r"C:\Windows\Fonts\arialbd.ttf"],
+        "italic":      [r"C:\Windows\Fonts\bahnschrift.ttf", r"C:\Windows\Fonts\arialNI.TTF",  r"C:\Windows\Fonts\ariali.ttf"],
+        "bold_italic": [r"C:\Windows\Fonts\bahnschrift.ttf", r"C:\Windows\Fonts\arialNBI.TTF", r"C:\Windows\Fonts\arialbi.ttf"],
+    },
+    # Ink Free ships as a single handwriting face; fall back to Segoe Script.
+    "inkfree": {
+        "normal":      [r"C:\Windows\Fonts\Inkfree.ttf", r"C:\Windows\Fonts\segoesc.ttf",  r"C:\Windows\Fonts\arial.ttf"],
+        "bold":        [r"C:\Windows\Fonts\Inkfree.ttf", r"C:\Windows\Fonts\segoescb.ttf", r"C:\Windows\Fonts\arialbd.ttf"],
+        "italic":      [r"C:\Windows\Fonts\Inkfree.ttf", r"C:\Windows\Fonts\segoesc.ttf",  r"C:\Windows\Fonts\ariali.ttf"],
+        "bold_italic": [r"C:\Windows\Fonts\Inkfree.ttf", r"C:\Windows\Fonts\segoescb.ttf", r"C:\Windows\Fonts\arialbi.ttf"],
     },
     "burbank": {
         "normal":      [_BURBANK_PATH, r"C:\Windows\Fonts\impact.ttf"],
@@ -303,6 +334,14 @@ def render_label(
             return _render_blueprint(text, w_px, h_px, dpi, text_case, icons, font_weight)
         if style_preset == "qr_code":
             return _render_qr_code(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text)
+        if style_preset == "barcode":
+            return _render_barcode(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text)
+        if style_preset == "name_tag":
+            return _render_name_tag(text, w_px, h_px, dpi, text_case, font_weight)
+        if style_preset == "receipt":
+            return _render_receipt(text, w_px, h_px, dpi, text_case, font_weight)
+        if style_preset == "chalkboard":
+            return _render_chalkboard(text, w_px, h_px, dpi, text_case, icons, font_weight)
         preset = STYLE_PRESETS.get(style_preset, {})
         font_style = preset.get("font_style", font_style)
         border     = preset.get("border",     border)
@@ -315,7 +354,9 @@ def render_label(
     pad  = max(4, int(min(w_px, h_px) * 0.05))
 
     # Push content inward so it never overlaps the border
-    _border_inset = {"thin": 4, "thick": 8, "double": 14, "dashed": 4, "rounded": 6, "corners": 4}
+    _border_inset = {"thin": 4, "thick": 8, "double": 14, "dashed": 4,
+                     "dotted": 4, "wave": 10, "ticket": 12, "inset": 12,
+                     "rounded": 6, "corners": 4}
     pad = max(pad, _border_inset.get(border, 0) + 4)
     # Image borders have thick decorative edges — use a generous inset
     if border in _IMAGE_BORDERS:
@@ -564,7 +605,9 @@ def _render_address(text: str, w_px: int, h_px: int, dpi: int,
     draw = ImageDraw.Draw(img)
 
     # Inset text to clear the border (same table used by render_label)
-    _border_inset = {"thin": 4, "thick": 8, "double": 14, "dashed": 4, "rounded": 6, "corners": 4}
+    _border_inset = {"thin": 4, "thick": 8, "double": 14, "dashed": 4,
+                     "dotted": 4, "wave": 10, "ticket": 12, "inset": 12,
+                     "rounded": 6, "corners": 4}
     inset  = _border_inset.get(border, 0)
     pad_x  = max(10, round(w_px * 0.055)) + inset
     pad_y  = max(6,  round(h_px * 0.07))  + inset
@@ -1053,6 +1096,215 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
     return img
 
 
+# ── Barcode renderer ──────────────────────────────────────────────────────────
+
+def _render_barcode(text: str, w_px: int, h_px: int, dpi: int,
+                    text_case: str, font_weight: str = "bold",
+                    show_text: bool = True) -> Image.Image:
+    """Code 128 barcode label. Human-readable caption shown below unless
+    show_text is False. Best on wider labels (4x2) where the bars stay scannable."""
+    img  = Image.new("RGB", (w_px, h_px), "white")
+    draw = ImageDraw.Draw(img)
+    pad  = max(4, round(min(w_px, h_px) * 0.06))
+    bw   = max(1, round(dpi / 150))
+
+    try:
+        from barcode import Code128
+        from barcode.writer import ImageWriter
+    except ImportError:
+        draw.multiline_text((pad, pad), "Install python-barcode:\npip install python-barcode",
+                            fill="black", font=ImageFont.load_default())
+        return img
+
+    # Code 128 covers ASCII only — anything else (emoji, accents) raises on encode
+    data = (text or "").strip() or " "
+    try:
+        bc_img = Code128(data, writer=ImageWriter()).render({
+            "write_text": False, "quiet_zone": 1.0,
+            "module_height": 15.0, "background": "white", "foreground": "black",
+        }).convert("L")
+    except Exception:
+        draw.multiline_text((pad, pad), "Barcode needs plain\nASCII text",
+                            fill="black", font=ImageFont.load_default())
+        draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
+        return img
+
+    cap_h = max(round(h_px * 0.18), round(0.16 * dpi)) if show_text else 0
+    bar_w = w_px - pad * 2
+    bar_h = h_px - cap_h - pad * 2
+    if bar_w > 0 and bar_h > 0:
+        img.paste(bc_img.resize((bar_w, bar_h), Image.NEAREST).convert("RGB"), (pad, pad))
+
+    if show_text:
+        display   = _apply_case(text, text_case) or data
+        font_path = _find_font_path("consolas", font_weight) or _find_font_path("mono", font_weight)
+        f, _ = _largest_font_for(display, w_px - pad * 2, max(1, cap_h - pad // 2), font_path, 0.9)
+        bb = draw.textbbox((0, 0), display, font=f)
+        tx = (w_px - (bb[2] - bb[0])) / 2 - bb[0]
+        ty = h_px - cap_h - pad // 2 + (cap_h - (bb[3] - bb[1])) / 2 - bb[1]
+        draw.text((tx, ty), display, fill="black", font=f)
+
+    draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
+    return img
+
+
+# ── Name Tag renderer ─────────────────────────────────────────────────────────
+
+def _render_name_tag(text: str, w_px: int, h_px: int, dpi: int,
+                     text_case: str, font_weight: str = "bold") -> Image.Image:
+    """Conference name badge: a black 'HELLO my name is' banner across the top,
+    with the name large in the white field below."""
+    BLACK = (0, 0, 0); WHITE = (255, 255, 255)
+    img  = Image.new("RGB", (w_px, h_px), WHITE)
+    draw = ImageDraw.Draw(img)
+    bw = max(3, round(dpi / 65))
+    r  = max(4, round(3 / 25.4 * dpi))
+    banner_h = round(h_px * 0.34)
+
+    # Fill the whole rounded rect black, then punch out the white body so the
+    # banner inherits naturally-curved top corners; re-clip to remove corner bleed.
+    draw.rounded_rectangle([0, 0, w_px - 1, h_px - 1], radius=r, fill=BLACK)
+    draw.rectangle([bw, banner_h, w_px - bw - 1, h_px - bw - 1], fill=WHITE)
+    clip = Image.new("L", (w_px, h_px), 255)
+    ImageDraw.Draw(clip).rounded_rectangle([0, 0, w_px - 1, h_px - 1], radius=r, fill=0)
+    img.paste(Image.new("RGB", (w_px, h_px), WHITE), mask=clip)
+    draw = ImageDraw.Draw(img)
+    draw.rounded_rectangle([0, 0, w_px - 1, h_px - 1], radius=r, outline=BLACK, width=bw)
+    draw.line([(bw, banner_h), (w_px - bw - 1, banner_h)], fill=BLACK, width=max(1, bw // 2))
+
+    # Banner text — "HELLO" stacked over "my name is", white on black
+    bfont = _find_font_path("standard", "bold")
+    hf, _ = _largest_font_for("HELLO",      w_px - bw * 4, round(banner_h * 0.5),  bfont, 0.9)
+    sf, _ = _largest_font_for("my name is", w_px - bw * 4, round(banner_h * 0.26), bfont, 0.9)
+    hb = draw.textbbox((0, 0), "HELLO", font=hf)
+    sb = draw.textbbox((0, 0), "my name is", font=sf)
+    gap = round(banner_h * 0.06)
+    block_h = (hb[3] - hb[1]) + gap + (sb[3] - sb[1])
+    y0 = bw + (banner_h - bw - block_h) / 2
+    draw.text(((w_px - (hb[2] - hb[0])) / 2 - hb[0], y0 - hb[1]), "HELLO", fill=WHITE, font=hf)
+    draw.text(((w_px - (sb[2] - sb[0])) / 2 - sb[0], y0 + (hb[3] - hb[1]) + gap - sb[1]),
+              "my name is", fill=WHITE, font=sf)
+
+    # Name in the white field below
+    pad     = max(6, round(min(w_px, h_px) * 0.05))
+    name    = _apply_case(text, text_case)
+    nf_path = _find_font_path("standard", font_weight)
+    area_w  = w_px - pad * 2
+    area_y0 = banner_h + pad
+    area_h  = h_px - area_y0 - pad
+    words   = name.split()
+    best_font, best_size, best_lines = ImageFont.load_default(), 8, [name]
+    for n in range(1, min(len(words), 3) + 1):
+        lines = _split_words(words, n)
+        f, size = _largest_font_for("\n".join(lines), area_w, area_h, nf_path, 0.9)
+        if size > best_size:
+            best_size, best_font, best_lines = size, f, lines
+    joined = "\n".join(best_lines)
+    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
+    x = (w_px - (bb[2] - bb[0])) / 2 - bb[0]
+    y = area_y0 + (area_h - (bb[3] - bb[1])) / 2 - bb[1]
+    draw.multiline_text((x, y), joined, fill=BLACK, font=best_font, align="center")
+    return img
+
+
+# ── Receipt renderer ──────────────────────────────────────────────────────────
+
+def _render_receipt(text: str, w_px: int, h_px: int, dpi: int,
+                    text_case: str, font_weight: str = "bold") -> Image.Image:
+    """Thermal-receipt aesthetic: centered monospace text framed by dashed rules."""
+    img  = Image.new("RGB", (w_px, h_px), "white")
+    draw = ImageDraw.Draw(img)
+    pad  = max(6, round(min(w_px, h_px) * 0.08))
+    lw   = max(1, round(dpi / 200))
+
+    def dashed_rule(y):
+        x = pad
+        while x < w_px - pad:
+            draw.line([(x, y), (min(x + 10, w_px - pad), y)], fill="black", width=lw)
+            x += 16
+
+    top_y, bot_y = pad, h_px - pad
+    dashed_rule(top_y)
+    dashed_rule(bot_y)
+
+    font_path = _find_font_path("mono", font_weight) or _find_font_path("consolas", font_weight)
+    area_w  = w_px - pad * 2
+    area_y0 = top_y + pad // 2
+    area_h  = bot_y - top_y - pad
+    display = _apply_case(text, text_case)
+    words   = display.split()
+    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display]
+    for n in range(1, min(len(words), 5) + 1):
+        lines = _split_words(words, n)
+        f, size = _largest_font_for("\n".join(lines), area_w, area_h, font_path, 0.9)
+        if size > best_size:
+            best_size, best_font, best_lines = size, f, lines
+    joined = "\n".join(best_lines)
+    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
+    x = (w_px - (bb[2] - bb[0])) / 2 - bb[0]
+    y = area_y0 + (area_h - (bb[3] - bb[1])) / 2 - bb[1]
+    draw.multiline_text((x, y), joined, fill="black", font=best_font, align="center")
+    return img
+
+
+# ── Chalkboard renderer ───────────────────────────────────────────────────────
+
+def _render_chalkboard(text: str, w_px: int, h_px: int, dpi: int,
+                       text_case: str, icons: bool = True,
+                       font_weight: str = "bold") -> Image.Image:
+    """Black chalkboard with white handwriting text and a thin chalk frame.
+    Uses Ink Free for the chalk look regardless of the selected font."""
+    BG = (0, 0, 0); FG = (255, 255, 255)
+    img  = Image.new("RGB", (w_px, h_px), BG)
+    draw = ImageDraw.Draw(img)
+
+    fm = max(6, round(min(w_px, h_px) * 0.06))
+    fw = max(2, round(dpi / 110))
+    rr = max(4, round(min(w_px, h_px) * 0.05))
+    draw.rounded_rectangle([fm, fm, w_px - fm - 1, h_px - fm - 1], radius=rr, outline=FG, width=fw)
+
+    pad  = fm + max(6, round(min(w_px, h_px) * 0.05))
+    icon = _detect_icon(text) if (icons and len(text) <= 60) else None
+    if icon and h_px > w_px:
+        # Portrait/tall label: icon on top, text below (size to width so it
+        # never overflows a narrow label and forces a negative text area)
+        icon_size = int(min(w_px * 0.5, h_px * 0.28))
+        icon_x    = (w_px - icon_size) // 2
+        icon_y    = pad
+        text_x0   = pad
+        text_y0   = icon_y + icon_size + pad
+    elif icon:
+        # Landscape label: icon on the left, text to the right
+        icon_size = int(min(h_px * 0.5, w_px * 0.45))
+        icon_x    = pad
+        icon_y    = (h_px - icon_size) // 2
+        text_x0   = icon_x + icon_size + pad
+        text_y0   = pad
+    else:
+        text_x0   = pad
+        text_y0   = pad
+
+    text_area_w = max(1, w_px - text_x0 - pad)
+    text_area_h = max(1, h_px - text_y0 - pad)
+    display   = _apply_case(text, text_case)
+    font_path = _find_font_path("inkfree", font_weight) or _find_font_path("enhanced", font_weight)
+    words     = display.split()
+    best_font, best_size, best_lines = ImageFont.load_default(), 8, [display]
+    for n in range(1, min(len(words), 5) + 1):
+        lines = _split_words(words, n)
+        f, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h, font_path, 0.85)
+        if size > best_size:
+            best_size, best_font, best_lines = size, f, lines
+    joined = "\n".join(best_lines)
+    bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center")
+    x = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+    y = text_y0 + (text_area_h - (bb[3] - bb[1])) / 2 - bb[1]
+    draw.multiline_text((x, y), joined, fill=FG, font=best_font, align="center")
+    if icon:
+        _draw_icon(img, icon, icon_x, icon_y, icon_size, color=FG)
+    return img
+
+
 # ── Text fitting ──────────────────────────────────────────────────────────────
 
 def _fit_text(text, max_w, max_h, font_style="standard", fill=0.85, font_weight="bold"):
@@ -1519,6 +1771,74 @@ def _draw_border(draw, w, h, pad, style, dpi=203):
                 draw.line([(edge_x, y), (edge_x, min(y+dash, h-p-r))],
                           fill="black", width=lw)
                 y += dash + gap
+
+    elif style == "dotted":
+        # Round dots tracing the rounded-rect perimeter (companion to dashed)
+        dot_r = max(1, round(dpi / 110))
+        step  = max(dot_r * 4, 8)
+        def _dot(cx, cy):
+            draw.ellipse([cx-dot_r, cy-dot_r, cx+dot_r, cy+dot_r], fill="black")
+        x = p + r
+        while x <= w - p - r:
+            _dot(x, p); _dot(x, h - p - 1); x += step
+        y = p + r
+        while y <= h - p - r:
+            _dot(p, y); _dot(w - p - 1, y); y += step
+        # quarter-circle corner dots (same arc spans as the dashed corners)
+        for cx, cy, a0 in ((p+r, p+r, 180), (w-p-r-1, p+r, 270),
+                           (p+r, h-p-r-1, 90), (w-p-r-1, h-p-r-1, 0)):
+            for k in range(1, 5):
+                a = math.radians(a0 + k * 18)
+                _dot(cx + r * math.cos(a), cy + r * math.sin(a))
+
+    elif style == "wave":
+        # Scalloped edge — a run of equal semicircle arcs bulging inward on each
+        # side. Only full scallops are drawn (centred per edge) so the last one is
+        # never squished; any leftover splits evenly into the end margins.
+        lw = 2
+        span_x = (w - 1) - 2 * p
+        span_y = (h - 1) - 2 * p
+        d  = max(12, round(min(w, h) / 12))
+        nx = max(1, span_x // d)
+        ny = max(1, span_y // d)
+        ox = p + (span_x - nx * d) // 2          # centring offset on horizontal edges
+        oy = p + (span_y - ny * d) // 2          # centring offset on vertical edges
+        for i in range(nx):
+            x = ox + i * d
+            draw.arc([x, p, x + d, p + d], 0, 180, fill="black", width=lw)                  # top
+            draw.arc([x, h-p-1-d, x + d, h-p-1], 180, 360, fill="black", width=lw)          # bottom
+        for i in range(ny):
+            y = oy + i * d
+            draw.arc([p, y, p + d, y + d], 270, 450, fill="black", width=lw)                # left
+            draw.arc([w-p-1-d, y, w-p-1, y + d], 90, 270, fill="black", width=lw)           # right
+
+    elif style == "ticket":
+        # Solid thin frame plus an inner ring of perforation holes (raffle ticket)
+        draw.rounded_rectangle([p, p, w-p-1, h-p-1], radius=r, outline="black", width=2)
+        gap   = max(6, round(min(w, h) * 0.05))
+        dot_r = max(1, round(dpi / 120))
+        step  = max(dot_r * 5, 12)
+        ix1, iy1, ix2, iy2 = p+gap, p+gap, w-p-gap-1, h-p-gap-1
+        def _pdot(cx, cy):
+            draw.ellipse([cx-dot_r, cy-dot_r, cx+dot_r, cy+dot_r], fill="black")
+        x = ix1
+        while x <= ix2:
+            _pdot(x, iy1); _pdot(x, iy2); x += step
+        y = iy1
+        while y <= iy2:
+            _pdot(ix1, y); _pdot(ix2, y); y += step
+
+    elif style == "inset":
+        # Recessed-panel look: concentric frames with a thickened inner top/left
+        # edge reading as a shadow cast into the recess
+        gap = max(5, round(dpi / 40))
+        ri  = max(2, r - gap)
+        draw.rounded_rectangle([p, p, w-p-1, h-p-1], radius=r, outline="black", width=2)
+        draw.rounded_rectangle([p+gap, p+gap, w-p-gap-1, h-p-gap-1], radius=ri,
+                                outline="black", width=2)
+        sw = max(2, round(dpi / 90))
+        draw.line([(p+gap+ri, p+gap+1), (w-p-gap-1-ri, p+gap+1)], fill="black", width=sw)
+        draw.line([(p+gap+1, p+gap+ri), (p+gap+1, h-p-gap-1-ri)], fill="black", width=sw)
 
     elif style == "rounded":
         # More pronounced decorative radius — intentionally larger than 3 mm
