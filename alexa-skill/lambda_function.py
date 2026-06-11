@@ -84,6 +84,14 @@ _FONT_MAP = {
     "mono":                 "mono",
     "monospace":            "mono",
     "courier":              "mono",
+    "consolas":             "consolas",
+    "console":              "consolas",
+    "bahnschrift":          "bahnschrift",
+    "bonn schrift":         "bahnschrift",
+    "ink free":             "inkfree",
+    "inkfree":              "inkfree",
+    "handwriting":          "inkfree",
+    "handwritten":          "inkfree",
     "burbank":              "burbank",
     "burbank big":          "burbank",
     "burbank big condensed":"burbank",
@@ -98,6 +106,17 @@ _BORDER_MAP = {
     "thick":     "thick",
     "double":    "double",
     "dashed":    "dashed",
+    "dotted":    "dotted",
+    "dots":      "dotted",
+    "wave":      "wave",
+    "wavy":      "wave",
+    "scallop":   "wave",
+    "scalloped": "wave",
+    "ticket":    "ticket",
+    "perforated":"ticket",
+    "inset":     "inset",
+    "recessed":  "inset",
+    "3d":        "inset",
     "rounded":   "rounded",
     "corners":   "corners",
     "corner":    "corners",
@@ -160,8 +179,18 @@ _PRESET_MAP = {
     "qr code":               "qr_code",
     "qr":                    "qr_code",
     "q r code":              "qr_code",
-    "barcode":               "qr_code",
     "scan code":             "qr_code",
+    "barcode":               "barcode",
+    "bar code":              "barcode",
+    "code 128":              "barcode",
+    "name tag":              "name_tag",
+    "name badge":            "name_tag",
+    "badge":                 "name_tag",
+    "hello my name is":      "name_tag",
+    "receipt":               "receipt",
+    "chalkboard":            "chalkboard",
+    "chalk board":           "chalkboard",
+    "blackboard":            "chalkboard",
 }
 
 _SIZE_MAP = {
@@ -195,12 +224,14 @@ _SIZE_MAP = {
 _FONT_LABELS = {
     "standard": "standard", "enhanced": "enhanced", "impact": "impact",
     "serif": "serif",       "narrow": "narrow",      "mono": "mono",
+    "consolas": "Consolas", "bahnschrift": "Bahnschrift", "inkfree": "Ink Free",
     "burbank": "Burbank",
 }
 _BORDER_LABELS = {
     "none": "off",     "thin": "thin",       "thick": "thick",
-    "double": "double","dashed": "dashed",    "rounded": "rounded",
-    "corners": "corners",
+    "double": "double","dashed": "dashed",    "dotted": "dotted",
+    "wave": "wave",    "ticket": "ticket",   "inset": "inset",
+    "rounded": "rounded", "corners": "corners",
 }
 _CASE_LABELS = {
     "none": "normal",           "uppercase": "all caps",
@@ -220,6 +251,10 @@ _PRESET_LABELS = {
     "cassette":   "cassette",
     "blueprint":  "blueprint",
     "qr_code":    "QR code",
+    "barcode":    "barcode",
+    "name_tag":   "name tag",
+    "receipt":    "receipt",
+    "chalkboard": "chalkboard",
 }
 
 _WEIGHT_MAP = {
@@ -296,7 +331,8 @@ def _handle_intent(intent):
         if not val:
             return _respond(
                 "I didn't recognise that font. Available fonts are: "
-                "standard, enhanced, impact, serif, narrow, mono, and Burbank.",
+                "standard, enhanced, impact, serif, narrow, mono, Consolas, "
+                "Bahnschrift, Ink Free, and Burbank.",
                 end=False,
             )
         try:
@@ -315,7 +351,8 @@ def _handle_intent(intent):
         if val is None:
             return _respond(
                 "I didn't recognise that border style. Options are: "
-                "none, thin, thick, double, dashed, rounded, and corners.",
+                "none, thin, thick, double, dashed, dotted, wave, ticket, "
+                "inset, rounded, and corners.",
                 end=False,
             )
         try:
@@ -368,7 +405,8 @@ def _handle_intent(intent):
             return _respond(
                 "I didn't recognise that style. Available styles are: "
                 "bold, elegant, retro, minimal, warning, address label, "
-                "price tag, cassette, blueprint, QR code, Windows 95, or none to clear.",
+                "price tag, cassette, blueprint, QR code, barcode, name tag, "
+                "receipt, chalkboard, Windows 95, or none to clear.",
                 end=False,
             )
         try:

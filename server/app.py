@@ -148,11 +148,14 @@ def fail_job(job_id):
 def post_setting():
     """Lambda posts a setting change here: {key, value}."""
     VALID = {
-        "font_style":   {"standard", "enhanced", "impact", "serif", "narrow", "mono", "burbank"},
-        "border":       {"none", "thin", "thick", "double", "dashed", "rounded", "corners"},
+        "font_style":   {"standard", "enhanced", "impact", "serif", "narrow", "mono",
+                          "consolas", "bahnschrift", "burbank", "inkfree"},
+        "border":       {"none", "thin", "thick", "double", "dashed", "dotted", "wave",
+                          "ticket", "inset", "rounded", "corners"},
         "text_case":    {"none", "uppercase", "lowercase", "title", "sentence"},
         "style_preset": {"none", "bold", "elegant", "retro", "minimal", "warning",
-                          "address", "windows95", "price_tag", "cassette", "blueprint", "qr_code"},
+                          "address", "windows95", "price_tag", "cassette", "blueprint", "qr_code",
+                          "barcode", "name_tag", "receipt", "chalkboard"},
         "font_weight":  {"normal", "bold", "italic", "bold_italic"},
         "icons":        {"true", "false"},
         "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5", "1.1x3.5", "1.1x2.4"},
