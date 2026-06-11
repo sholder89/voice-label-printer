@@ -161,80 +161,498 @@
         {
           "name": "FontStyle",
           "values": [
-            { "name": { "value": "standard" } },
-            { "name": { "value": "enhanced" } },
-            { "name": { "value": "impact" } },
-            { "name": { "value": "serif" } },
-            { "name": { "value": "narrow" } },
-            { "name": { "value": "mono", "synonyms": ["monospace", "courier", "fixed width"] } },
-            { "name": { "value": "burbank", "synonyms": ["burbank big", "burbank big condensed", "big condensed"] } }
+            {
+              "name": {
+                "value": "standard"
+              }
+            },
+            {
+              "name": {
+                "value": "enhanced"
+              }
+            },
+            {
+              "name": {
+                "value": "impact"
+              }
+            },
+            {
+              "name": {
+                "value": "serif"
+              }
+            },
+            {
+              "name": {
+                "value": "narrow"
+              }
+            },
+            {
+              "name": {
+                "value": "mono",
+                "synonyms": [
+                  "monospace",
+                  "courier",
+                  "fixed width"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "burbank",
+                "synonyms": [
+                  "burbank big",
+                  "burbank big condensed",
+                  "big condensed"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "consolas",
+                "synonyms": [
+                  "console"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "bahnschrift",
+                "synonyms": [
+                  "bonn schrift"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "ink free",
+                "synonyms": [
+                  "inkfree",
+                  "handwriting",
+                  "handwritten"
+                ]
+              }
+            }
           ]
         },
         {
           "name": "BorderStyle",
           "values": [
-            { "name": { "value": "none", "synonyms": ["off", "no border", "remove"] } },
-            { "name": { "value": "thin" } },
-            { "name": { "value": "thick" } },
-            { "name": { "value": "double" } },
-            { "name": { "value": "dashed" } },
-            { "name": { "value": "rounded" } },
-            { "name": { "value": "corners", "synonyms": ["corner"] } }
+            {
+              "name": {
+                "value": "none",
+                "synonyms": [
+                  "off",
+                  "no border",
+                  "remove"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "thin"
+              }
+            },
+            {
+              "name": {
+                "value": "thick"
+              }
+            },
+            {
+              "name": {
+                "value": "double"
+              }
+            },
+            {
+              "name": {
+                "value": "dashed"
+              }
+            },
+            {
+              "name": {
+                "value": "rounded"
+              }
+            },
+            {
+              "name": {
+                "value": "corners",
+                "synonyms": [
+                  "corner"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "dotted",
+                "synonyms": [
+                  "dots"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "wave",
+                "synonyms": [
+                  "wavy",
+                  "scallop",
+                  "scalloped"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "ticket",
+                "synonyms": [
+                  "perforated"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "inset",
+                "synonyms": [
+                  "recessed",
+                  "3d"
+                ]
+              }
+            }
           ]
         },
         {
           "name": "TextCase",
           "values": [
-            { "name": { "value": "none", "synonyms": ["normal", "default", "as typed"] } },
-            { "name": { "value": "uppercase", "synonyms": ["all caps", "caps", "upper case", "capital", "all uppercase"] } },
-            { "name": { "value": "lowercase", "synonyms": ["all lowercase", "lower case", "lower"] } },
-            { "name": { "value": "title", "synonyms": ["title case", "capitalize each word", "every word"] } },
-            { "name": { "value": "sentence", "synonyms": ["sentence case", "capitalize first", "first letter"] } }
+            {
+              "name": {
+                "value": "none",
+                "synonyms": [
+                  "normal",
+                  "default",
+                  "as typed"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "uppercase",
+                "synonyms": [
+                  "all caps",
+                  "caps",
+                  "upper case",
+                  "capital",
+                  "all uppercase"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "lowercase",
+                "synonyms": [
+                  "all lowercase",
+                  "lower case",
+                  "lower"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "title",
+                "synonyms": [
+                  "title case",
+                  "capitalize each word",
+                  "every word"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "sentence",
+                "synonyms": [
+                  "sentence case",
+                  "capitalize first",
+                  "first letter"
+                ]
+              }
+            }
           ]
         },
         {
           "name": "StylePreset",
           "values": [
-            { "name": { "value": "none", "synonyms": ["off", "no style", "normal", "default", "clear", "clear style"] } },
-            { "name": { "value": "bold" } },
-            { "name": { "value": "elegant" } },
-            { "name": { "value": "retro", "synonyms": ["retro typewriter", "typewriter"] } },
-            { "name": { "value": "minimal" } },
-            { "name": { "value": "warning", "synonyms": ["caution", "warning label"] } },
-            { "name": { "value": "address", "synonyms": ["address label", "mailing label", "mailing"] } },
-            { "name": { "value": "windows95", "synonyms": ["windows 95", "windows ninety five", "ninety five"] } },
-            { "name": { "value": "price tag", "synonyms": ["price label", "tag"] } },
-            { "name": { "value": "cassette", "synonyms": ["cassette spine", "tape"] } },
-            { "name": { "value": "blueprint", "synonyms": ["blue print", "technical"] } },
-            { "name": { "value": "qr code", "synonyms": ["qr", "q r code", "barcode", "scan code"] } }
+            {
+              "name": {
+                "value": "none",
+                "synonyms": [
+                  "off",
+                  "no style",
+                  "normal",
+                  "default",
+                  "clear",
+                  "clear style"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "bold"
+              }
+            },
+            {
+              "name": {
+                "value": "elegant"
+              }
+            },
+            {
+              "name": {
+                "value": "retro",
+                "synonyms": [
+                  "retro typewriter",
+                  "typewriter"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "minimal"
+              }
+            },
+            {
+              "name": {
+                "value": "warning",
+                "synonyms": [
+                  "caution",
+                  "warning label"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "address",
+                "synonyms": [
+                  "address label",
+                  "mailing label",
+                  "mailing"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "windows95",
+                "synonyms": [
+                  "windows 95",
+                  "windows ninety five",
+                  "ninety five"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "price tag",
+                "synonyms": [
+                  "price label",
+                  "tag"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "cassette",
+                "synonyms": [
+                  "cassette spine",
+                  "tape"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "blueprint",
+                "synonyms": [
+                  "blue print",
+                  "technical"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "qr code",
+                "synonyms": [
+                  "qr",
+                  "q r code",
+                  "barcode",
+                  "scan code"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "barcode",
+                "synonyms": [
+                  "bar code",
+                  "code 128"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "name tag",
+                "synonyms": [
+                  "name badge",
+                  "badge",
+                  "hello my name is"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "receipt"
+              }
+            },
+            {
+              "name": {
+                "value": "chalkboard",
+                "synonyms": [
+                  "chalk board",
+                  "blackboard"
+                ]
+              }
+            }
           ]
         },
         {
           "name": "FontWeight",
           "values": [
-            { "name": { "value": "normal", "synonyms": ["regular", "light"] } },
-            { "name": { "value": "bold" } },
-            { "name": { "value": "italic", "synonyms": ["italics"] } },
-            { "name": { "value": "bold italic", "synonyms": ["bold italics", "bold and italic"] } }
+            {
+              "name": {
+                "value": "normal",
+                "synonyms": [
+                  "regular",
+                  "light"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "bold"
+              }
+            },
+            {
+              "name": {
+                "value": "italic",
+                "synonyms": [
+                  "italics"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "bold italic",
+                "synonyms": [
+                  "bold italics",
+                  "bold and italic"
+                ]
+              }
+            }
           ]
         },
         {
           "name": "OnOff",
           "values": [
-            { "name": { "value": "on",  "synonyms": ["enable", "enabled", "yes", "activate"] } },
-            { "name": { "value": "off", "synonyms": ["disable", "disabled", "no", "deactivate"] } }
+            {
+              "name": {
+                "value": "on",
+                "synonyms": [
+                  "enable",
+                  "enabled",
+                  "yes",
+                  "activate"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "off",
+                "synonyms": [
+                  "disable",
+                  "disabled",
+                  "no",
+                  "deactivate"
+                ]
+              }
+            }
           ]
         },
         {
           "name": "LabelSize",
           "values": [
-            { "name": { "value": "2x1", "synonyms": ["two by one", "two by one inch", "small label"] } },
-            { "name": { "value": "4x2", "synonyms": ["four by two", "four by two inch", "large label"] } },
-            { "name": { "value": "4x6", "synonyms": ["four by six", "four by six inch", "shipping label"] } },
-            { "name": { "value": "3x2", "synonyms": ["three by two", "three by two inch"] } },
-            { "name": { "value": "2x0.5",  "synonyms": ["two by half", "two by half inch", "tiny label", "two by point five"] } },
-            { "name": { "value": "1.1x3.5", "synonyms": ["one by three and a half", "address label", "brother address", "twenty nine by ninety"] } },
-            { "name": { "value": "1.1x2.4", "synonyms": ["one by two and a half", "brother short", "twenty nine by sixty two"] } }
+            {
+              "name": {
+                "value": "2x1",
+                "synonyms": [
+                  "two by one",
+                  "two by one inch",
+                  "small label"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "4x2",
+                "synonyms": [
+                  "four by two",
+                  "four by two inch",
+                  "large label"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "4x6",
+                "synonyms": [
+                  "four by six",
+                  "four by six inch",
+                  "shipping label"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "3x2",
+                "synonyms": [
+                  "three by two",
+                  "three by two inch"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "2x0.5",
+                "synonyms": [
+                  "two by half",
+                  "two by half inch",
+                  "tiny label",
+                  "two by point five"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "1.1x3.5",
+                "synonyms": [
+                  "one by three and a half",
+                  "address label",
+                  "brother address",
+                  "twenty nine by ninety"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "1.1x2.4",
+                "synonyms": [
+                  "one by two and a half",
+                  "brother short",
+                  "twenty nine by sixty two"
+                ]
+              }
+            }
           ]
         }
       ]
