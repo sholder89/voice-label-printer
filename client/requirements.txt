@@ -4,6 +4,7 @@ pillow>=10.0
 pywin32>=306
 pystray>=0.19
 qrcode[pil]>=7.4
+python-barcode>=0.15
 uharfbuzz>=0.30.0
 freetype-py>=2.4.0
 fonttools>=4.0.0

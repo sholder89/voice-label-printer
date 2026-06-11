@@ -531,6 +531,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
               {% for fs in font_styles %}
               <option value="{{ fs }}" {% if fs == state.font_style %}selected{% endif %}>
                 {% if fs == "burbank" %}Burbank Big Condensed
+                {% elif fs == "inkfree" %}Ink Free
                 {% else %}{{ fs | capitalize }}{% endif %}
               </option>
               {% endfor %}
@@ -616,11 +617,11 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
       <p class="hint">💡 Mention keywords like <em>kitchen, tools, travel, music, fragile, warning</em> to auto-add an emoji.</p>
     </div>
 
-    <!-- QR-specific option — shown only when QR Code preset is active -->
+    <!-- Caption option — shown when the QR Code or Barcode preset is active -->
     <div id="qr-options" style="display:none; margin-bottom:.85rem">
       <label class="check-row" for="chk-qr-text">
         <input type="checkbox" id="chk-qr-text" checked onchange="saveConfig()">
-        <span>📝 Show text label alongside QR code</span>
+        <span>📝 Show text caption alongside the code</span>
       </label>
     </div>
 
@@ -818,7 +819,7 @@ function onPresetChange() {
   document.getElementById('style-overrides').style.pointerEvents = dim ? 'none' : '';
   document.getElementById('normal-text-wrap').style.display = isAddress ? 'none'  : 'block';
   document.getElementById('address-fields').style.display   = isAddress ? 'block' : 'none';
-  document.getElementById('qr-options').style.display       = (preset === 'qr_code') ? 'block' : 'none';
+  document.getElementById('qr-options').style.display       = (preset === 'qr_code' || preset === 'barcode') ? 'block' : 'none';
   if (isAddress) loadSavedAddresses();
   saveConfig();
   refreshPreview();
@@ -1286,7 +1287,7 @@ function checkStatus() {
       document.getElementById('style-overrides').style.pointerEvents = dim ? 'none' : '';
       document.getElementById('normal-text-wrap').style.display = isAddress ? 'none'  : 'block';
       document.getElementById('address-fields').style.display   = isAddress ? 'block' : 'none';
-      document.getElementById('qr-options').style.display       = (d.style_preset === 'qr_code') ? 'block' : 'none';
+      document.getElementById('qr-options').style.display       = (d.style_preset === 'qr_code' || d.style_preset === 'barcode') ? 'block' : 'none';
     }
     if (d.qr_show_text != null) {
       const chk = document.getElementById('chk-qr-text');
