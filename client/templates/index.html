@@ -1004,7 +1004,8 @@ function buildHistPreviewUrl(r) {
     + `&text_case=${r.text_case     || 'none'}`
     + `&style_preset=${r.style_preset || 'none'}`
     + `&icons=${r.icons !== undefined ? r.icons : true}`
-    + `&qr_show_text=${r.qr_show_text !== undefined ? r.qr_show_text : true}`;
+    + `&qr_show_text=${r.qr_show_text !== undefined ? r.qr_show_text : true}`
+    + `&text_align=${r.text_align || 'center'}`;
 }
 
 /* ── History hover preview ────────────────────────────────────────────── */
@@ -1078,6 +1079,7 @@ function reprintLabel(i) {
       text_case:    r.text_case    || 'none',
       style_preset: r.style_preset || 'none',
       icons:        r.icons !== undefined ? r.icons : true,
+      text_align:   r.text_align || 'center',
     }),
   }).then(res => res.json()).then(d => {
     if (d.ok) toast(copies > 1 ? `✓ Reprinted ${copies} copies` : '✓ Reprinted!');
@@ -1102,6 +1104,7 @@ function loadFromHistory(i) {
   document.getElementById('sel-text-case').value    = r.text_case    || 'none';
   if (r.size) document.getElementById('sel-size').value = r.size;
   document.getElementById('chk-icons').checked = r.icons !== undefined ? r.icons : true;
+  setTextAlign(r.text_align || 'center');
 
   if (preset === 'address') {
     // Parse multiline text back into address fields
