@@ -269,8 +269,9 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
       <section id="sec-darkness" class="settings-section">
         <div class="card">
           <h2>Emoji Print Darkness</h2>
-          <p class="hint">Color emojis can print faint on some thermal printers. Increase this to darken them on the label preview and in print. <b>This is a per-printer setting</b> — each printer remembers its own value, so changing the printer on the main page loads that printer's darkness.</p>
-          <p class="hint" id="darkness-printer" style="font-weight:600; color:var(--text2)"></p>
+          <p class="hint">Color emojis can print faint on some thermal printers. Increase this to darken them on the label preview and in print. <b>This is a per-printer setting</b> — each printer remembers its own value. Pick a printer below to view or change its darkness.</p>
+          <label for="darkness-printer">Printer</label>
+          <select id="darkness-printer" onchange="onDarknessPrinterChange()"></select>
           <div class="slider-row">
             <input type="range" id="emoji-darkness" min="0" max="100" step="1" value="0"
                    oninput="onDarknessSlider(this.value)">
@@ -488,25 +489,50 @@ function onDarknessSlider(v) {
   }, 120);
 }
 
+function applyDarknessValue(v) {
+  document.getElementById('emoji-darkness').value = v;
+  document.getElementById('darkness-val').textContent = v + '%';
+  document.getElementById('darkness-preview').src =
+    '/config/emoji-darkness/preview?pct=' + v + '&t=' + Date.now();
+}
+
 function loadDarkness() {
   fetch('/config/emoji-darkness').then(r => r.json()).then(d => {
     if (d.error) return;
-    const v = d.emoji_darkness || 0;
-    document.getElementById('emoji-darkness').value = v;
-    document.getElementById('darkness-val').textContent = v + '%';
-    document.getElementById('darkness-preview').src =
-      '/config/emoji-darkness/preview?pct=' + v + '&t=' + Date.now();
-    document.getElementById('darkness-printer').textContent = d.printer
-      ? 'Adjusting darkness for: ' + d.printer
-      : 'No printer selected — pick one on the main page first.';
+    const sel = document.getElementById('darkness-printer');
+    sel.innerHTML = '';
+    const printers = d.printers || [];
+    if (!printers.length) {
+      sel.innerHTML = '<option value="">No printers found</option>';
+    } else {
+      printers.forEach(p => {
+        const o = document.createElement('option');
+        o.value = p; o.textContent = p;
+        if (p === d.printer) o.selected = true;
+        sel.appendChild(o);
+      });
+    }
+    applyDarknessValue(d.emoji_darkness || 0);
   }).catch(() => {});
+}
+
+function onDarknessPrinterChange() {
+  const p = document.getElementById('darkness-printer').value;
+  darknessNote('', '');
+  fetch('/config/emoji-darkness?printer=' + encodeURIComponent(p))
+    .then(r => r.json()).then(d => {
+      if (d.error) return;
+      applyDarknessValue(d.emoji_darkness || 0);
+    }).catch(() => {});
 }
 
 function saveDarkness() {
   const v = parseInt(document.getElementById('emoji-darkness').value, 10);
+  const p = document.getElementById('darkness-printer').value;
+  if (!p) { darknessNote('No printer selected.', 'err'); return; }
   fetch('/config/emoji-darkness', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ emoji_darkness: v }),
+    body: JSON.stringify({ emoji_darkness: v, printer: p }),
   }).then(r => r.json()).then(d => {
     if (d.error) { darknessNote(d.error, 'err'); return; }
     darknessNote('Saved ✓ for ' + d.printer + ' — applies to the next print.', 'ok');

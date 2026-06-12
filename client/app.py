@@ -522,8 +522,14 @@ def emoji_darkness_preview():
 def get_emoji_darkness():
     if not _is_local_request():
         return jsonify({"error": "forbidden"}), 403
-    printer = state["printer"]
-    return jsonify({"emoji_darkness": _darkness_for(printer), "printer": printer})
+    # Defaults to the printer selected on the main page, but the Advanced page
+    # can pass ?printer= to inspect any printer's value.
+    printer = request.args.get("printer") or state["printer"]
+    return jsonify({
+        "emoji_darkness": _darkness_for(printer),
+        "printer":        printer,
+        "printers":       list_printers(),
+    })
 
 
 @app.route("/config/emoji-darkness", methods=["POST"])
