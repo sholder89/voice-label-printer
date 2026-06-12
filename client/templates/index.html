@@ -554,8 +554,8 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
         <div>
           <label>Printer</label>
           <select id="sel-printer" onchange="saveConfig()">
-            {% for p in printers %}
-            <option value="{{ p }}" {% if p == state.printer %}selected{% endif %}>{{ p }}</option>
+            {% for opt in printer_options %}
+            <option value="{{ opt.name }}" {% if opt.name == state.printer %}selected{% endif %}>{{ opt.label }}</option>
             {% endfor %}
           </select>
         </div>
@@ -1031,7 +1031,7 @@ function saveConfig() {
 }
 
 let _lastPrintAt = 0;
-function doPrint(overrideText, overridePrinter) {
+function doPrint(overrideText, overridePrinter, overrideLabel) {
   // Throttle: ignore rapid repeat triggers (e.g. holding/mashing Enter) so a
   // single keypress can't fire off a burst of labels. ~1.5s between prints.
   const now = Date.now();
@@ -1050,7 +1050,7 @@ function doPrint(overrideText, overridePrinter) {
     body:    JSON.stringify({ text, copies, ...s, printer }),
   }).then(r => r.json()).then(d => {
     if (d.ok) {
-      if (overridePrinter)   toast(`✓ Sent to ${overridePrinter}`);
+      if (overridePrinter)   toast(`✓ Sent to ${overrideLabel || overridePrinter}`);
       else if (copies > 1)   toast(`✓ Printed ${copies} copies`);
       else                   toast('✓ Printed!');
     } else toast('Error: ' + d.error, true);
@@ -1062,25 +1062,26 @@ function doPrint(overrideText, overridePrinter) {
 function buildPrinterMenu() {
   const menu = document.getElementById('printer-menu');
   const sel  = document.getElementById('sel-printer');
-  const current  = sel.value;
-  const printers = [...sel.options].map(o => o.value).filter(Boolean);
+  const current = sel.value;
+  const opts = [...sel.options].filter(o => o.value);
   menu.innerHTML = '';
   const head = document.createElement('div');
   head.className = 'split-menu-head';
-  head.textContent = printers.length ? 'Print once to…' : 'No printers found';
+  head.textContent = opts.length ? 'Print once to…' : 'No printers found';
   menu.appendChild(head);
-  printers.forEach(name => {
+  opts.forEach(o => {
+    const label = o.textContent.trim();         // nickname or raw printer name
     const b = document.createElement('button');
     b.type = 'button';
     b.setAttribute('role', 'menuitem');
-    b.textContent = name;                       // textContent = escape-safe
-    if (name === current) {
+    b.textContent = label;                       // textContent = escape-safe
+    if (o.value === current) {
       const tag = document.createElement('span');
       tag.className = 'cur';
       tag.textContent = ' (current)';
       b.appendChild(tag);
     }
-    b.addEventListener('click', () => { closePrinterMenu(); doPrint(undefined, name); });
+    b.addEventListener('click', () => { closePrinterMenu(); doPrint(undefined, o.value, label); });
     menu.appendChild(b);
   });
 }
