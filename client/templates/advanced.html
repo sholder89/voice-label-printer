@@ -69,6 +69,9 @@ main { max-width:760px; margin:2rem auto; padding:0 1rem; display:grid; gap:1rem
 .settings-section { display: none; }
 .settings-section.active { display: block; }
 
+/* Nav wrapper — needs min-width:0 so it doesn't bust out of the grid column */
+.nav-scroll-wrap { min-width: 0; }
+
 /* Mobile: horizontal scrollable tab strip */
 @media (max-width: 580px) {
   .settings-layout { grid-template-columns: 1fr; }
@@ -93,7 +96,7 @@ main { max-width:760px; margin:2rem auto; padding:0 1rem; display:grid; gap:1rem
     display: inline-block;
     width: auto;
   }
-  .nav-scroll-wrap { position: relative; }
+  .nav-scroll-wrap { position: relative; overflow: hidden; }
   .nav-scroll-wrap::after {
     content: '❯';
     position: absolute; top: 0; right: 0; bottom: 0;
