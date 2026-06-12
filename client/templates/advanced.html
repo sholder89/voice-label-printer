@@ -654,7 +654,6 @@ const SWATCH_COLORS = [
   { name: 'Purple', hex: '#CE93D8' },
   { name: 'Pink',   hex: '#EF9A9A' },
   { name: 'Orange', hex: '#FFCC80' },
-  { name: 'Teal',   hex: '#80DEEA' },
 ];
 
 function addPrinterRow(name, nickname, visible, labelColor) {
@@ -677,7 +676,7 @@ function addPrinterRow(name, nickname, visible, labelColor) {
   tcol.className = 'printer-toggle-col';
   const cap = document.createElement('span');
   cap.className = 'printer-toggle-cap';
-  cap.textContent = 'Show / Hide';
+  cap.textContent = 'Hide / Show';
   tcol.append(wrap, cap);
 
   const info = document.createElement('div');
