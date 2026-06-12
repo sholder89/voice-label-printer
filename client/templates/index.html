@@ -299,7 +299,14 @@ button:active { transform: scale(.97); }
   color: var(--text3);
   margin-bottom: .6rem;
 }
+#preview-tint {
+  display: inline-block;
+  border-radius: .375rem;
+  max-width: 100%;
+  transition: background .2s;
+}
 #preview-img {
+  display: block;
   max-width: 100%;
   border-radius: .375rem;
   box-shadow: 0 2px 8px rgba(0,0,0,.12);
@@ -733,7 +740,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
 
     <div id="preview-wrap">
       <div id="preview-label">Preview</div>
-      <img id="preview-img" src="/preview?text=Label+Printer" alt="label preview" />
+      <div id="preview-tint"><img id="preview-img" src="/preview?text=Label+Printer" alt="label preview" /></div>
     </div>
 
     <div class="copies-row">
@@ -1032,13 +1039,13 @@ function applyPrinterColor() {
   const sel = document.getElementById('sel-printer');
   const opt = sel.options[sel.selectedIndex];
   const color = (opt && opt.dataset.color) || '#FFFFFF';
-  const wrap = document.getElementById('preview-wrap');
+  const tint = document.getElementById('preview-tint');
   const img  = document.getElementById('preview-img');
   if (!color || color.toUpperCase() === '#FFFFFF') {
-    wrap.style.removeProperty('background');
+    tint.style.removeProperty('background');
     img.style.removeProperty('mix-blend-mode');
   } else {
-    wrap.style.background = color;
+    tint.style.background = color;
     img.style.mixBlendMode = 'multiply';
   }
 }
