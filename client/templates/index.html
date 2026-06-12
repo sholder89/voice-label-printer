@@ -553,10 +553,12 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
       <div class="grid-2">
         <div>
           <label>Printer</label>
-          <select id="sel-printer" onchange="saveConfig()">
+          <select id="sel-printer" onchange="onPrinterChange()">
             {% for opt in printer_options %}
             <option value="{{ opt.name }}" {% if opt.name == state.printer %}selected{% endif %}>{{ opt.label }}</option>
             {% endfor %}
+            <option disabled>──────────────</option>
+            <option value="__manage__">⚙ View all printers…</option>
           </select>
         </div>
         <div>
@@ -1014,6 +1016,18 @@ function refreshPreview() {
     `/preview?text=${encodeURIComponent(text)}&size=${s.size}&font_style=${s.font_style}&font_weight=${s.font_weight}&border=${s.border}&text_case=${s.text_case}&text_align=${s.text_align}&style_preset=${s.style_preset}&icons=${s.icons}&qr_show_text=${s.qr_show_text}&t=${Date.now()}`;
 }
 
+let _lastPrinter = null;
+function onPrinterChange() {
+  const sel = document.getElementById('sel-printer');
+  if (sel.value === '__manage__') {
+    if (_lastPrinter !== null) sel.value = _lastPrinter;   // don't leave the picker on this item
+    window.location.href = '/advanced#printers';
+    return;
+  }
+  _lastPrinter = sel.value;
+  saveConfig();
+}
+
 function saveConfig() {
   updateSettingsSummary();
   fetch('/config', {
@@ -1063,7 +1077,7 @@ function buildPrinterMenu() {
   const menu = document.getElementById('printer-menu');
   const sel  = document.getElementById('sel-printer');
   const current = sel.value;
-  const opts = [...sel.options].filter(o => o.value);
+  const opts = [...sel.options].filter(o => o.value && o.value !== '__manage__');
   menu.innerHTML = '';
   const head = document.createElement('div');
   head.className = 'split-menu-head';
@@ -1483,6 +1497,7 @@ function checkStatus() {
   loadHistory();
 }
 
+_lastPrinter = document.getElementById('sel-printer').value;
 setInterval(checkStatus, 5000);
 checkStatus();
 </script>

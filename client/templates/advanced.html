@@ -147,9 +147,9 @@ button:active { transform:scale(.97); }
 /* Printer rows */
 .printer-row { display:flex; gap:.7rem; align-items:center; margin-bottom:.6rem; }
 .printer-info { flex:1 1 auto; min-width:0; }
-.printer-nickname { margin-bottom:.2rem !important; }
-.printer-realname { font-size:.72rem; color:var(--text3); white-space:nowrap;
-                    overflow:hidden; text-overflow:ellipsis; }
+.printer-realname { font-size:.92rem; font-weight:600; color:var(--text); margin-bottom:.3rem;
+                    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.printer-nickname { margin-bottom:0 !important; font-size:.82rem; }
 .printer-row.hidden-pr .printer-info { opacity:.45; }
 
 /* Emoji picker modal */
@@ -416,6 +416,14 @@ document.querySelectorAll('#settings-nav .nav-btn').forEach(btn => {
   });
 });
 
+// Open a specific tab when linked with a hash, e.g. /advanced#printers
+(function() {
+  const h = location.hash.replace('#', '');
+  if (!h) return;
+  const btn = document.querySelector('#settings-nav .nav-btn[data-target="sec-' + h + '"]');
+  if (btn) btn.click();
+})();
+
 function setNote(msg, kind) {
   const n = document.getElementById('note');
   n.textContent = msg;
@@ -590,14 +598,14 @@ function addPrinterRow(name, nickname, visible) {
 
   const info = document.createElement('div');
   info.className = 'printer-info';
-  const nick = document.createElement('input');
-  nick.type = 'text'; nick.className = 'printer-nickname';
-  nick.placeholder = 'Nickname (optional)';
-  nick.value = nickname || '';
   const real = document.createElement('div');
   real.className = 'printer-realname';
   real.textContent = name; real.title = name;
-  info.append(nick, real);
+  const nick = document.createElement('input');
+  nick.type = 'text'; nick.className = 'printer-nickname';
+  nick.placeholder = 'Add a nickname (optional)';
+  nick.value = nickname || '';
+  info.append(real, nick);
 
   row.append(wrap, info);
   document.getElementById('printer-rows').appendChild(row);
