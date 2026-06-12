@@ -367,9 +367,14 @@ def _load_printer_prefs():
         with open(_PRINTER_PREFS_PATH, encoding="utf-8") as f:
             data = json.load(f)
         if isinstance(data, dict):
+            import re as _re
+            def _clean_color(val):
+                val = (val or "#FFFFFF").strip()
+                return val if _re.match(r'^#[0-9a-fA-F]{6}$', val) else "#FFFFFF"
             _printer_prefs = {
-                str(k): {"visible":  bool(v.get("visible", True)),
-                         "nickname": str(v.get("nickname", ""))[:60]}
+                str(k): {"visible":     bool(v.get("visible", True)),
+                         "nickname":    str(v.get("nickname", ""))[:60],
+                         "label_color": _clean_color(v.get("label_color", "#FFFFFF"))}
                 for k, v in data.items() if isinstance(v, dict)
             }
     except (FileNotFoundError, json.JSONDecodeError):
