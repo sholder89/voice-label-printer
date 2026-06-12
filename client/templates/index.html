@@ -337,7 +337,7 @@ button:active { transform: scale(.97); }
 
 /* ── Toast ────────────────────────────────────────────────────────────── */
 .toast {
-  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
   background: var(--toast-bg); color: #f1f5f9;
   padding: .7rem 1.25rem;
   border-radius: .6rem;
@@ -729,7 +729,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
       </tbody>
     </table>
     </div>
-    <div id="hist-pagination" style="display:none; margin-top:.75rem; display:flex; align-items:center; gap:.5rem; justify-content:center;">
+    <div id="hist-pagination" style="display:none; margin-top:.75rem; align-items:center; gap:.5rem; justify-content:center;">
       <button class="btn-icon" id="hist-prev" onclick="histPage(-1)">← Prev</button>
       <span id="hist-pages" style="display:flex; gap:.3rem; align-items:center;"></span>
       <button class="btn-icon" id="hist-next" onclick="histPage(1)">Next →</button>

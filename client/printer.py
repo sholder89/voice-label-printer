@@ -596,24 +596,24 @@ def _render_win95(text: str, w_px: int, h_px: int, dpi: int, text_case: str,
                             text_area_w, text_area_h, font_path=font_path,
                             fill=0.85, color=(0, 0, 0))
     else:
-      words = display_text.split()
-      max_n = min(len(words), 5)
-      best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
-      for n in range(1, min(max_n, 5) + 1):
-          lines = _split_words(words, n)
-          font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h,
-                                         font_path, fill=0.85)
-          if size > best_size:
-              best_size, best_font, best_lines = size, font, lines
+        words = display_text.split()
+        max_n = min(len(words), 5)
+        best_font, best_size, best_lines = ImageFont.load_default(), 8, [display_text]
+        for n in range(1, min(max_n, 5) + 1):
+            lines = _split_words(words, n)
+            font, size = _largest_font_for("\n".join(lines), text_area_w, text_area_h,
+                                           font_path, fill=0.85)
+            if size > best_size:
+                best_size, best_font, best_lines = size, font, lines
 
-      joined = "\n".join(best_lines)
-      stroke = 1 if font_weight in ("bold", "bold_italic") else 0
-      bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center",
-                                   stroke_width=stroke)
-      x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
-      y  = by1 + (bh - (bb[3] - bb[1])) / 2 - bb[1]
-      draw.multiline_text((x, y), joined, fill="#000000", font=best_font, align="center",
-                        stroke_width=stroke, stroke_fill="#000000")
+        joined = "\n".join(best_lines)
+        stroke = 1 if font_weight in ("bold", "bold_italic") else 0
+        bb = draw.multiline_textbbox((0, 0), joined, font=best_font, align="center",
+                                     stroke_width=stroke)
+        x  = text_x0 + (text_area_w - (bb[2] - bb[0])) / 2 - bb[0]
+        y  = by1 + (bh - (bb[3] - bb[1])) / 2 - bb[1]
+        draw.multiline_text((x, y), joined, fill="#000000", font=best_font, align="center",
+                            stroke_width=stroke, stroke_fill="#000000")
 
     if icon:
         _draw_icon(img, icon, icon_x, icon_y, icon_size)

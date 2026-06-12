@@ -7,6 +7,7 @@ import subprocess
 import sys
 import threading
 import time
+from datetime import datetime
 import requests
 from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
@@ -776,7 +777,6 @@ def status():
 
 def _record(text, size, status, *, font_style=None, font_weight=None, border=None,
             text_case=None, style_preset=None, icons=None, text_align=None):
-    from datetime import datetime
     state["history"].insert(0, {
         "text":         text,
         "size":         size,
