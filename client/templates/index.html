@@ -1033,10 +1033,13 @@ function applyPrinterColor() {
   const opt = sel.options[sel.selectedIndex];
   const color = (opt && opt.dataset.color) || '#FFFFFF';
   const wrap = document.getElementById('preview-wrap');
+  const img  = document.getElementById('preview-img');
   if (!color || color.toUpperCase() === '#FFFFFF') {
     wrap.style.removeProperty('background');
+    img.style.removeProperty('mix-blend-mode');
   } else {
     wrap.style.background = color;
+    img.style.mixBlendMode = 'multiply';
   }
 }
 
