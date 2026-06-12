@@ -561,10 +561,12 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
         </div>
         <div>
           <label>Label Size</label>
-          <select id="sel-size" onchange="saveConfig()">
+          <select id="sel-size" onchange="onSizeChange()">
             {% for key, label in size_options %}
             <option value="{{ key }}" {% if key == state.size %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
+            <option disabled>──────────────</option>
+            <option value="__manage_sizes__">⚙ Custom sizes…</option>
           </select>
         </div>
       </div>
@@ -1012,6 +1014,18 @@ function refreshPreview() {
   const text = getPrintText();
   document.getElementById('preview-img').src =
     `/preview?text=${encodeURIComponent(text)}&size=${s.size}&font_style=${s.font_style}&font_weight=${s.font_weight}&border=${s.border}&text_case=${s.text_case}&text_align=${s.text_align}&style_preset=${s.style_preset}&icons=${s.icons}&qr_show_text=${s.qr_show_text}&t=${Date.now()}`;
+}
+
+let _lastSize = null;
+function onSizeChange() {
+  const sel = document.getElementById('sel-size');
+  if (sel.value === '__manage_sizes__') {
+    if (_lastSize !== null) sel.value = _lastSize;
+    window.location.href = '/advanced#sizes';
+    return;
+  }
+  _lastSize = sel.value;
+  saveConfig();
 }
 
 let _lastPrinter = null;
@@ -1495,6 +1509,7 @@ function checkStatus() {
   loadHistory();
 }
 
+_lastSize    = document.getElementById('sel-size').value;
 _lastPrinter = document.getElementById('sel-printer').value;
 setInterval(checkStatus, 5000);
 checkStatus();
