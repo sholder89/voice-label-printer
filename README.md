@@ -116,7 +116,7 @@ Click the **🔧** icon in the header — visible **only on the PC running the c
 |---|---|
 | **Connection** | Change the relay URL or rotate the `LABEL_TOKEN` (write-only), with a **Test connection** button |
 | **Telegram** | Enable/disable print notifications and configure the bot token + chat ID |
-| **Emoji Darkness** | A **per-printer** 0–100% slider that darkens emoji icons for faint thermal printers, with a printer picker and live preview strip — each printer remembers its own value, and full grayscale detail is preserved rather than flattened to black |
+| **Emoji Contrast** | A **per-printer** 0–100% slider that boosts emoji contrast for faint thermal printers, with a printer picker and live preview strip — each printer remembers its own value, and full grayscale detail is preserved rather than flattened to black |
 | **Custom Emojis** | Map your own keywords to any emoji (searchable picker of all 1,870), with a per-row toggle to enable/disable each mapping without deleting it |
 | **Custom Label Sizes** | Define named sizes in inches, mm, or cm — they appear in the Print Settings size list |
 | **Appearance** | Light / Dark / Follow System theme selector |

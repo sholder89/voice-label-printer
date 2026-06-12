@@ -231,7 +231,7 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
       <button class="nav-btn active" data-target="sec-relay">Connection</button>
       <button class="nav-btn" data-target="sec-printers">Printers</button>
       <button class="nav-btn" data-target="sec-telegram">Telegram</button>
-      <button class="nav-btn" data-target="sec-darkness">Emoji Darkness</button>
+      <button class="nav-btn" data-target="sec-darkness">Emoji Contrast</button>
       <button class="nav-btn" data-target="sec-emojis">Custom Emojis</button>
       <button class="nav-btn" data-target="sec-sizes">Label Sizes</button>
       <button class="nav-btn" data-target="sec-appearance">Appearance</button>
@@ -304,11 +304,11 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
         </div>
       </section>
 
-      <!-- Emoji Print Darkness -->
+      <!-- Emoji Contrast -->
       <section id="sec-darkness" class="settings-section">
         <div class="card">
-          <h2>Emoji Print Darkness</h2>
-          <p class="hint">Color emojis can print faint on some thermal printers. Increase this to darken them on the label preview and in print. <b>This is a per-printer setting</b> — each printer remembers its own value. Pick a printer below to view or change its darkness.</p>
+          <h2>Emoji Contrast</h2>
+          <p class="hint">Color emojis can print faint on some thermal printers. Increase this to improve contrast on the label preview and in print. <b>This is a per-printer setting</b> — each printer remembers its own value. Pick a printer below to view or change its darkness.</p>
           <label for="darkness-printer">Printer</label>
           <select id="darkness-printer" onchange="onDarknessPrinterChange()"></select>
           <div class="slider-row">
