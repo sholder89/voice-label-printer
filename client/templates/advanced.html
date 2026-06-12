@@ -461,6 +461,7 @@ document.querySelectorAll('#settings-nav .nav-btn').forEach(btn => {
     document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.target).classList.add('active');
+    location.hash = btn.dataset.target.replace('sec-', '');
   });
 });
 
