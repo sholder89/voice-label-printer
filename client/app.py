@@ -464,24 +464,18 @@ def index():
         style_presets=STYLE_PRESETS,
         style_preset_groups=STYLE_PRESET_GROUPS,
         state=state,
-        is_local=_is_local_request(),
     )
 
 
-# ── Advanced settings (localhost only) ────────────────────────────────────────
+# ── Advanced settings ────────────────────────────────────────────────────────
 
 @app.route("/advanced")
 def advanced_page():
-    if not _is_local_request():
-        return ("Advanced settings can only be opened on the computer running "
-                "Label Printer."), 403
     return render_template("advanced.html")
 
 
 @app.route("/config/advanced", methods=["GET"])
 def get_advanced():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     # Never return the token itself — only whether one is set (write-only field).
     return jsonify({
         "relay_url": runtime["relay_url"],
@@ -491,8 +485,6 @@ def get_advanced():
 
 @app.route("/config/advanced", methods=["POST"])
 def set_advanced():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     data  = request.get_json(silent=True) or {}
 
     relay = (data.get("relay_url") or "").strip().rstrip("/")
@@ -514,8 +506,6 @@ def set_advanced():
 
 @app.route("/config/advanced/test", methods=["POST"])
 def test_advanced():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     data  = request.get_json(silent=True) or {}
     relay = (data.get("relay_url") or runtime["relay_url"] or "").strip().rstrip("/")
     token = (data.get("token") or "").strip() or runtime["token"]
@@ -536,15 +526,11 @@ def test_advanced():
 
 @app.route("/config/emojis", methods=["GET"])
 def get_emojis():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     return jsonify(_custom_emojis)
 
 
 @app.route("/config/emojis", methods=["POST"])
 def set_emojis():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     global _custom_emojis
     data = request.get_json(silent=True) or {}
     raw  = data.get("emojis") if isinstance(data, dict) else data
@@ -556,15 +542,11 @@ def set_emojis():
 
 @app.route("/config/sizes", methods=["GET"])
 def get_sizes():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     return jsonify(_custom_sizes)
 
 
 @app.route("/config/sizes", methods=["POST"])
 def set_sizes():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     global _custom_sizes
     data = request.get_json(silent=True) or {}
     raw  = data.get("sizes") if isinstance(data, dict) else data
@@ -576,8 +558,6 @@ def set_sizes():
 
 @app.route("/config/printers", methods=["GET"])
 def get_printers():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     out = []
     for name in list_printers():
         pref = _printer_prefs.get(name, {})
@@ -589,8 +569,6 @@ def get_printers():
 
 @app.route("/config/printers", methods=["POST"])
 def set_printers():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     data = request.get_json(silent=True) or {}
     raw  = data.get("printers") if isinstance(data, dict) else data
     # Merge (don't replace) so prefs for a temporarily-disconnected printer
@@ -611,8 +589,6 @@ def set_printers():
 
 @app.route("/config/emoji-darkness/preview")
 def emoji_darkness_preview():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     import printer as _pm
     pct = max(0, min(100, int(request.args.get("pct", 0))))
     samples = ["😀", "🍕", "❤️", "⭐", "🔥"]
@@ -636,8 +612,6 @@ def emoji_darkness_preview():
 
 @app.route("/config/emoji-darkness", methods=["GET"])
 def get_emoji_darkness():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     # Defaults to the printer selected on the main page, but the Advanced page
     # can pass ?printer= to inspect any printer's value.
     printer = request.args.get("printer") or state["printer"]
@@ -650,8 +624,6 @@ def get_emoji_darkness():
 
 @app.route("/config/emoji-darkness", methods=["POST"])
 def post_emoji_darkness():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     data = request.get_json(silent=True) or {}
     val  = data.get("emoji_darkness")
     if val is None:
@@ -668,8 +640,6 @@ def post_emoji_darkness():
 
 @app.route("/config/telegram", methods=["GET"])
 def get_telegram():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     return jsonify({
         "tg_enabled":   _TG_ENABLED,
         "tg_token_set": bool(_TG_TOKEN),
@@ -679,8 +649,6 @@ def get_telegram():
 
 @app.route("/config/telegram", methods=["POST"])
 def set_telegram():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     global _TG_TOKEN, _TG_CHAT, _TG_ENABLED
     data = request.get_json(silent=True) or {}
     if "tg_enabled" in data:
@@ -697,8 +665,6 @@ def set_telegram():
 
 @app.route("/config/telegram/test", methods=["POST"])
 def test_telegram():
-    if not _is_local_request():
-        return jsonify({"error": "forbidden"}), 403
     if not (_TG_TOKEN and _TG_CHAT):
         return jsonify({"ok": False, "detail": "No Telegram bot configured yet."})
     try:
