@@ -467,6 +467,10 @@ tr:nth-child(even) td { background: var(--tr-alt); }
   pointer-events: none;
   transition: opacity .12s;
 }
+#hist-preview-tint {
+  border-radius: .375rem;
+  transition: background .2s;
+}
 #hist-preview img {
   width: 100%;
   border-radius: .375rem;
@@ -800,7 +804,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
 
 <!-- History hover preview -->
 <div id="hist-preview">
-  <img id="hist-preview-img" alt="label preview" src="">
+  <div id="hist-preview-tint"><img id="hist-preview-img" alt="label preview" src=""></div>
   <div id="hist-preview-meta"></div>
 </div>
 
@@ -1219,6 +1223,15 @@ function showHistoryPreview(i, rowEl) {
     const meta = document.getElementById('hist-preview-meta');
 
     img.src = buildHistPreviewUrl(r) + '&t=' + Date.now();
+    const tint = document.getElementById('hist-preview-tint');
+    const color = r.label_color || '#FFFFFF';
+    if (color.toUpperCase() === '#FFFFFF') {
+      tint.style.removeProperty('background');
+      img.style.removeProperty('mix-blend-mode');
+    } else {
+      tint.style.background = color;
+      img.style.mixBlendMode = 'multiply';
+    }
 
     const preset = r.style_preset && r.style_preset !== 'none' ? r.style_preset : null;
     const parts = [
