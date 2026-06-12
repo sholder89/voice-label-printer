@@ -88,6 +88,7 @@ _ADDRESSES_PATH  = os.path.join(_DATA_DIR, "addresses.json")
 _CONFIG_PATH     = os.path.join(_DATA_DIR, "config.json")
 _CUSTOM_EMOJIS_PATH = os.path.join(_DATA_DIR, "custom_emojis.json")
 _CUSTOM_SIZES_PATH  = os.path.join(_DATA_DIR, "custom_sizes.json")
+_PRINTER_PREFS_PATH = os.path.join(_DATA_DIR, "printers.json")
 _HISTORY_MAX     = 500
 
 # One-time migration: copy settings.json from the old OneDrive location if it exists
@@ -353,6 +354,48 @@ def _size_options():
     return opts
 
 
+# ── Printer preferences (nickname + show/hide) ─────────────────────────────────
+# {printer_name: {"visible": bool, "nickname": str}}, edited on the Advanced page.
+# A printer with no entry defaults to visible with no nickname, so a fresh install
+# behaves exactly as before.
+_printer_prefs = {}
+
+
+def _load_printer_prefs():
+    global _printer_prefs
+    try:
+        with open(_PRINTER_PREFS_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            _printer_prefs = {
+                str(k): {"visible":  bool(v.get("visible", True)),
+                         "nickname": str(v.get("nickname", ""))[:60]}
+                for k, v in data.items() if isinstance(v, dict)
+            }
+    except (FileNotFoundError, json.JSONDecodeError):
+        _printer_prefs = {}
+
+
+def _save_printer_prefs():
+    try:
+        with open(_PRINTER_PREFS_PATH, "w", encoding="utf-8") as f:
+            json.dump(_printer_prefs, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+
+def _printer_display(name):
+    """Friendly nickname if set, else the raw Windows printer name."""
+    return _printer_prefs.get(name, {}).get("nickname") or name
+
+
+def _visible_printers(all_printers=None):
+    """Printer names that should appear in the main-page lists, in OS order.
+    Unconfigured printers default to visible."""
+    src = all_printers if all_printers is not None else list_printers()
+    return [p for p in src if _printer_prefs.get(p, {}).get("visible", True)]
+
+
 def _load_addresses():
     """Load saved addresses from addresses.json."""
     try:
@@ -400,9 +443,17 @@ def _is_local_request():
 
 @app.route("/")
 def index():
+    all_printers = list_printers()
+    # Always include the active printer so the dropdown reflects saved state
+    # even if it has been hidden on the Printers page.
+    names = list(_visible_printers(all_printers))
+    cur = state["printer"]
+    if cur and cur not in names and cur in all_printers:
+        names.append(cur)
+    printer_options = [{"name": n, "label": _printer_display(n)} for n in names]
     return render_template(
         "index.html",
-        printers=list_printers(),
+        printer_options=printer_options,
         sizes=list(LABEL_SIZES.keys()),
         size_options=_size_options(),
         font_styles=FONT_STYLES,
@@ -521,6 +572,41 @@ def set_sizes():
     _save_custom_sizes()
     _apply_custom_sizes()       # live — registers into LABEL_SIZES immediately
     return jsonify({"ok": True, "sizes": _custom_sizes})
+
+
+@app.route("/config/printers", methods=["GET"])
+def get_printers():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    out = []
+    for name in list_printers():
+        pref = _printer_prefs.get(name, {})
+        out.append({"name": name,
+                    "nickname": pref.get("nickname", ""),
+                    "visible":  pref.get("visible", True)})
+    return jsonify(out)
+
+
+@app.route("/config/printers", methods=["POST"])
+def set_printers():
+    if not _is_local_request():
+        return jsonify({"error": "forbidden"}), 403
+    data = request.get_json(silent=True) or {}
+    raw  = data.get("printers") if isinstance(data, dict) else data
+    # Merge (don't replace) so prefs for a temporarily-disconnected printer
+    # aren't lost when the page only lists the currently-connected ones.
+    for entry in (raw or []):
+        if not isinstance(entry, dict):
+            continue
+        name = (entry.get("name") or "").strip()
+        if not name:
+            continue
+        _printer_prefs[name] = {
+            "visible":  bool(entry.get("visible", True)),
+            "nickname": (entry.get("nickname") or "").strip()[:60],
+        }
+    _save_printer_prefs()
+    return jsonify({"ok": True})
 
 
 @app.route("/config/emoji-darkness/preview")
@@ -975,6 +1061,7 @@ if __name__ == "__main__":
     _load_addresses()
     _load_custom_emojis()
     _load_custom_sizes()
+    _load_printer_prefs()
 
     printers = list_printers()
     if printers and not state["printer"]:

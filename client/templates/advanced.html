@@ -144,6 +144,14 @@ button:active { transform:scale(.97); }
 .size-x    { color:var(--text3); flex:0 0 auto; }
 .size-empty { font-size:.8rem; color:var(--text3); margin-bottom:.6rem; }
 
+/* Printer rows */
+.printer-row { display:flex; gap:.7rem; align-items:center; margin-bottom:.6rem; }
+.printer-info { flex:1 1 auto; min-width:0; }
+.printer-nickname { margin-bottom:.2rem !important; }
+.printer-realname { font-size:.72rem; color:var(--text3); white-space:nowrap;
+                    overflow:hidden; text-overflow:ellipsis; }
+.printer-row.hidden-pr .printer-info { opacity:.45; }
+
 /* Emoji picker modal */
 .picker { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
           align-items:center; justify-content:center; padding:1rem; }
@@ -206,6 +214,7 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
     <!-- Left nav sidebar -->
     <nav class="settings-nav" id="settings-nav">
       <button class="nav-btn active" data-target="sec-relay">Connection</button>
+      <button class="nav-btn" data-target="sec-printers">Printers</button>
       <button class="nav-btn" data-target="sec-telegram">Telegram</button>
       <button class="nav-btn" data-target="sec-darkness">Emoji Darkness</button>
       <button class="nav-btn" data-target="sec-emojis">Custom Emojis</button>
@@ -235,6 +244,24 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
             <button class="btn-secondary" onclick="testConn()">Test connection</button>
           </div>
           <div class="note" id="note"></div>
+        </div>
+      </section>
+
+      <!-- Printers -->
+      <section id="sec-printers" class="settings-section">
+        <div class="card">
+          <h2>Printers</h2>
+          <p class="hint">Give a printer a friendly <b>nickname</b>, or <b>hide</b> ones you never use
+             (PDF writers, fax, etc.) so they don't clutter the printer lists on the main page —
+             including the Print button's printer menu. Changes apply after you reload the main page.</p>
+
+          <div id="printer-rows"></div>
+          <p class="size-empty" id="printer-empty" style="display:none">No printers detected.</p>
+
+          <div class="row">
+            <button class="btn-primary" onclick="savePrinters()">Save</button>
+          </div>
+          <div class="note" id="printer-note"></div>
         </div>
       </section>
 
@@ -539,6 +566,67 @@ function saveDarkness() {
   }).catch(() => darknessNote('Save failed.', 'err'));
 }
 
+/* ── Printers (nickname + show/hide) ────────────────────────────────────── */
+function printerNote(msg, kind) {
+  const n = document.getElementById('printer-note');
+  n.textContent = msg; n.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+function addPrinterRow(name, nickname, visible) {
+  const row = document.createElement('div');
+  row.className = 'printer-row' + (visible === false ? ' hidden-pr' : '');
+  row.dataset.name = name;
+
+  const wrap = document.createElement('label');
+  wrap.className = 'emoji-toggle-wrap';
+  wrap.title = 'Show this printer on the main page';
+  const tog = document.createElement('input');
+  tog.type = 'checkbox'; tog.className = 'printer-visible';
+  tog.checked = visible !== false;
+  tog.onchange = () => row.classList.toggle('hidden-pr', !tog.checked);
+  const slider = document.createElement('span');
+  slider.className = 'emoji-toggle-slider';
+  wrap.append(tog, slider);
+
+  const info = document.createElement('div');
+  info.className = 'printer-info';
+  const nick = document.createElement('input');
+  nick.type = 'text'; nick.className = 'printer-nickname';
+  nick.placeholder = 'Nickname (optional)';
+  nick.value = nickname || '';
+  const real = document.createElement('div');
+  real.className = 'printer-realname';
+  real.textContent = name; real.title = name;
+  info.append(nick, real);
+
+  row.append(wrap, info);
+  document.getElementById('printer-rows').appendChild(row);
+}
+
+function loadPrinters() {
+  fetch('/config/printers').then(r => r.json()).then(list => {
+    if (!Array.isArray(list)) return;
+    document.getElementById('printer-rows').innerHTML = '';
+    list.forEach(p => addPrinterRow(p.name, p.nickname, p.visible));
+    document.getElementById('printer-empty').style.display = list.length ? 'none' : 'block';
+  }).catch(() => printerNote('Could not load printers.', 'err'));
+}
+
+function savePrinters() {
+  const rows = [...document.querySelectorAll('.printer-row')].map(r => ({
+    name:     r.dataset.name,
+    nickname: r.querySelector('.printer-nickname').value.trim(),
+    visible:  r.querySelector('.printer-visible').checked,
+  }));
+  fetch('/config/printers', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ printers: rows }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { printerNote(d.error, 'err'); return; }
+    printerNote('Saved ✓ — reload the main page to see the changes.', 'ok');
+  }).catch(() => printerNote('Save failed.', 'err'));
+}
+
 /* ── Custom emojis ──────────────────────────────────────────────────────── */
 function emojiNote(msg, kind) {
   const n = document.getElementById('emoji-note');
@@ -803,6 +891,7 @@ document.querySelectorAll('input[name=theme]').forEach(r => {
 
 load();
 loadTelegram();
+loadPrinters();
 loadDarkness();
 loadEmojis();
 loadSizes();
