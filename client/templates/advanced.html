@@ -69,8 +69,8 @@ main { max-width:760px; margin:2rem auto; padding:0 1rem; display:grid; gap:1rem
 .settings-section { display: none; }
 .settings-section.active { display: block; }
 
-/* Nav wrapper — needs min-width:0 so it doesn't bust out of the grid column */
-.nav-scroll-wrap { min-width: 0; }
+/* Both grid children need min-width:0 to respect their columns */
+.nav-scroll-wrap, .settings-content { min-width: 0; }
 
 /* Mobile: horizontal scrollable tab strip */
 @media (max-width: 580px) {
@@ -97,20 +97,36 @@ main { max-width:760px; margin:2rem auto; padding:0 1rem; display:grid; gap:1rem
     width: auto;
   }
   .nav-scroll-wrap { position: relative; overflow: hidden; }
+  .nav-scroll-wrap::before,
   .nav-scroll-wrap::after {
-    content: '❯';
-    position: absolute; top: 0; right: 0; bottom: 0;
+    position: absolute; top: 0; bottom: 0;
     width: 2.2rem;
-    background: linear-gradient(to right, transparent, var(--surface) 70%);
-    display: flex; align-items: center; justify-content: flex-end;
-    padding-right: .5rem;
+    display: flex; align-items: center;
     color: var(--text2);
     font-size: .85rem;
     pointer-events: none;
-    border-radius: 0 .75rem .75rem 0;
     transition: opacity .2s;
   }
-  .nav-scroll-wrap.at-end::after { opacity: 0; }
+  .nav-scroll-wrap::before {
+    content: '❮';
+    left: 0;
+    background: linear-gradient(to left, transparent, var(--surface) 70%);
+    justify-content: flex-start;
+    padding-left: .5rem;
+    border-radius: .75rem 0 0 .75rem;
+    opacity: 0;
+  }
+  .nav-scroll-wrap::after {
+    content: '❯';
+    right: 0;
+    background: linear-gradient(to right, transparent, var(--surface) 70%);
+    justify-content: flex-end;
+    padding-right: .5rem;
+    border-radius: 0 .75rem .75rem 0;
+  }
+  .nav-scroll-wrap.at-start::before { opacity: 0; }
+  .nav-scroll-wrap.at-end::after   { opacity: 0; }
+  .nav-scroll-wrap.scrolled::before { opacity: 1; }
 }
 .topbar a { color:var(--accent); text-decoration:none; font-size:.9rem; font-weight:600; }
 h1 { font-size:1.25rem; margin-bottom:.25rem; }
@@ -461,7 +477,11 @@ document.querySelectorAll('#settings-nav .nav-btn').forEach(btn => {
   const nav  = document.getElementById('settings-nav');
   const wrap = nav.parentElement;
   function update() {
-    wrap.classList.toggle('at-end', nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 4);
+    const atStart = nav.scrollLeft <= 4;
+    const atEnd   = nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 4;
+    wrap.classList.toggle('at-start', atStart);
+    wrap.classList.toggle('scrolled', !atStart);
+    wrap.classList.toggle('at-end',   atEnd);
   }
   nav.addEventListener('scroll', update, { passive: true });
   update();
