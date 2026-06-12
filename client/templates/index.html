@@ -857,9 +857,14 @@ function autoGrow(el) {
 function getTextAlign() {
   return document.querySelector('#align-btns button.active')?.dataset.align || 'center';
 }
-function setTextAlign(val) {
+/* Update the button states only — used by the status poll, which must not
+   echo the value back through saveConfig */
+function applyTextAlign(val) {
   document.querySelectorAll('#align-btns button').forEach(b =>
     b.classList.toggle('active', b.dataset.align === val));
+}
+function setTextAlign(val) {
+  applyTextAlign(val);
   saveConfig();
 }
 
@@ -1047,10 +1052,10 @@ function showHistoryPreview(i, rowEl) {
 
     const preset = r.style_preset && r.style_preset !== 'none' ? r.style_preset : null;
     const parts = [
-      `<strong>${r.size || '?'}</strong>`,
-      preset ? preset : (r.font_style || 'enhanced'),
-      r.border && r.border !== 'none' ? r.border + ' border' : null,
-      r.text_case && r.text_case !== 'none' ? r.text_case : null,
+      `<strong>${escHtml(r.size || '?')}</strong>`,
+      escHtml(preset ? preset : (r.font_style || 'enhanced')),
+      r.border && r.border !== 'none' ? escHtml(r.border + ' border') : null,
+      r.text_case && r.text_case !== 'none' ? escHtml(r.text_case) : null,
     ].filter(Boolean);
     meta.innerHTML = parts.join(' · ');
 
@@ -1357,6 +1362,10 @@ function checkStatus() {
     changed |= syncSelect('sel-border',       d.border);
     changed |= syncSelect('sel-text-case',    d.text_case);
     changed |= syncSelect('sel-style-preset', d.style_preset);
+    if (d.text_align != null && d.text_align !== getTextAlign()) {
+      applyTextAlign(d.text_align);
+      changed = true;
+    }
     if (d.icons != null) {
       const chk = document.getElementById('chk-icons');
       if (chk.checked !== d.icons) { chk.checked = d.icons; changed = true; }
@@ -1411,12 +1420,17 @@ function _particlesCfg(dark) {
 }
 
 function _particlesOn() { return localStorage.getItem('labelprinter-particles') !== '0'; }
+function _destroyParticles() {
+  // Destroy every instance, not just [0] — each particlesJS() call appends a
+  // new canvas + animation loop, so theme toggles would otherwise stack them.
+  (window.pJSDom || []).forEach(p => { try { p.pJS.fn.vendors.destroypJS(); } catch (e) {} });
+  window.pJSDom = [];
+  document.querySelectorAll('#particles-js canvas').forEach(c => c.remove());
+}
 function _syncParticles() {
+  _destroyParticles();
   if (_particlesOn()) {
     particlesJS('particles-js', _particlesCfg(document.documentElement.classList.contains('dark')));
-  } else if (window.pJSDom && window.pJSDom.length) {
-    window.pJSDom[0].pJS.fn.vendors.destroypJS();
-    window.pJSDom = [];
   }
 }
 

@@ -831,12 +831,17 @@ function _particlesCfg(dark) {
 }
 
 function _particlesOn() { return localStorage.getItem('labelprinter-particles') !== '0'; }
+function _destroyParticles() {
+  // Destroy every instance, not just [0] — each particlesJS() call appends a
+  // new canvas + animation loop, so theme toggles would otherwise stack them.
+  (window.pJSDom || []).forEach(p => { try { p.pJS.fn.vendors.destroypJS(); } catch (e) {} });
+  window.pJSDom = [];
+  document.querySelectorAll('#particles-js canvas').forEach(c => c.remove());
+}
 function _syncParticles() {
+  _destroyParticles();
   if (_particlesOn()) {
     particlesJS('particles-js', _particlesCfg(document.documentElement.classList.contains('dark')));
-  } else if (window.pJSDom && window.pJSDom.length) {
-    window.pJSDom[0].pJS.fn.vendors.destroypJS();
-    window.pJSDom = [];
   }
 }
 
