@@ -269,7 +269,8 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
       <section id="sec-darkness" class="settings-section">
         <div class="card">
           <h2>Emoji Print Darkness</h2>
-          <p class="hint">Color emojis can print faint on some thermal printers. Increase this to darken them on the label preview and in print.</p>
+          <p class="hint">Color emojis can print faint on some thermal printers. Increase this to darken them on the label preview and in print. <b>This is a per-printer setting</b> — each printer remembers its own value, so changing the printer on the main page loads that printer's darkness.</p>
+          <p class="hint" id="darkness-printer" style="font-weight:600; color:var(--text2)"></p>
           <div class="slider-row">
             <input type="range" id="emoji-darkness" min="0" max="100" step="1" value="0"
                    oninput="onDarknessSlider(this.value)">
@@ -495,6 +496,9 @@ function loadDarkness() {
     document.getElementById('darkness-val').textContent = v + '%';
     document.getElementById('darkness-preview').src =
       '/config/emoji-darkness/preview?pct=' + v + '&t=' + Date.now();
+    document.getElementById('darkness-printer').textContent = d.printer
+      ? 'Adjusting darkness for: ' + d.printer
+      : 'No printer selected — pick one on the main page first.';
   }).catch(() => {});
 }
 
@@ -505,7 +509,7 @@ function saveDarkness() {
     body: JSON.stringify({ emoji_darkness: v }),
   }).then(r => r.json()).then(d => {
     if (d.error) { darknessNote(d.error, 'err'); return; }
-    darknessNote('Saved ✓ — applies to the next print.', 'ok');
+    darknessNote('Saved ✓ for ' + d.printer + ' — applies to the next print.', 'ok');
   }).catch(() => darknessNote('Save failed.', 'err'));
 }
 

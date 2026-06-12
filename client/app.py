@@ -129,13 +129,20 @@ def _save_history():
         pass
 
 
-_emoji_darkness = 0   # 0–100, persisted in config.json
+_emoji_darkness = {}          # {printer_name: pct (0–100)}, persisted in config.json
+_emoji_darkness_default = 0   # legacy global fallback for printers with no value set
+
+
+def _darkness_for(printer):
+    """Emoji darkness for a given printer, falling back to the legacy global
+    value for any printer that hasn't been configured individually yet."""
+    return _emoji_darkness.get(printer or "", _emoji_darkness_default)
 
 
 def _load_config():
     """Load runtime overrides (set via the Advanced page). Saved values win
     over .env defaults; missing keys keep their current value."""
-    global _emoji_darkness, _TG_TOKEN, _TG_CHAT, _TG_ENABLED
+    global _emoji_darkness, _emoji_darkness_default, _TG_TOKEN, _TG_CHAT, _TG_ENABLED
     try:
         with open(_CONFIG_PATH) as f:
             cfg = json.load(f)
@@ -143,9 +150,15 @@ def _load_config():
             runtime["relay_url"] = cfg["relay_url"]
         if cfg.get("token"):
             runtime["token"] = cfg["token"]
-        if "emoji_darkness" in cfg:
-            _emoji_darkness = max(0, min(100, int(cfg["emoji_darkness"])))
-            set_emoji_darkness(_emoji_darkness)
+        ed = cfg.get("emoji_darkness")
+        if isinstance(ed, dict):
+            _emoji_darkness = {str(k): max(0, min(100, int(v))) for k, v in ed.items()}
+        elif ed is not None:
+            # Legacy single global value (pre per-printer) — keep it as the
+            # fallback for every printer until each one is configured.
+            _emoji_darkness_default = max(0, min(100, int(ed)))
+        if "emoji_darkness_default" in cfg:
+            _emoji_darkness_default = max(0, min(100, int(cfg["emoji_darkness_default"])))
         if cfg.get("tg_token"):
             _TG_TOKEN = cfg["tg_token"]
         if "tg_chat" in cfg:
@@ -163,7 +176,8 @@ def _save_config():
             json.dump({
                 "relay_url":      runtime["relay_url"],
                 "token":          runtime["token"],
-                "emoji_darkness": _emoji_darkness,
+                "emoji_darkness":         _emoji_darkness,
+                "emoji_darkness_default": _emoji_darkness_default,
                 "tg_token":   _TG_TOKEN or "",
                 "tg_chat":    _TG_CHAT  or "",
                 "tg_enabled": _TG_ENABLED,
@@ -508,22 +522,26 @@ def emoji_darkness_preview():
 def get_emoji_darkness():
     if not _is_local_request():
         return jsonify({"error": "forbidden"}), 403
-    return jsonify({"emoji_darkness": _emoji_darkness})
+    printer = state["printer"]
+    return jsonify({"emoji_darkness": _darkness_for(printer), "printer": printer})
 
 
 @app.route("/config/emoji-darkness", methods=["POST"])
 def post_emoji_darkness():
     if not _is_local_request():
         return jsonify({"error": "forbidden"}), 403
-    global _emoji_darkness
     data = request.get_json(silent=True) or {}
     val  = data.get("emoji_darkness")
     if val is None:
         return jsonify({"error": "emoji_darkness required"}), 400
-    _emoji_darkness = max(0, min(100, int(val)))
-    set_emoji_darkness(_emoji_darkness)
+    # Emoji darkness is per-printer — save it against the named printer (or the
+    # one currently selected on the main page).
+    printer = data.get("printer") or state["printer"]
+    if not printer:
+        return jsonify({"error": "no printer selected"}), 400
+    _emoji_darkness[printer] = max(0, min(100, int(val)))
     _save_config()
-    return jsonify({"ok": True, "emoji_darkness": _emoji_darkness})
+    return jsonify({"ok": True, "emoji_darkness": _emoji_darkness[printer], "printer": printer})
 
 
 @app.route("/config/telegram", methods=["GET"])
@@ -604,6 +622,8 @@ def preview():
     qr_show_text = request.args.get("qr_show_text", str(state["qr_show_text"])).lower() not in ("false", "0")
     if size not in LABEL_SIZES:
         size = "2x1"
+    # Match the preview's emoji darkness to the currently selected printer
+    set_emoji_darkness(_darkness_for(state["printer"]))
     # Brother tape renders landscape so the preview matches the printed output
     w, h = render_dimensions(size)
     img  = render_label(text, w, h, dpi=203, font_style=font_style, border=border,
@@ -636,6 +656,7 @@ def manual_print():
         return jsonify({"error": "no text"}), 400
     if not printer:
         return jsonify({"error": "no printer selected"}), 400
+    set_emoji_darkness(_darkness_for(printer))
     try:
         for i in range(copies):
             if i > 0:
@@ -802,6 +823,7 @@ def poll_loop():
                     printer = state["printer"]
                     if not printer:
                         continue
+                    set_emoji_darkness(_darkness_for(printer))
                     try:
                         print_label(
                             text, printer, state["size"],
