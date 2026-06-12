@@ -1077,7 +1077,7 @@ function buildPrinterMenu() {
   const menu = document.getElementById('printer-menu');
   const sel  = document.getElementById('sel-printer');
   const current = sel.value;
-  const opts = [...sel.options].filter(o => o.value && o.value !== '__manage__');
+  const opts = [...sel.options].filter(o => !o.disabled && o.value && o.value !== '__manage__');
   menu.innerHTML = '';
   const head = document.createElement('div');
   head.className = 'split-menu-head';
