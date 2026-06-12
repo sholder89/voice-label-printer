@@ -157,6 +157,15 @@ button:active { transform:scale(.97); }
                     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .printer-nickname { margin-bottom:0 !important; font-size:.82rem; }
 .printer-row.hidden-pr .printer-info { opacity:.45; }
+.printer-color-label { font-size:.68rem; font-weight:700; text-transform:uppercase;
+                       letter-spacing:.06em; color:var(--text3); margin-top:.55rem; margin-bottom:.3rem; }
+.color-swatches { display:flex; gap:.3rem; flex-wrap:wrap; align-items:center; }
+.color-swatch { width:1.2rem; height:1.2rem; border-radius:50%; cursor:pointer;
+                border:2px solid transparent; box-shadow:0 1px 3px rgba(0,0,0,.2);
+                transition:border-color .15s, transform .12s; flex-shrink:0; }
+.color-swatch:hover { transform:scale(1.2); }
+.color-swatch.selected { border-color:var(--text); box-shadow:0 0 0 1px var(--surface),0 0 0 3px var(--text); }
+.color-swatch.custom-swatch { background:conic-gradient(red,yellow,lime,aqua,blue,magenta,red); }
 
 /* Emoji picker modal */
 .picker { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
@@ -586,7 +595,18 @@ function printerNote(msg, kind) {
   n.textContent = msg; n.className = 'note' + (kind ? ' ' + kind : '');
 }
 
-function addPrinterRow(name, nickname, visible) {
+const SWATCH_COLORS = [
+  { name: 'White',  hex: '#FFFFFF' },
+  { name: 'Yellow', hex: '#FFF9C4' },
+  { name: 'Green',  hex: '#C8E6C9' },
+  { name: 'Blue',   hex: '#BBDEFB' },
+  { name: 'Purple', hex: '#E1BEE7' },
+  { name: 'Pink',   hex: '#FFCDD2' },
+  { name: 'Orange', hex: '#FFE0B2' },
+  { name: 'Teal',   hex: '#B2EBF2' },
+];
+
+function addPrinterRow(name, nickname, visible, labelColor) {
   const row = document.createElement('div');
   row.className = 'printer-row' + (visible === false ? ' hidden-pr' : '');
   row.dataset.name = name;
@@ -618,7 +638,47 @@ function addPrinterRow(name, nickname, visible) {
   nick.type = 'text'; nick.className = 'printer-nickname';
   nick.placeholder = 'Add a nickname (optional)';
   nick.value = nickname || '';
-  info.append(real, nick);
+
+  // Color swatches
+  const activeColor = (labelColor || '#FFFFFF').toUpperCase();
+  row.dataset.labelColor = activeColor;
+
+  const colorLbl = document.createElement('div');
+  colorLbl.className = 'printer-color-label';
+  colorLbl.textContent = 'Label Color';
+
+  const swatchRow = document.createElement('div');
+  swatchRow.className = 'color-swatches';
+
+  function selectSwatch(swEl, hex) {
+    swatchRow.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+    swEl.classList.add('selected');
+    row.dataset.labelColor = hex;
+  }
+
+  SWATCH_COLORS.forEach(sc => {
+    const sw = document.createElement('span');
+    sw.className = 'color-swatch' + (activeColor === sc.hex.toUpperCase() ? ' selected' : '');
+    sw.style.background = sc.hex;
+    sw.title = sc.name;
+    sw.onclick = () => selectSwatch(sw, sc.hex);
+    swatchRow.appendChild(sw);
+  });
+
+  // Custom color swatch
+  const customInput = document.createElement('input');
+  customInput.type = 'color';
+  customInput.style.cssText = 'position:absolute;opacity:0;width:0;height:0;pointer-events:none;';
+  const isCustom = !SWATCH_COLORS.some(sc => sc.hex.toUpperCase() === activeColor);
+  if (isCustom) customInput.value = labelColor || '#FFFFFF';
+  const customSw = document.createElement('span');
+  customSw.className = 'color-swatch custom-swatch' + (isCustom ? ' selected' : '');
+  customSw.title = 'Custom color';
+  customSw.onclick = () => customInput.click();
+  customInput.oninput = () => selectSwatch(customSw, customInput.value);
+  swatchRow.append(customSw, customInput);
+
+  info.append(real, nick, colorLbl, swatchRow);
 
   row.append(tcol, info);
   document.getElementById('printer-rows').appendChild(row);
@@ -628,16 +688,17 @@ function loadPrinters() {
   fetch('/config/printers').then(r => r.json()).then(list => {
     if (!Array.isArray(list)) return;
     document.getElementById('printer-rows').innerHTML = '';
-    list.forEach(p => addPrinterRow(p.name, p.nickname, p.visible));
+    list.forEach(p => addPrinterRow(p.name, p.nickname, p.visible, p.label_color));
     document.getElementById('printer-empty').style.display = list.length ? 'none' : 'block';
   }).catch(() => printerNote('Could not load printers.', 'err'));
 }
 
 function savePrinters() {
   const rows = [...document.querySelectorAll('.printer-row')].map(r => ({
-    name:     r.dataset.name,
-    nickname: r.querySelector('.printer-nickname').value.trim(),
-    visible:  r.querySelector('.printer-visible').checked,
+    name:        r.dataset.name,
+    nickname:    r.querySelector('.printer-nickname').value.trim(),
+    visible:     r.querySelector('.printer-visible').checked,
+    label_color: r.dataset.labelColor || '#FFFFFF',
   }));
   fetch('/config/printers', {
     method: 'POST', headers: {'Content-Type': 'application/json'},

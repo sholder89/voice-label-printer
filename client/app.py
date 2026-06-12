@@ -450,7 +450,9 @@ def index():
     cur = state["printer"]
     if cur and cur not in names and cur in all_printers:
         names.append(cur)
-    printer_options = [{"name": n, "label": _printer_display(n)} for n in names]
+    printer_options = [{"name": n, "label": _printer_display(n),
+                        "color": _printer_prefs.get(n, {}).get("label_color", "#FFFFFF")}
+                       for n in names]
     return render_template(
         "index.html",
         printer_options=printer_options,
@@ -562,8 +564,9 @@ def get_printers():
     for name in list_printers():
         pref = _printer_prefs.get(name, {})
         out.append({"name": name,
-                    "nickname": pref.get("nickname", ""),
-                    "visible":  pref.get("visible", True)})
+                    "nickname":    pref.get("nickname", ""),
+                    "visible":     pref.get("visible", True),
+                    "label_color": pref.get("label_color", "#FFFFFF")})
     return jsonify(out)
 
 
@@ -579,9 +582,13 @@ def set_printers():
         name = (entry.get("name") or "").strip()
         if not name:
             continue
+        import re as _re
+        raw_color = (entry.get("label_color") or "#FFFFFF").strip()
+        color = raw_color if _re.match(r'^#[0-9a-fA-F]{6}$', raw_color) else "#FFFFFF"
         _printer_prefs[name] = {
-            "visible":  bool(entry.get("visible", True)),
-            "nickname": (entry.get("nickname") or "").strip()[:60],
+            "visible":     bool(entry.get("visible", True)),
+            "nickname":    (entry.get("nickname") or "").strip()[:60],
+            "label_color": color,
         }
     _save_printer_prefs()
     return jsonify({"ok": True})

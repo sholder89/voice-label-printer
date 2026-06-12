@@ -553,7 +553,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
           <label>Printer</label>
           <select id="sel-printer" onchange="onPrinterChange()">
             {% for opt in printer_options %}
-            <option value="{{ opt.name }}" {% if opt.name == state.printer %}selected{% endif %}>{{ opt.label }}</option>
+            <option value="{{ opt.name }}" data-color="{{ opt.color }}" {% if opt.name == state.printer %}selected{% endif %}>{{ opt.label }}</option>
             {% endfor %}
             <option disabled>──────────────</option>
             <option value="__manage__">⚙ View all printers…</option>
@@ -1028,6 +1028,18 @@ function onSizeChange() {
   saveConfig();
 }
 
+function applyPrinterColor() {
+  const sel = document.getElementById('sel-printer');
+  const opt = sel.options[sel.selectedIndex];
+  const color = (opt && opt.dataset.color) || '#FFFFFF';
+  const wrap = document.getElementById('preview-wrap');
+  if (!color || color.toUpperCase() === '#FFFFFF') {
+    wrap.style.removeProperty('background');
+  } else {
+    wrap.style.background = color;
+  }
+}
+
 let _lastPrinter = null;
 function onPrinterChange() {
   const sel = document.getElementById('sel-printer');
@@ -1037,6 +1049,7 @@ function onPrinterChange() {
     return;
   }
   _lastPrinter = sel.value;
+  applyPrinterColor();
   saveConfig();
 }
 
@@ -1471,7 +1484,9 @@ function checkStatus() {
     txt.textContent = 'Online';
     document.getElementById('win32-banner').style.display = d.win32 ? 'none' : 'block';
     let changed = false;
-    changed |= syncSelect('sel-printer',      d.printer);
+    const printerChanged = syncSelect('sel-printer', d.printer);
+    if (printerChanged) applyPrinterColor();
+    changed |= printerChanged;
     changed |= syncSelect('sel-size',         d.size);
     changed |= syncSelect('sel-font-style',   d.font_style);
     changed |= syncSelect('sel-font-weight',  d.font_weight);
@@ -1511,6 +1526,7 @@ function checkStatus() {
 
 _lastSize    = document.getElementById('sel-size').value;
 _lastPrinter = document.getElementById('sel-printer').value;
+applyPrinterColor();
 setInterval(checkStatus, 5000);
 checkStatus();
 </script>
