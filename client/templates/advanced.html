@@ -76,10 +76,12 @@ main { max-width:760px; margin:2rem auto; padding:0 1rem; display:grid; gap:1rem
     display: flex;
     gap: .25rem;
     overflow-x: auto;
+    scrollbar-width: none;
     border-radius: .75rem;
     padding: .3rem;
     position: static;
   }
+  .settings-nav::-webkit-scrollbar { display: none; }
   .settings-nav .nav-btn {
     flex: 0 0 auto;
     font-size: .78rem;
@@ -88,6 +90,21 @@ main { max-width:760px; margin:2rem auto; padding:0 1rem; display:grid; gap:1rem
     display: inline-block;
     width: auto;
   }
+  .nav-scroll-wrap { position: relative; }
+  .nav-scroll-wrap::after {
+    content: '❯';
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: 2.2rem;
+    background: linear-gradient(to right, transparent, var(--surface) 70%);
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: .5rem;
+    color: var(--text2);
+    font-size: .85rem;
+    pointer-events: none;
+    border-radius: 0 .75rem .75rem 0;
+    transition: opacity .2s;
+  }
+  .nav-scroll-wrap.at-end::after { opacity: 0; }
 }
 .topbar a { color:var(--accent); text-decoration:none; font-size:.9rem; font-weight:600; }
 h1 { font-size:1.25rem; margin-bottom:.25rem; }
@@ -227,15 +244,17 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
   <div class="settings-layout">
 
     <!-- Left nav sidebar -->
-    <nav class="settings-nav" id="settings-nav">
-      <button class="nav-btn active" data-target="sec-relay">Connection</button>
-      <button class="nav-btn" data-target="sec-printers">Printers</button>
-      <button class="nav-btn" data-target="sec-telegram">Telegram</button>
-      <button class="nav-btn" data-target="sec-darkness">Emoji Contrast</button>
-      <button class="nav-btn" data-target="sec-emojis">Custom Emojis</button>
-      <button class="nav-btn" data-target="sec-sizes">Label Sizes</button>
-      <button class="nav-btn" data-target="sec-appearance">Appearance</button>
-    </nav>
+    <div class="nav-scroll-wrap">
+      <nav class="settings-nav" id="settings-nav">
+        <button class="nav-btn active" data-target="sec-relay">Connection</button>
+        <button class="nav-btn" data-target="sec-printers">Printers</button>
+        <button class="nav-btn" data-target="sec-telegram">Telegram</button>
+        <button class="nav-btn" data-target="sec-darkness">Emoji Contrast</button>
+        <button class="nav-btn" data-target="sec-emojis">Custom Emojis</button>
+        <button class="nav-btn" data-target="sec-sizes">Label Sizes</button>
+        <button class="nav-btn" data-target="sec-appearance">Appearance</button>
+      </nav>
+    </div>
 
     <!-- Right content area -->
     <div class="settings-content">
@@ -429,6 +448,17 @@ document.querySelectorAll('#settings-nav .nav-btn').forEach(btn => {
   if (!h) return;
   const btn = document.querySelector('#settings-nav .nav-btn[data-target="sec-' + h + '"]');
   if (btn) btn.click();
+})();
+
+// Scroll-end arrow indicator for mobile nav strip
+(function() {
+  const nav  = document.getElementById('settings-nav');
+  const wrap = nav.parentElement;
+  function update() {
+    wrap.classList.toggle('at-end', nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 4);
+  }
+  nav.addEventListener('scroll', update, { passive: true });
+  update();
 })();
 
 function setNote(msg, kind) {
