@@ -273,9 +273,6 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
           <div id="printer-rows"></div>
           <p class="size-empty" id="printer-empty" style="display:none">No printers detected.</p>
 
-          <div class="row">
-            <button class="btn-primary" onclick="savePrinters()">Save</button>
-          </div>
           <div class="note" id="printer-note"></div>
         </div>
       </section>
@@ -617,7 +614,7 @@ function addPrinterRow(name, nickname, visible, labelColor) {
   const tog = document.createElement('input');
   tog.type = 'checkbox'; tog.className = 'printer-visible';
   tog.checked = visible !== false;
-  tog.onchange = () => row.classList.toggle('hidden-pr', !tog.checked);
+  tog.onchange = () => { row.classList.toggle('hidden-pr', !tog.checked); savePrinters(); };
   const slider = document.createElement('span');
   slider.className = 'emoji-toggle-slider';
   wrap.append(tog, slider);
@@ -638,6 +635,8 @@ function addPrinterRow(name, nickname, visible, labelColor) {
   nick.type = 'text'; nick.className = 'printer-nickname';
   nick.placeholder = 'Add a nickname (optional)';
   nick.value = nickname || '';
+  let _nickTimer = null;
+  nick.oninput = () => { clearTimeout(_nickTimer); _nickTimer = setTimeout(savePrinters, 600); };
 
   // Color swatches
   const activeColor = (labelColor || '#FFFFFF').toUpperCase();
@@ -654,6 +653,7 @@ function addPrinterRow(name, nickname, visible, labelColor) {
     swatchRow.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
     swEl.classList.add('selected');
     row.dataset.labelColor = hex;
+    savePrinters();
   }
 
   SWATCH_COLORS.forEach(sc => {
@@ -705,7 +705,7 @@ function savePrinters() {
     body: JSON.stringify({ printers: rows }),
   }).then(r => r.json()).then(d => {
     if (d.error) { printerNote(d.error, 'err'); return; }
-    printerNote('Saved ✓ — reload the main page to see the changes.', 'ok');
+    printerNote('Saved ✓', 'ok');
   }).catch(() => printerNote('Save failed.', 'err'));
 }
 
