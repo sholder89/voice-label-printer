@@ -658,7 +658,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
     <!-- Multi-line label input -->
     <div id="normal-text-wrap">
       <label>Label Text</label>
-      <textarea id="print-text" rows="1" placeholder="Type your label…&#10;Press Enter for a new line"
+      <textarea id="print-text" rows="1" placeholder="Type your label…"
                 oninput="schedulePreview(); updateCharCount(); autoGrow(this)"
                 onkeydown="if(event.key==='Enter' && (event.ctrlKey || event.metaKey)) { event.preventDefault(); doPrint(); }"></textarea>
       <div class="char-count" id="char-count">0 / 200</div>
