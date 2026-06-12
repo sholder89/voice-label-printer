@@ -5,6 +5,7 @@ import math
 import os
 import re
 import struct
+import threading
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 # Per-user font directory (works regardless of Windows username)
@@ -78,12 +79,19 @@ DEFAULT_DPI = 203
 
 # Emoji print darkness (0 = no change, 100 = maximum darkening). Applied in
 # _draw_icon after resize. Controlled from the Advanced Settings page.
-_EMOJI_DARKNESS = 0
+#
+# Stored per-thread: the value is set per render based on the target printer,
+# and Flask serves requests on multiple threads, so a shared global would let a
+# concurrent /preview and /print stomp on each other's darkness mid-render.
+_emoji_darkness_tls = threading.local()
 
 
 def set_emoji_darkness(pct: int):
-    global _EMOJI_DARKNESS
-    _EMOJI_DARKNESS = max(0, min(100, int(pct)))
+    _emoji_darkness_tls.value = max(0, min(100, int(pct)))
+
+
+def _emoji_darkness() -> int:
+    return getattr(_emoji_darkness_tls, "value", 0)
 
 # ── Style constants ───────────────────────────────────────────────────────────
 
@@ -1437,8 +1445,9 @@ def _split_words(words, n):
 def _largest_font_for(text, max_w, max_h, font_path, fill=0.85):
     if not font_path:
         return ImageFont.load_default(), 0
-    scratch   = Image.new("RGB", (max_w * 2, max_h * 2))
-    draw      = ImageDraw.Draw(scratch)
+    # textbbox only measures — it never draws — so a 1×1 canvas is enough and
+    # avoids allocating a large image on every call.
+    draw      = ImageDraw.Draw(Image.new("RGB", (1, 1)))
     best, best_size = ImageFont.load_default(), 0
     try:
         best = ImageFont.truetype(font_path, 8)
@@ -1968,8 +1977,9 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
 
     # Optional darkness boost: shifts ink pixels toward black while leaving the
     # pure-white background untouched. factor 1.0 = no change; 4.0 = near-black.
-    if _EMOJI_DARKNESS:
-        factor = 1.0 + (_EMOJI_DARKNESS / 100) * 3.0
+    darkness = _emoji_darkness()
+    if darkness:
+        factor = 1.0 + (darkness / 100) * 3.0
         emoji_img = emoji_img.point(lambda x: max(0, 255 - int((255 - x) * factor)))
 
     # Paste centered: invert L mask so 255=opaque ink, 0=transparent

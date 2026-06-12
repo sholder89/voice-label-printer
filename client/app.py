@@ -506,7 +506,7 @@ def emoji_darkness_preview():
     w = pad + len(samples) * (icon_sz + pad)
     h = icon_sz + pad * 2
     preview_img = Image.new("RGB", (w, h), "white")
-    orig = _pm._EMOJI_DARKNESS
+    orig = _pm._emoji_darkness()
     _pm.set_emoji_darkness(pct)
     try:
         for i, emoji in enumerate(samples):
@@ -811,8 +811,8 @@ def poll_loop():
                     if key in ("font_style", "font_weight", "border", "text_case", "style_preset", "size", "text_align"):
                         state[key] = value
                         _save_settings()
-                    elif key == "icons":
-                        state["icons"] = (value == "true")
+                    elif key in ("icons", "qr_show_text"):
+                        state[key] = (value == "true")
                         _save_settings()
                     requests.post(f"{relay}/settings/{cid}/complete",
                                   headers=headers, timeout=5)

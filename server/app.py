@@ -124,8 +124,12 @@ def pending_jobs():
     return jsonify([{"id": r["id"], "text": r["text"]} for r in rows])
 
 
+# Generous explicit limit so a busy print session is never throttled by the
+# restrictive global default (30/hour) — a 429 here would leave the job pending
+# and the client would reprint it next poll cycle.
 @app.route("/jobs/<job_id>/complete", methods=["POST"])
 @require_token
+@limiter.limit("60 per minute")
 def complete_job(job_id):
     db = get_db()
     db.execute("UPDATE jobs SET status = 'done' WHERE id = ?", (job_id,))
@@ -135,6 +139,7 @@ def complete_job(job_id):
 
 @app.route("/jobs/<job_id>/fail", methods=["POST"])
 @require_token
+@limiter.limit("60 per minute")
 def fail_job(job_id):
     db = get_db()
     db.execute("UPDATE jobs SET status = 'failed' WHERE id = ?", (job_id,))
@@ -159,6 +164,7 @@ def post_setting():
                           "barcode", "name_tag", "receipt", "chalkboard"},
         "font_weight":  {"normal", "bold", "italic", "bold_italic"},
         "icons":        {"true", "false"},
+        "qr_show_text": {"true", "false"},
         "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5", "1.1x3.5", "1.1x2.4"},
     }
     data  = request.get_json(silent=True) or {}
@@ -175,6 +181,10 @@ def post_setting():
     db.execute(
         "INSERT INTO settings_changes (id, key, value, status, created_at) VALUES (?, ?, ?, 'pending', ?)",
         (change_id, key, value, datetime.utcnow().isoformat()),
+    )
+    # Keep the table lean — purge done/failed changes older than 7 days
+    db.execute(
+        "DELETE FROM settings_changes WHERE status != 'pending' AND created_at < datetime('now', '-7 days')"
     )
     db.commit()
     return jsonify({"id": change_id, "key": key, "value": value}), 201
@@ -194,6 +204,7 @@ def pending_settings():
 
 @app.route("/settings/<change_id>/complete", methods=["POST"])
 @require_token
+@limiter.limit("60 per minute")
 def complete_setting(change_id):
     db = get_db()
     db.execute("UPDATE settings_changes SET status = 'done' WHERE id = ?", (change_id,))

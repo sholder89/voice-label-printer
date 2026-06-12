@@ -902,7 +902,7 @@ function loadSavedAddresses() {
     const sel = document.getElementById('sel-saved-address');
     const cur = sel.value;
     sel.innerHTML = '<option value="">— select a saved address —</option>' +
-      addrs.map(a => `<option value="${a.id}">${a.label}</option>`).join('');
+      addrs.map(a => `<option value="${escHtml(a.id)}">${escHtml(a.label)}</option>`).join('');
     if (cur) sel.value = cur;
   });
 }
@@ -1170,6 +1170,11 @@ function toast(msg, isError = false) {
 }
 
 /* ── History ──────────────────────────────────────────────────────────── */
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
 function renderHistPage() {
   const tbody    = document.getElementById('history-body');
   const pgDiv    = document.getElementById('hist-pagination');
@@ -1191,11 +1196,11 @@ function renderHistPage() {
       <tr class="hist-row"
           onmouseenter="showHistoryPreview(${i}, this)"
           onmouseleave="hideHistoryPreview()">
-        <td style="white-space:nowrap; color:var(--text2); font-size:.78rem">${r.ts}</td>
+        <td style="white-space:nowrap; color:var(--text2); font-size:.78rem">${escHtml(r.ts)}</td>
         <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap"
-            title="${r.text.replace(/"/g,'&quot;')}">${r.text.replace(/\n/g, ' · ')}</td>
-        <td style="color:var(--text2); white-space:nowrap">${r.size || '—'}</td>
-        <td class="${r.status && r.status.startsWith('ok') ? 'status-ok' : 'status-err'}">${r.status}</td>
+            title="${escHtml(r.text)}">${escHtml(r.text).replace(/\n/g, ' · ')}</td>
+        <td style="color:var(--text2); white-space:nowrap">${escHtml(r.size || '—')}</td>
+        <td class="${r.status && r.status.startsWith('ok') ? 'status-ok' : 'status-err'}">${escHtml(r.status)}</td>
         <td style="white-space:nowrap; display:flex; gap:.3rem; align-items:center">
           <button class="btn-icon" onclick="reprintLabel(${i})" title="Reprint with original settings">🖨</button>
           <button class="btn-icon" onclick="loadFromHistory(${i})" title="Load into editor" style="font-size:.75rem; padding:.3rem .55rem">↩ Load</button>
