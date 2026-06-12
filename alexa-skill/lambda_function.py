@@ -345,7 +345,7 @@ def lambda_handler(event, context):
     if req_type == "LaunchRequest":
         return _respond(
             "Label printer ready. You can print a label, or change the style, "
-            "font, border, text case, size, or toggle icons.",
+            "font, border, text case, alignment, size, or toggle icons.",
             end=False,
         )
 
@@ -522,7 +522,8 @@ def _handle_intent(intent):
             "You can say: print Hello World. "
             "Or change settings: set style to bold, set font to impact, "
             "set font weight to italic, set border to thick, "
-            "set text case to all caps, set size to four by two, or turn icons off.",
+            "set text case to all caps, set alignment to left, "
+            "set size to four by two, or turn icons off.",
             end=False,
         )
 

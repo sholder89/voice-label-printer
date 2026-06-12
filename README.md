@@ -130,9 +130,11 @@ Click the **🔧** icon in the header — visible **only on the PC running the c
 | *"Alexa, ask label printer to print kitchen supplies"* | Prints a label |
 | *"Alexa, ask label printer to set style to warning"* | Changes style preset |
 | *"Alexa, ask label printer to set size to four by two"* | Changes label size |
+| *"Alexa, ask label printer to set size to address label"* | Switches to Brother 29mm tape (also: *brother short*) |
 | *"Alexa, ask label printer to set font to burbank"* | Changes font style |
 | *"Alexa, ask label printer to set border to double"* | Changes border style |
 | *"Alexa, ask label printer to set font weight to italic"* | Changes font weight |
+| *"Alexa, ask label printer to set alignment to left"* | Changes text alignment |
 | *"Alexa, ask label printer to turn icons off"* | Disables emoji icons |
 | *"Alexa, ask label printer to set text to uppercase"* | Changes text case |
 
