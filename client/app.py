@@ -19,6 +19,34 @@ from printer import (
     _IMAGE_BORDER_ENTRIES,
 )
 
+
+def _load_env_file(path):
+    """Minimal KEY=VALUE .env loader (same as server/run_local.py). Existing
+    environment variables win (setdefault), so values set by a launcher script
+    take precedence over the file."""
+    if not os.path.isfile(path):
+        return
+    try:
+        with open(path, encoding="utf-8") as fh:
+            for raw in fh:
+                line = raw.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, val = line.split("=", 1)
+                if " #" in val:                       # strip inline comments
+                    val = val.split(" #", 1)[0]
+                os.environ.setdefault(key.strip(), val.strip())
+    except OSError:
+        pass
+
+
+# Load .env here rather than relying on the launcher: run-all.bat (the
+# auto-start path) execs pythonw directly, so without this any .env-based
+# config was silently ignored unless launched via client/start.bat.
+# Shared root .env takes precedence, then client/.env.
+_load_env_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env"))
+_load_env_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
@@ -39,7 +67,8 @@ SHOUTRRR_URL = os.environ.get("SHOUTRRR_URL", "")
 _TG_TOKEN   = None
 _TG_CHAT    = None
 _TG_ENABLED = True
-_m = re.match(r"telegram://([^@]+)@telegram\?chats=(\d+)", SHOUTRRR_URL)
+# Chat IDs can be negative (groups/channels), hence -?
+_m = re.match(r"telegram://([^@]+)@telegram\?chats=(-?\d+)", SHOUTRRR_URL)
 if _m:
     _TG_TOKEN, _TG_CHAT = _m.group(1), _m.group(2)
 

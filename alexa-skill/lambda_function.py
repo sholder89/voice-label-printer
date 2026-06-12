@@ -54,6 +54,8 @@ _TIMEOUT     = 8
 #       four by six, four by six inch, shipping label
 #       three by two, three by two inch
 #       two by half, two by half inch, tiny label
+#       one by three and a half, address label, brother address, twenty nine by ninety
+#       one by two and a half, brother short, twenty nine by sixty two
 #
 #   ToggleIconsIntent
 #     Slots:  onOff  (AMAZON.OnOff built-in)
@@ -231,6 +233,16 @@ _SIZE_MAP = {
     "two by half inch":      "2x0.5",
     "two by point five":     "2x0.5",
     "tiny label":            "2x0.5",
+    # Brother QL 29 mm continuous tape
+    "one by three and a half":  "1.1x3.5",
+    "1.1x3.5":                  "1.1x3.5",
+    "address label":            "1.1x3.5",
+    "brother address":          "1.1x3.5",
+    "twenty nine by ninety":    "1.1x3.5",
+    "one by two and a half":    "1.1x2.4",
+    "1.1x2.4":                  "1.1x2.4",
+    "brother short":            "1.1x2.4",
+    "twenty nine by sixty two": "1.1x2.4",
 }
 
 # ── Human-readable confirmations ──────────────────────────────────────────────
@@ -290,11 +302,13 @@ _WEIGHT_LABELS = {
     "bold_italic": "bold italic",
 }
 _SIZE_LABELS = {
-    "2x1":   "two by one",
-    "4x2":   "four by two",
-    "4x6":   "four by six",
-    "3x2":   "three by two",
-    "2x0.5": "two by half",
+    "2x1":     "two by one",
+    "4x2":     "four by two",
+    "4x6":     "four by six",
+    "3x2":     "three by two",
+    "2x0.5":   "two by half",
+    "1.1x3.5": "Brother address label",
+    "1.1x2.4": "Brother short label",
 }
 
 _ALIGN_MAP = {
@@ -478,7 +492,8 @@ def _handle_intent(intent):
         if val is None:
             return _respond(
                 "I didn't recognise that size. Available sizes are: "
-                "two by one, four by two, four by six, three by two, and two by half.",
+                "two by one, four by two, four by six, three by two, two by half, "
+                "and the Brother tape sizes: address label and brother short.",
                 end=False,
             )
         try:
