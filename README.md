@@ -29,11 +29,14 @@ You (voice) → Alexa Skill → AWS Lambda → Relay Server (VPS) → Windows Cl
 - 203 DPI rendering via Pillow — what you see in the preview is exactly what prints
 - Multiple label sizes: **2×1**, **4×2**, **4×6**, **3×2**, **2×0.5** (inches), **1.1×3.5**, **1.1×2.4** (Brother QL 29mm tape)
 - Print multiple copies (up to 10) from the web UI
+- **Multi-line text** — type your label across multiple lines (Enter for a new line, Ctrl+Enter to print); line breaks are preserved on the label
+- **Text alignment** — Left / Center / Right for multi-line labels
 
 ### 😀 Automatic Emoji Icons
 - Type (or say) any label text and the app automatically detects a matching emoji icon
 - Over **3,800 keywords** covering household items, sports, hobbies, professions, food, brands, electronic components, country flags, and more — see **[EMOJIS.md](EMOJIS.md)** for the full list
 - Icons appear to the left of the label text (stacked above on portrait labels)
+- **Inline emoji** — type or paste emoji directly into the label text and they render inline with the words (works regardless of the auto-icons setting)
 - Rendered via **Noto Color Emoji** (fonttools PNG extraction) with HarfBuzz + FreeType as fallback — correctly handles ZWJ sequences (🧑‍✈️ pilot, 🧑‍🔬 scientist) and country flags (🇺🇸 🇬🇧 🇯🇵 and all others)
 - Icons can be toggled on/off per label or globally
 - **Longest-match detection** — "polar bear" correctly picks 🐻‍❄️ over just 🐻
@@ -113,7 +116,7 @@ Click the **🔧** icon in the header — visible **only on the PC running the c
 |---|---|
 | **Connection** | Change the relay URL or rotate the `LABEL_TOKEN` (write-only), with a **Test connection** button |
 | **Telegram** | Enable/disable print notifications and configure the bot token + chat ID |
-| **Emoji Darkness** | A 0–100% slider that darkens emoji icons for faint thermal printers, with a live preview strip — preserves full grayscale detail rather than flattening to black |
+| **Emoji Darkness** | A **per-printer** 0–100% slider that darkens emoji icons for faint thermal printers, with a printer picker and live preview strip — each printer remembers its own value, and full grayscale detail is preserved rather than flattened to black |
 | **Custom Emojis** | Map your own keywords to any emoji (searchable picker of all 1,870), with a per-row toggle to enable/disable each mapping without deleting it |
 | **Custom Label Sizes** | Define named sizes in inches, mm, or cm — they appear in the Print Settings size list |
 | **Appearance** | Light / Dark / Follow System theme selector |
@@ -385,7 +388,7 @@ All user data is stored in `%APPDATA%\LabelPrinter\` (i.e. `C:\Users\<you>\AppDa
 | `settings.json` | Current printer, size, font, border, style preset, saved default style, etc. |
 | `history.json` | Print history (last 500) with full render settings |
 | `addresses.json` | Saved address book entries |
-| `config.json` | Advanced-page overrides: relay URL, token, Telegram credentials, emoji darkness |
+| `config.json` | Advanced-page overrides: relay URL, token, Telegram credentials, per-printer emoji darkness |
 | `custom_emojis.json` | Custom keyword → emoji mappings (with per-entry enabled flag) |
 | `custom_sizes.json` | User-defined label sizes (name + dimensions + unit) |
 
