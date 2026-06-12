@@ -767,13 +767,15 @@ def manual_print():
         status_label = "ok" if copies == 1 else f"ok ×{copies}"
         _record(text, size, status_label, font_style=font_style, font_weight=font_weight,
                 border=border, text_case=text_case, style_preset=style_preset, icons=icons,
-                text_align=text_align)
+                text_align=text_align,
+                label_color=_printer_prefs.get(printer, {}).get("label_color", "#FFFFFF"))
         threading.Thread(target=_notify, args=(text, size, "manual"), daemon=True).start()
         return jsonify({"ok": True})
     except Exception as e:
         _record(text, size, f"error: {e}", font_style=font_style, font_weight=font_weight,
                 border=border, text_case=text_case, style_preset=style_preset, icons=icons,
-                text_align=text_align)
+                text_align=text_align,
+                label_color=_printer_prefs.get(printer, {}).get("label_color", "#FFFFFF"))
         threading.Thread(target=_notify, args=(text, size, "manual"),
                          kwargs={"error": str(e)}, daemon=True).start()
         return jsonify({"error": str(e)}), 500
@@ -869,7 +871,7 @@ def status():
 # ── Background polling ────────────────────────────────────────────────────────
 
 def _record(text, size, status, *, font_style=None, font_weight=None, border=None,
-            text_case=None, style_preset=None, icons=None, text_align=None):
+            text_case=None, style_preset=None, icons=None, text_align=None, label_color=None):
     state["history"].insert(0, {
         "text":         text,
         "size":         size,
@@ -882,6 +884,7 @@ def _record(text, size, status, *, font_style=None, font_weight=None, border=Non
         "style_preset": style_preset if style_preset  is not None else state["style_preset"],
         "icons":        icons        if icons         is not None else state["icons"],
         "text_align":   text_align   if text_align    is not None else state["text_align"],
+        "label_color":  label_color  if label_color   is not None else "#FFFFFF",
     })
     if len(state["history"]) > _HISTORY_MAX:
         state["history"] = state["history"][:_HISTORY_MAX]
@@ -941,7 +944,8 @@ def poll_loop():
                                 font_style=state["font_style"], font_weight=state["font_weight"],
                                 border=state["border"],
                                 text_case=state["text_case"], style_preset=state["style_preset"],
-                                icons=state["icons"], text_align=state["text_align"])
+                                icons=state["icons"], text_align=state["text_align"],
+                                label_color=_printer_prefs.get(state["printer"], {}).get("label_color", "#FFFFFF"))
                         threading.Thread(
                             target=_notify,
                             args=(text, state["size"], "voice"),
@@ -954,7 +958,8 @@ def poll_loop():
                                 font_style=state["font_style"], font_weight=state["font_weight"],
                                 border=state["border"],
                                 text_case=state["text_case"], style_preset=state["style_preset"],
-                                icons=state["icons"], text_align=state["text_align"])
+                                icons=state["icons"], text_align=state["text_align"],
+                                label_color=_printer_prefs.get(state["printer"], {}).get("label_color", "#FFFFFF"))
                         threading.Thread(
                             target=_notify,
                             args=(text, state["size"], "voice"),
