@@ -145,8 +145,14 @@ button:active { transform:scale(.97); }
 .size-empty { font-size:.8rem; color:var(--text3); margin-bottom:.6rem; }
 
 /* Printer rows */
-.printer-row { display:flex; gap:.7rem; align-items:center; margin-bottom:.6rem; }
+.printer-row { display:flex; gap:.85rem; align-items:center; margin-bottom:.5rem;
+               padding:.65rem .8rem; border:1px solid var(--border); border-radius:.6rem;
+               background:var(--surface2); }
+.printer-row:nth-child(even) { background:var(--surface); }
 .printer-info { flex:1 1 auto; min-width:0; }
+.printer-toggle-col { flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:.25rem; }
+.printer-toggle-cap { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+                      color:var(--text3); white-space:nowrap; }
 .printer-realname { font-size:.92rem; font-weight:600; color:var(--text); margin-bottom:.3rem;
                     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .printer-nickname { margin-bottom:0 !important; font-size:.82rem; }
@@ -596,6 +602,13 @@ function addPrinterRow(name, nickname, visible) {
   slider.className = 'emoji-toggle-slider';
   wrap.append(tog, slider);
 
+  const tcol = document.createElement('div');
+  tcol.className = 'printer-toggle-col';
+  const cap = document.createElement('span');
+  cap.className = 'printer-toggle-cap';
+  cap.textContent = 'Show / Hide';
+  tcol.append(wrap, cap);
+
   const info = document.createElement('div');
   info.className = 'printer-info';
   const real = document.createElement('div');
@@ -607,7 +620,7 @@ function addPrinterRow(name, nickname, visible) {
   nick.value = nickname || '';
   info.append(real, nick);
 
-  row.append(wrap, info);
+  row.append(tcol, info);
   document.getElementById('printer-rows').appendChild(row);
 }
 
