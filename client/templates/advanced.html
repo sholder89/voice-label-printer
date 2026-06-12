@@ -319,9 +319,6 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
           <div class="darkness-preview">
             <img id="darkness-preview" src="/config/emoji-darkness/preview?pct=0" alt="Emoji preview">
           </div>
-          <div class="row" style="margin-top:.6rem">
-            <button class="btn-primary" onclick="saveDarkness()">Save</button>
-          </div>
           <div class="note" id="darkness-note"></div>
         </div>
       </section>
@@ -339,7 +336,6 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
 
           <div class="row">
             <button class="btn-secondary" onclick="addEmojiRow()">＋ Add emoji</button>
-            <button class="btn-primary" onclick="saveEmojis()">Save emojis</button>
           </div>
           <div class="note" id="emoji-note"></div>
         </div>
@@ -357,7 +353,6 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
 
           <div class="row">
             <button class="btn-secondary" onclick="addSizeRow()">＋ Add size</button>
-            <button class="btn-primary" onclick="saveSizes()">Save sizes</button>
           </div>
           <div class="note" id="size-note"></div>
         </div>
@@ -527,6 +522,7 @@ function darknessNote(msg, kind) {
 }
 
 let _darknessTimer = null;
+let _darknessSaveTimer = null;
 function onDarknessSlider(v) {
   document.getElementById('darkness-val').textContent = v + '%';
   clearTimeout(_darknessTimer);
@@ -534,6 +530,8 @@ function onDarknessSlider(v) {
     document.getElementById('darkness-preview').src =
       '/config/emoji-darkness/preview?pct=' + v + '&t=' + Date.now();
   }, 120);
+  clearTimeout(_darknessSaveTimer);
+  _darknessSaveTimer = setTimeout(saveDarkness, 600);
 }
 
 function applyDarknessValue(v) {
@@ -731,7 +729,7 @@ function addEmojiRow(emoji, keywords, enabled) {
   tog.type = 'checkbox';
   tog.className = 'emoji-toggle';
   tog.checked = enabled !== false;
-  tog.onchange = () => row.classList.toggle('disabled', !tog.checked);
+  tog.onchange = () => { row.classList.toggle('disabled', !tog.checked); _autoSaveEmojis(); };
   const slider = document.createElement('span');
   slider.className = 'emoji-toggle-slider';
   wrap.append(tog, slider);
@@ -746,12 +744,14 @@ function addEmojiRow(emoji, keywords, enabled) {
   kw.className = 'emoji-keywords';
   kw.placeholder = 'pizza, friday, dinner';
   kw.value = keywords || '';
+  let _kwTimer = null;
+  kw.oninput = () => { clearTimeout(_kwTimer); _kwTimer = setTimeout(_autoSaveEmojis, 600); };
   const rm = document.createElement('button');
   rm.type = 'button';
   rm.className = 'emoji-remove';
   rm.textContent = '✕';
   rm.title = 'Remove';
-  rm.onclick = () => { row.remove(); refreshEmptyHint(); };
+  rm.onclick = () => { row.remove(); refreshEmptyHint(); _autoSaveEmojis(); };
   row.append(wrap, pick, kw, rm);
   document.getElementById('emoji-rows').appendChild(row);
   refreshEmptyHint();
@@ -767,6 +767,12 @@ function loadEmojis() {
   }).catch(() => emojiNote('Could not load custom emojis.', 'err'));
 }
 
+let _emojiSaveTimer = null;
+function _autoSaveEmojis() {
+  clearTimeout(_emojiSaveTimer);
+  _emojiSaveTimer = setTimeout(saveEmojis, 300);
+}
+
 function saveEmojis() {
   const rows = [...document.querySelectorAll('.emoji-row')].map(r => ({
     emoji:    r.querySelector('.emoji-pick').dataset.emoji || '',
@@ -774,15 +780,13 @@ function saveEmojis() {
                 .split(',').map(s => s.trim()).filter(Boolean),
     enabled:  r.querySelector('.emoji-toggle').checked,
   }));
-  const incomplete = rows.find(r => (r.emoji && !r.keywords.length) || (!r.emoji && r.keywords.length));
-  if (incomplete) { emojiNote('Each row needs both an emoji and at least one keyword.', 'err'); return; }
   const clean = rows.filter(r => r.emoji && r.keywords.length);
   fetch('/config/emojis', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ emojis: clean }),
   }).then(r => r.json()).then(d => {
     if (d.error) { emojiNote(d.error, 'err'); return; }
-    emojiNote('Saved ✓ — applies to voice prints immediately.', 'ok');
+    emojiNote('Saved ✓', 'ok');
   }).catch(() => emojiNote('Save failed.', 'err'));
 }
 
@@ -814,7 +818,13 @@ function addSizeRow(name, width, height, unit) {
   if (width  != null) row.querySelector('.size-w').value = width;
   if (height != null) row.querySelector('.size-h').value = height;
   row.querySelector('.size-unit').value = unit || 'in';
-  row.querySelector('.emoji-remove').onclick = () => { row.remove(); refreshSizeEmpty(); };
+  let _sizeTimer = null;
+  const _debounceSave = () => { clearTimeout(_sizeTimer); _sizeTimer = setTimeout(saveSizes, 600); };
+  row.querySelector('.size-name').oninput = _debounceSave;
+  row.querySelector('.size-w').oninput    = _debounceSave;
+  row.querySelector('.size-h').oninput    = _debounceSave;
+  row.querySelector('.size-unit').onchange = saveSizes;
+  row.querySelector('.emoji-remove').onclick = () => { row.remove(); refreshSizeEmpty(); saveSizes(); };
   document.getElementById('size-rows').appendChild(row);
   refreshSizeEmpty();
   return row;
@@ -836,10 +846,6 @@ function saveSizes() {
     height: parseFloat(r.querySelector('.size-h').value),
     unit:   r.querySelector('.size-unit').value,
   }));
-  // Flag obviously-incomplete rows so they aren't silently dropped
-  const bad = rows.find(r => (r.name || r.width || r.height) &&
-                             (!r.name || !(r.width > 0) || !(r.height > 0)));
-  if (bad) { sizeNote('Each size needs a name and positive width & height.', 'err'); return; }
   const clean = rows.filter(r => r.name && r.width > 0 && r.height > 0);
   fetch('/config/sizes', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -849,7 +855,7 @@ function saveSizes() {
     if (d.sizes.length !== clean.length) {
       sizeNote('Saved ✓ — some entries were rejected (duplicate/reserved name, or out of range).', 'err');
     } else {
-      sizeNote('Saved ✓ — reload the main page to see them in Print Settings.', 'ok');
+      sizeNote('Saved ✓', 'ok');
     }
     loadSizes();   // reflect the normalized result
   }).catch(() => sizeNote('Save failed.', 'err'));
@@ -908,6 +914,7 @@ function pickEmoji(emoji) {
     _activePick.classList.remove('empty');
   }
   closePicker();
+  _autoSaveEmojis();
 }
 
 function filterGrid(q) {
