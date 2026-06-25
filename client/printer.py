@@ -84,6 +84,7 @@ DEFAULT_DPI = 203
 # and Flask serves requests on multiple threads, so a shared global would let a
 # concurrent /preview and /print stomp on each other's darkness mid-render.
 _emoji_darkness_tls = threading.local()
+_emoji_outline_tls  = threading.local()
 
 
 def set_emoji_darkness(pct: int):
@@ -92,6 +93,15 @@ def set_emoji_darkness(pct: int):
 
 def _emoji_darkness() -> int:
     return getattr(_emoji_darkness_tls, "value", 0)
+
+
+def set_emoji_outline(px: int):
+    """Set outline thickness in pixels (0 = off, 1–5 = on)."""
+    _emoji_outline_tls.value = max(0, min(5, int(px)))
+
+
+def _emoji_outline() -> int:
+    return getattr(_emoji_outline_tls, "value", 0)
 
 # ── Style constants ───────────────────────────────────────────────────────────
 
@@ -1981,6 +1991,34 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
     if darkness:
         factor = 1.0 + (darkness / 100) * 3.0
         emoji_img = emoji_img.point(lambda x: max(0, 255 - int((255 - x) * factor)))
+
+    # Optional shape-following outline: dilate the emoji silhouette by outline_px
+    # pixels, paint it black first, then paste the emoji on top so light-colored
+    # emojis still have a crisp black border even without heavy darkness boosting.
+    outline_px = _emoji_outline()
+    if outline_px:
+        from PIL import ImageFilter
+        # Build a hard silhouette mask (anything not near-white = ink)
+        silhouette = ImageChops.invert(emoji_img.point(lambda v: 0 if v < 240 else 255))
+        kernel = outline_px * 2 + 1          # MaxFilter size must be odd
+        border_mask = silhouette.filter(ImageFilter.MaxFilter(kernel))
+        # Expand canvas so the border isn't clipped at the edges
+        pad = outline_px
+        padded_w, padded_h = ew + pad * 2, eh + pad * 2
+        padded_emoji = Image.new("L", (padded_w, padded_h), 255)
+        padded_emoji.paste(emoji_img, (pad, pad))
+        padded_border = Image.new("L", (padded_w, padded_h), 255)
+        padded_border.paste(border_mask, (pad, pad))
+        padded_border = padded_border.filter(ImageFilter.MaxFilter(kernel))
+        black_img = Image.new("RGB", (padded_w, padded_h), (0, 0, 0))
+        outline_mask = ImageChops.invert(padded_border)
+        paste_x = x + (size - padded_w) // 2
+        paste_y = y + (size - padded_h) // 2
+        img.paste(black_img, (paste_x, paste_y), mask=outline_mask)
+        ink_mask  = ImageChops.invert(padded_emoji)
+        color_img = Image.new("RGB", (padded_w, padded_h), color)
+        img.paste(color_img, (paste_x, paste_y), mask=ink_mask)
+        return
 
     # Paste centered: invert L mask so 255=opaque ink, 0=transparent
     mask      = ImageChops.invert(emoji_img)

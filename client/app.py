@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
     print_label, list_printers, render_label, render_dimensions,
-    set_custom_emojis, set_custom_sizes, set_emoji_darkness, _BUILTIN_SIZE_KEYS,
+    set_custom_emojis, set_custom_sizes, set_emoji_darkness, set_emoji_outline, _BUILTIN_SIZE_KEYS,
     LABEL_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
     _IMAGE_BORDER_ENTRIES,
@@ -162,6 +162,7 @@ def _save_history():
 
 _emoji_darkness = {}          # {printer_name: pct (0–100)}, persisted in config.json
 _emoji_darkness_default = 0   # legacy global fallback for printers with no value set
+_emoji_outline_px = 0         # global outline thickness (0 = off, 1–5 px)
 
 
 def _darkness_for(printer):
@@ -173,7 +174,7 @@ def _darkness_for(printer):
 def _load_config():
     """Load runtime overrides (set via the Advanced page). Saved values win
     over .env defaults; missing keys keep their current value."""
-    global _emoji_darkness, _emoji_darkness_default, _TG_TOKEN, _TG_CHAT, _TG_ENABLED
+    global _emoji_darkness, _emoji_darkness_default, _emoji_outline_px, _TG_TOKEN, _TG_CHAT, _TG_ENABLED
     try:
         with open(_CONFIG_PATH) as f:
             cfg = json.load(f)
@@ -190,6 +191,8 @@ def _load_config():
             _emoji_darkness_default = max(0, min(100, int(ed)))
         if "emoji_darkness_default" in cfg:
             _emoji_darkness_default = max(0, min(100, int(cfg["emoji_darkness_default"])))
+        if "emoji_outline_px" in cfg:
+            _emoji_outline_px = max(0, min(5, int(cfg["emoji_outline_px"])))
         if cfg.get("tg_token"):
             _TG_TOKEN = cfg["tg_token"]
         if "tg_chat" in cfg:
@@ -209,6 +212,7 @@ def _save_config():
                 "token":          runtime["token"],
                 "emoji_darkness":         _emoji_darkness,
                 "emoji_darkness_default": _emoji_darkness_default,
+                "emoji_outline_px":       _emoji_outline_px,
                 "tg_token":   _TG_TOKEN or "",
                 "tg_chat":    _TG_CHAT  or "",
                 "tg_enabled": _TG_ENABLED,
@@ -622,6 +626,32 @@ def emoji_darkness_preview():
     return send_file(buf, mimetype="image/png", max_age=0)
 
 
+@app.route("/config/emoji-outline/preview")
+def emoji_outline_preview():
+    import printer as _pm
+    px = max(0, min(5, int(request.args.get("px", 0))))
+    samples = ["😀", "🍕", "❤️", "⭐", "🔥"]
+    icon_sz = 52
+    pad = 12
+    w = pad + len(samples) * (icon_sz + pad)
+    h = icon_sz + pad * 2
+    preview_img = Image.new("RGB", (w, h), "white")
+    orig_darkness = _pm._emoji_darkness()
+    orig_outline  = _pm._emoji_outline()
+    _pm.set_emoji_darkness(_darkness_for(state["printer"]))
+    _pm.set_emoji_outline(px)
+    try:
+        for i, emoji in enumerate(samples):
+            _pm._draw_icon(preview_img, emoji, pad + i * (icon_sz + pad), pad, icon_sz)
+    finally:
+        _pm.set_emoji_darkness(orig_darkness)
+        _pm.set_emoji_outline(orig_outline)
+    buf = io.BytesIO()
+    preview_img.save(buf, format="PNG")
+    buf.seek(0)
+    return send_file(buf, mimetype="image/png", max_age=0)
+
+
 @app.route("/config/emoji-darkness", methods=["GET"])
 def get_emoji_darkness():
     # Defaults to the printer selected on the main page, but the Advanced page
@@ -648,6 +678,23 @@ def post_emoji_darkness():
     _emoji_darkness[printer] = max(0, min(100, int(val)))
     _save_config()
     return jsonify({"ok": True, "emoji_darkness": _emoji_darkness[printer], "printer": printer})
+
+
+@app.route("/config/emoji-outline", methods=["GET"])
+def get_emoji_outline():
+    return jsonify({"emoji_outline_px": _emoji_outline_px})
+
+
+@app.route("/config/emoji-outline", methods=["POST"])
+def post_emoji_outline():
+    global _emoji_outline_px
+    data = request.get_json(silent=True) or {}
+    val  = data.get("emoji_outline_px")
+    if val is None:
+        return jsonify({"error": "emoji_outline_px required"}), 400
+    _emoji_outline_px = max(0, min(5, int(val)))
+    _save_config()
+    return jsonify({"ok": True, "emoji_outline_px": _emoji_outline_px})
 
 
 @app.route("/config/telegram", methods=["GET"])
@@ -722,8 +769,9 @@ def preview():
     qr_show_text = request.args.get("qr_show_text", str(state["qr_show_text"])).lower() not in ("false", "0")
     if size not in LABEL_SIZES:
         size = "2x1"
-    # Match the preview's emoji darkness to the currently selected printer
+    # Match the preview's emoji darkness/outline to the currently selected printer
     set_emoji_darkness(_darkness_for(state["printer"]))
+    set_emoji_outline(_emoji_outline_px)
     # Brother tape renders landscape so the preview matches the printed output
     w, h = render_dimensions(size)
     img  = render_label(text, w, h, dpi=203, font_style=font_style, border=border,
@@ -757,6 +805,7 @@ def manual_print():
     if not printer:
         return jsonify({"error": "no printer selected"}), 400
     set_emoji_darkness(_darkness_for(printer))
+    set_emoji_outline(_emoji_outline_px)
     try:
         for i in range(copies):
             if i > 0:
@@ -926,6 +975,7 @@ def poll_loop():
                     if not printer:
                         continue
                     set_emoji_darkness(_darkness_for(printer))
+                    set_emoji_outline(_emoji_outline_px)
                     try:
                         print_label(
                             text, printer, state["size"],

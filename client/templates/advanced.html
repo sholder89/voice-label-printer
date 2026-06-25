@@ -272,6 +272,7 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
         <button class="nav-btn" data-target="sec-printers">Printers</button>
         <button class="nav-btn" data-target="sec-telegram">Telegram</button>
         <button class="nav-btn" data-target="sec-darkness">Emoji Contrast</button>
+        <button class="nav-btn" data-target="sec-outline">Emoji Outline</button>
         <button class="nav-btn" data-target="sec-emojis">Custom Emojis</button>
         <button class="nav-btn" data-target="sec-sizes">Label Sizes</button>
         <button class="nav-btn" data-target="sec-appearance">Appearance</button>
@@ -361,6 +362,23 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
             <img id="darkness-preview" src="/config/emoji-darkness/preview?pct=0" alt="Emoji preview">
           </div>
           <div class="note" id="darkness-note"></div>
+        </div>
+      </section>
+
+      <!-- Emoji Outline -->
+      <section id="sec-outline" class="settings-section">
+        <div class="card">
+          <h2>Emoji Outline</h2>
+          <p class="hint">Adds a solid black border that follows the shape of each emoji. Useful for light-colored emojis that print faint even with contrast turned up — the outline keeps them visible regardless of their colors.</p>
+          <div class="slider-row">
+            <input type="range" id="emoji-outline" min="0" max="4" step="1" value="0"
+                   oninput="onOutlineSlider(this.value)">
+            <span class="slider-val" id="outline-val">Off</span>
+          </div>
+          <div class="darkness-preview">
+            <img id="outline-preview" src="/config/emoji-darkness/preview?pct=0" alt="Emoji outline preview">
+          </div>
+          <div class="note" id="outline-note"></div>
         </div>
       </section>
 
@@ -639,6 +657,48 @@ function saveDarkness() {
     if (d.error) { darknessNote(d.error, 'err'); return; }
     darknessNote('Saved ✓ for ' + d.printer + ' — applies to the next print.', 'ok');
   }).catch(() => darknessNote('Save failed.', 'err'));
+}
+
+/* ── Emoji outline ──────────────────────────────────────────────────────── */
+function outlineNote(msg, kind) {
+  const n = document.getElementById('outline-note');
+  n.textContent = msg; n.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+let _outlineTimer = null;
+let _outlineSaveTimer = null;
+function onOutlineSlider(v) {
+  const px = parseInt(v, 10);
+  document.getElementById('outline-val').textContent = px === 0 ? 'Off' : px + 'px';
+  clearTimeout(_outlineTimer);
+  _outlineTimer = setTimeout(() => {
+    document.getElementById('outline-preview').src =
+      '/config/emoji-outline/preview?px=' + px + '&t=' + Date.now();
+  }, 120);
+  clearTimeout(_outlineSaveTimer);
+  _outlineSaveTimer = setTimeout(saveOutline, 600);
+}
+
+function loadOutline() {
+  fetch('/config/emoji-outline').then(r => r.json()).then(d => {
+    const px = d.emoji_outline_px || 0;
+    document.getElementById('emoji-outline').value = px;
+    document.getElementById('outline-val').textContent = px === 0 ? 'Off' : px + 'px';
+    document.getElementById('outline-preview').src =
+      '/config/emoji-outline/preview?px=' + px + '&t=' + Date.now();
+  }).catch(() => {});
+}
+
+function saveOutline() {
+  const px = parseInt(document.getElementById('emoji-outline').value, 10);
+  fetch('/config/emoji-outline', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ emoji_outline_px: px }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { outlineNote(d.error, 'err'); return; }
+    outlineNote('Saved ✓ — applies to the next print.', 'ok');
+    setTimeout(() => outlineNote('', ''), 3000);
+  }).catch(() => outlineNote('Save failed.', 'err'));
 }
 
 /* ── Printers (nickname + show/hide) ────────────────────────────────────── */
@@ -1038,6 +1098,7 @@ load();
 loadTelegram();
 loadPrinters();
 loadDarkness();
+loadOutline();
 loadEmojis();
 loadSizes();
 </script>
