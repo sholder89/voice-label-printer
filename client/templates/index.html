@@ -716,7 +716,7 @@ tr.hist-row:hover td { background: var(--surface2) !important; }
       <label>Label Text</label>
       <div id="text-input-wrap">
         <textarea id="print-text" rows="1" placeholder="Type your label…"
-                  oninput="schedulePreview(); updateCharCount(); autoGrow(this); updateClearBtn()"
+                  oninput="schedulePreview(); updateCharCount(); autoGrow(this); updateClearBtn(); localStorage.setItem('labelprinter-text', this.value)"
                   onkeydown="if(event.key==='Enter' && (event.ctrlKey || event.metaKey)) { event.preventDefault(); doPrint(); }"></textarea>
         <button id="clear-text" title="Clear" onclick="clearLabelText()">✕</button>
       </div>
@@ -835,6 +835,12 @@ function toggleDark() {
   const saved = localStorage.getItem('labelprinter-dark');
   if (saved === '1') applyDark(true);
   else if (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches) applyDark(true);
+  const savedText = localStorage.getItem('labelprinter-text');
+  if (savedText) {
+    const ta = document.getElementById('print-text');
+    ta.value = savedText;
+    setTimeout(() => { autoGrow(ta); updateClearBtn(); schedulePreview(); }, 0);
+  }
   if (localStorage.getItem('labelprinter-settings-open') === '0') {
     document.getElementById('settings-body').classList.add('collapsed');
     document.getElementById('settings-card').classList.add('card-collapsed');
@@ -926,6 +932,7 @@ function updateClearBtn() {
 function clearLabelText() {
   const ta = document.getElementById('print-text');
   ta.value = '';
+  localStorage.removeItem('labelprinter-text');
   ta.focus();
   autoGrow(ta);
   updateCharCount();
