@@ -1998,22 +1998,23 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
     outline_px = _emoji_outline()
     if outline_px:
         from PIL import ImageFilter
-        # Pad canvas so the outline isn't clipped at the edges
+        # Pad canvas so the outline ring isn't clipped at the edges
         pad = outline_px + 2
         padded_w, padded_h = ew + pad * 2, eh + pad * 2
         padded = Image.new("L", (padded_w, padded_h), 255)
         padded.paste(emoji_img, (pad, pad))
-        # ink_mask: 255 where emoji ink is, 0 where background
+        # Binary ink mask: 255 where emoji has any ink, 0 where background
         ink_mask = padded.point(lambda v: 255 if v < 240 else 0)
-        # Dilate ink_mask to get the full outline+interior silhouette
-        kernel   = outline_px * 2 + 1
-        expanded = ink_mask.filter(ImageFilter.MaxFilter(kernel))
+        # Dilate to get outline+interior; subtract original ink to get ring only
+        kernel    = outline_px * 2 + 1
+        expanded  = ink_mask.filter(ImageFilter.MaxFilter(kernel))
+        ring_mask = ImageChops.subtract(expanded, ink_mask)
         paste_x = x + (size - padded_w) // 2
         paste_y = y + (size - padded_h) // 2
-        # 1. Paint expanded silhouette black (outline + interior)
+        # 1. Paint only the ring black — interior stays as label background
         black_img = Image.new("RGB", (padded_w, padded_h), (0, 0, 0))
-        img.paste(black_img, (paste_x, paste_y), mask=expanded)
-        # 2. Paint the emoji on top using its own ink as the mask
+        img.paste(black_img, (paste_x, paste_y), mask=ring_mask)
+        # 2. Paint the emoji normally on top (same variable-opacity as no-outline path)
         color_img = Image.new("RGB", (padded_w, padded_h), color)
         img.paste(color_img, (paste_x, paste_y), mask=ImageChops.invert(padded))
         return
