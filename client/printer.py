@@ -1998,26 +1998,24 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
     outline_px = _emoji_outline()
     if outline_px:
         from PIL import ImageFilter
-        # Build a hard silhouette mask (anything not near-white = ink)
-        silhouette = ImageChops.invert(emoji_img.point(lambda v: 0 if v < 240 else 255))
-        kernel = outline_px * 2 + 1          # MaxFilter size must be odd
-        border_mask = silhouette.filter(ImageFilter.MaxFilter(kernel))
-        # Expand canvas so the border isn't clipped at the edges
-        pad = outline_px
+        # Pad canvas so the outline isn't clipped at the edges
+        pad = outline_px + 2
         padded_w, padded_h = ew + pad * 2, eh + pad * 2
-        padded_emoji = Image.new("L", (padded_w, padded_h), 255)
-        padded_emoji.paste(emoji_img, (pad, pad))
-        padded_border = Image.new("L", (padded_w, padded_h), 255)
-        padded_border.paste(border_mask, (pad, pad))
-        padded_border = padded_border.filter(ImageFilter.MaxFilter(kernel))
-        black_img = Image.new("RGB", (padded_w, padded_h), (0, 0, 0))
-        outline_mask = ImageChops.invert(padded_border)
+        padded = Image.new("L", (padded_w, padded_h), 255)
+        padded.paste(emoji_img, (pad, pad))
+        # ink_mask: 255 where emoji ink is, 0 where background
+        ink_mask = padded.point(lambda v: 255 if v < 240 else 0)
+        # Dilate ink_mask to get the full outline+interior silhouette
+        kernel   = outline_px * 2 + 1
+        expanded = ink_mask.filter(ImageFilter.MaxFilter(kernel))
         paste_x = x + (size - padded_w) // 2
         paste_y = y + (size - padded_h) // 2
-        img.paste(black_img, (paste_x, paste_y), mask=outline_mask)
-        ink_mask  = ImageChops.invert(padded_emoji)
+        # 1. Paint expanded silhouette black (outline + interior)
+        black_img = Image.new("RGB", (padded_w, padded_h), (0, 0, 0))
+        img.paste(black_img, (paste_x, paste_y), mask=expanded)
+        # 2. Paint the emoji on top using its own ink as the mask
         color_img = Image.new("RGB", (padded_w, padded_h), color)
-        img.paste(color_img, (paste_x, paste_y), mask=ink_mask)
+        img.paste(color_img, (paste_x, paste_y), mask=ImageChops.invert(padded))
         return
 
     # Paste centered: invert L mask so 255=opaque ink, 0=transparent
