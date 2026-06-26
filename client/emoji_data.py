@@ -83,6 +83,21 @@ _ICON_KEYWORDS = {
     "callsign":         "radio",
     "propagation":      "radio",
     "grounding":        "radio",
+    # Radio brand names / models
+    "quansheng":        "radio",
+    "baofeng":          "radio",
+    "yaesu":            "radio",
+    "icom":             "radio",
+    "kenwood":          "radio",
+    "tidradio":         "radio",
+    "vgc":              "radio",
+    "tecsun":           "radio",
+    "tyt":              "radio",
+    "raddy":            "radio",
+    "radioditty":       "radio",
+    "handie talkie":    "radio",
+    "uv5r":             "radio",
+    "uvk5":             "radio",
 
     # ── Warning / Hazard ─────────────────────────────────────────────────────
     "fragile":          "warning",
@@ -262,9 +277,19 @@ _ICON_KEYWORDS = {
     "death":            "skull",
     "dead":             "skull",
     "died":             "skull",
-    "poison":           "skull",
     "toxic":            "skull",
     "pirate skull":     "skull",
+    "skull crossbones": "skull_crossbones",
+    "crossbones":       "skull_crossbones",
+    "poison":           "skull_crossbones",
+    "alcohol":          "skull_crossbones",
+    "drug":             "skull_crossbones",
+    "drugs":            "skull_crossbones",
+    "chemical":         "skull_crossbones",
+    "chemicals":        "skull_crossbones",
+    "solvent":          "skull_crossbones",
+    "pesticide":        "skull_crossbones",
+    "hazardous":        "skull_crossbones",
     "ghost":            "ghost",
     "haunted":          "ghost",
     "spirit":           "ghost",
@@ -522,6 +547,29 @@ _ICON_KEYWORDS = {
     "horns":            "rock_on",
     "fist bump":        "fist_bump",
     "raised fist":      "fist_bump",
+
+    # ── Greetings ────────────────────────────────────────────────────────────
+    "hello":            "wave_hand",
+    "hi":               "wave_hand",
+    "hey":              "wave_hand",
+    "howdy":            "wave_hand",
+    "welcome":          "wave_hand",
+    "greet":            "wave_hand",
+    "greeting":         "wave_hand",
+    "greetings":        "wave_hand",
+    "wave hand":        "wave_hand",
+    "waving":           "wave_hand",
+    "bye":              "wave_hand",
+    "goodbye":          "wave_hand",
+    "farewell":         "wave_hand",
+
+    # ── Questions ────────────────────────────────────────────────────────────
+    "who":              "question_mark",
+    "what":             "question_mark",
+    "why":              "question_mark",
+    "when":             "question_mark",
+    "how":              "question_mark",
+    "huh":              "question_mark",
 
     # ── Hazard / Safety ──────────────────────────────────────────────────────
     "radioactive":      "radioactive",
@@ -1556,6 +1604,11 @@ _ICON_KEYWORDS = {
     "pans":             "kitchen",
     "bakeware":         "kitchen",
     "cutlery":          "kitchen",
+    "fork":             "kitchen",
+    "knife":            "kitchen",
+    "spoon":            "kitchen",
+    "utensil":          "kitchen",
+    "silverware":       "kitchen",
     "spices":           "kitchen",
     "barbecue":         "bbq",
     "grill":            "bbq",
@@ -1753,6 +1806,12 @@ _ICON_KEYWORDS = {
     "meal":             "food",
     "snack":            "food",
     "treat":            "food",
+    "plate":            "food",
+    "bowl":             "food",
+    "dish":             "food",
+    "dishes":           "food",
+    "tableware":        "food",
+    "dinnerware":       "food",
 
     # ── Drinks ───────────────────────────────────────────────────────────────
     "coffee":           "coffee",
@@ -4133,6 +4192,7 @@ _ICON_EMOJIS = {
     "warning":          "⚠",           # ⚠
     "snowflake":        "❄",           # ❄
     "lightning":        "⚡",           # ⚡
+    "skull_crossbones": "\U00002620",       # ☠
 
     # Seasons / weather
     "summer":           "\U00002600",       # ☀
@@ -4208,6 +4268,7 @@ _ICON_EMOJIS = {
     "magic_wand":       "\U0001FA84",       # 🪄
 
     # People / gestures
+    "wave_hand":        "\U0001F44B",       # 👋
     "thumbsup":         "\U0001F44D",       # 👍
     "thumbsdown":       "\U0001F44E",       # 👎
     "clap":             "\U0001F44F",       # 👏
