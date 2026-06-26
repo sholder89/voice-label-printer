@@ -1742,7 +1742,7 @@ def _render_emoji_noto(emoji_char: str, target_size: int):
         alpha = img.split()[3]
         bg = Image.new('L', img.size, 255)
         result = Image.composite(gray, bg, alpha)
-        return result
+        return result, alpha
 
     except Exception:
         return None
@@ -1872,7 +1872,8 @@ def _render_emoji_shaped(emoji_char: str, font_path: str, target_size: int):
         canvas_w  = max(total_adv, target_size)
         canvas_h  = target_size + target_size // 2
         baseline  = int(target_size * 0.85)
-        result    = Image.new("L", (canvas_w, canvas_h), 255)
+        result       = Image.new("L", (canvas_w, canvas_h), 255)
+        alpha_canvas = Image.new("L", (canvas_w, canvas_h), 0)
 
         # --- Render each shaped glyph with FreeType ---
         ft_face = ft_lib.Face(font_path)
@@ -1910,16 +1911,20 @@ def _render_emoji_shaped(emoji_char: str, font_path: str, target_size: int):
                 gray  = Image.merge('RGBA', [ch2, ch1, ch0, ch3]).convert('L')
                 alpha = ch3
                 result.paste(gray, (ox, oy), mask=alpha)
+                alpha_canvas.paste(alpha, (ox, oy))
             elif bm.pixel_mode == ft_lib.FT_PIXEL_MODE_GRAY:
                 # Grayscale: 0=transparent, 255=ink — paste black using value as mask
                 mask = Image.frombytes('L', (bm.width, bm.rows), data)
                 result.paste(Image.new('L', mask.size, 0), (ox, oy), mask=mask)
+                alpha_canvas.paste(mask, (ox, oy))
 
             pen += pos.x_advance >> 6
 
         diff = ImageChops.difference(result, Image.new("L", result.size, 255))
         bb   = diff.getbbox()
-        return result.crop(bb) if bb else None
+        if not bb:
+            return None
+        return result.crop(bb), alpha_canvas.crop(bb)
 
     except Exception:
         return None
@@ -1939,14 +1944,21 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
         return
 
     # Try Noto Color Emoji first — supports flags + all emoji via PNG extraction
-    emoji_img = None if skip_noto else _render_emoji_noto(emoji, size * 2)
+    outline_alpha = None
+    noto_result = None if skip_noto else _render_emoji_noto(emoji, size * 2)
+    if noto_result is not None:
+        emoji_img, outline_alpha = noto_result
+    else:
+        emoji_img = None
 
     if emoji_img is None:
         # Fall back to HarfBuzz+FreeType with Segoe UI Emoji
         font_path = next((p for p in _EMOJI_FONT_PATHS if os.path.exists(p)), None)
         if not font_path:
             return
-        emoji_img = None if skip_hb else _render_emoji_shaped(emoji, font_path, size * 2)
+        hb_result = None if skip_hb else _render_emoji_shaped(emoji, font_path, size * 2)
+        if hb_result is not None:
+            emoji_img, outline_alpha = hb_result
 
     if emoji_img is None:
         # Fallback: Pillow-based rendering (no ZWJ support but works for simple emoji)
@@ -1972,7 +1984,8 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
         ink_bb = diff.getbbox()
         if not ink_bb:
             return
-        emoji_img = tmp.crop(ink_bb)
+        emoji_img     = tmp.crop(ink_bb)
+        outline_alpha = diff.crop(ink_bb)   # diff value = ink opacity
 
     ew, eh = emoji_img.size
 
@@ -2003,12 +2016,20 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
         padded_w, padded_h = ew + pad * 2, eh + pad * 2
         padded = Image.new("L", (padded_w, padded_h), 255)
         padded.paste(emoji_img, (pad, pad))
-        # Binary ink mask: 255 where emoji has any ink, 0 where background
-        ink_mask = padded.point(lambda v: 255 if v < 240 else 0)
-        # Dilate to get outline+interior; subtract original ink to get ring only
+        # Use the alpha channel (true silhouette) when available — this correctly
+        # handles flags, which have white stripes that would be missed by a gray
+        # threshold. Fall back to thresholding if no alpha was captured.
+        if outline_alpha is not None:
+            alpha_padded = Image.new("L", (padded_w, padded_h), 0)
+            scaled_alpha = outline_alpha.resize((ew, eh), Image.LANCZOS)
+            alpha_padded.paste(scaled_alpha, (pad, pad))
+            silhouette = alpha_padded.point(lambda v: 255 if v > 32 else 0)
+        else:
+            silhouette = padded.point(lambda v: 255 if v < 240 else 0)
+        # Dilate silhouette for ring, subtract to get ring only
         kernel    = outline_px * 2 + 1
-        expanded  = ink_mask.filter(ImageFilter.MaxFilter(kernel))
-        ring_mask = ImageChops.subtract(expanded, ink_mask)
+        expanded  = silhouette.filter(ImageFilter.MaxFilter(kernel))
+        ring_mask = ImageChops.subtract(expanded, silhouette)
         paste_x = x + (size - padded_w) // 2
         paste_y = y + (size - padded_h) // 2
         # 1. Paint only the ring black — interior stays as label background
