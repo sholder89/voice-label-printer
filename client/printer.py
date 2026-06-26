@@ -2005,18 +2005,10 @@ def _draw_icon(img, icon_type, x, y, size, color=(0, 0, 0), skip_noto=False, ski
         padded.paste(emoji_img, (pad, pad))
         # Binary ink mask: 255 where emoji has any ink, 0 where background
         ink_mask = padded.point(lambda v: 255 if v < 240 else 0)
-        # Morphological closing: dilate then erode to fill internal white gaps.
-        # Without this, flags produce outlines around each internal stripe instead
-        # of one ring around the outer boundary. Kernel scales with emoji size so
-        # it's wide enough to bridge stripes without over-closing tiny emojis.
-        close_k   = max(7, (min(padded_w, padded_h) // 5) | 1)
-        silhouette = (ink_mask
-                      .filter(ImageFilter.MaxFilter(close_k))
-                      .filter(ImageFilter.MinFilter(close_k)))
-        # Dilate silhouette for the ring, subtract to get ring only
+        # Dilate to get outline+interior; subtract original ink to get ring only
         kernel    = outline_px * 2 + 1
-        expanded  = silhouette.filter(ImageFilter.MaxFilter(kernel))
-        ring_mask = ImageChops.subtract(expanded, silhouette)
+        expanded  = ink_mask.filter(ImageFilter.MaxFilter(kernel))
+        ring_mask = ImageChops.subtract(expanded, ink_mask)
         paste_x = x + (size - padded_w) // 2
         paste_y = y + (size - padded_h) // 2
         # 1. Paint only the ring black — interior stays as label background
