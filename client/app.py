@@ -895,7 +895,7 @@ def delete_history():
 
 @app.route("/history/clear", methods=["POST"])
 def clear_history():
-    state["history"] = []
+    state["history"] = [h for h in state["history"] if h.get("pinned")]
     _save_history()
     return jsonify({"ok": True})
 

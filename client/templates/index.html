@@ -1454,12 +1454,13 @@ function goHistPage(n) {
 
 function clearHistory() {
   if (!_histRows.length) return;
-  if (!confirm('Clear all print history?')) return;
-  fetch('/history/clear', { method: 'POST' }).then(() => {
-    _histRows = [];
+  const pinnedCount = _histRows.filter(r => r.pinned).length;
+  const note = pinnedCount ? ` Starred entries (${pinnedCount}) will be kept.` : '';
+  if (!confirm(`Clear all print history?${note}`)) return;
+  fetch('/history/clear', { method: 'POST' }).then(() => loadHistory()).then(() => {
     _histPage = 0;
-    renderHistPage();
-    toast('History cleared');
+    const msg = pinnedCount ? `History cleared — ${pinnedCount} starred entr${pinnedCount === 1 ? 'y' : 'ies'} kept` : 'History cleared';
+    toast(msg);
   });
 }
 
