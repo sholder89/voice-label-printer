@@ -2241,6 +2241,11 @@ _ICON_KEYWORDS = {
     "sewing needle":    "needle",
     "string":           "thread",
     "twine":            "thread",
+    "knot":             "knot",
+    "knots":            "knot",
+    "rope":             "knot",
+    "lasso":            "knot",
+    "tied":             "knot",
     "chart":            "chart",
     "graph":            "chart",
     "data":             "chart",
@@ -4646,7 +4651,7 @@ _ICON_EMOJIS = {
     "clamp":            "\U0001F5DC",       # 🗜
     "bricks":           "\U0001F9F1",       # 🧱
     "thread":           "\U0001F9F5",       # 🧵
-    "knot":             "\U0001FA22",       # 🪢
+    "knot":             "\U0001FA62",       # 🪢
 
     # Maker / fabrication
     "printer_3d":       "\U0001F5A8",       # 🖨
