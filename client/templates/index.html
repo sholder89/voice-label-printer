@@ -1397,6 +1397,7 @@ function renderHistPage() {
         <td style="color:var(--text2); white-space:nowrap">${escHtml(r.size || '—')}</td>
         <td class="${r.status && r.status.startsWith('ok') ? 'status-ok' : 'status-err'}">${escHtml(r.status)}</td>
         <td style="white-space:nowrap; display:flex; gap:.3rem; align-items:center">
+          <button class="btn-icon" onclick="pinHistory(_histRows[${i}].ts, !!_histRows[${i}].pinned)" title="${r.pinned ? 'Unpin' : 'Pin to top'}" style="${r.pinned ? 'color:#f59e0b;border-color:#fcd34d;' : 'color:var(--text2);opacity:.55;'}">${r.pinned ? '★' : '☆'}</button>
           <button class="btn-icon" onclick="reprintLabel(${i})" title="Reprint with original settings">🖨</button>
           <button class="btn-icon" onclick="loadFromHistory(${i})" title="Load into editor" style="font-size:.75rem; padding:.3rem .55rem">↩ Load</button>
           <button class="btn-icon" onclick="deleteHistory(_histRows[${i}].ts)" title="Delete" style="margin-left:.6rem; color:#ef4444; border-color:#fca5a5; font-size:.7rem; font-weight:700; padding:.3rem .5rem">✕</button>
@@ -1463,9 +1464,18 @@ function clearHistory() {
 
 function loadHistory() {
   fetch('/history').then(r => r.json()).then(rows => {
-    _histRows = rows;
+    // Stable sort: pinned entries first, preserving order within each group
+    _histRows = rows.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
     renderHistPage();
   });
+}
+
+function pinHistory(ts, currentlyPinned) {
+  fetch('/history/pin', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ts, pinned: !currentlyPinned})
+  }).then(() => loadHistory());
 }
 
 /* ── Style randomizer & default ───────────────────────────────────────── */

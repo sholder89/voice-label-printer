@@ -1,4 +1,5 @@
 """Local Windows client: web UI + polling thread for print jobs."""
+import csv as _csv
 import io
 import json
 import os
@@ -7,6 +8,7 @@ import subprocess
 import sys
 import threading
 import time
+import zipfile
 from datetime import datetime
 import requests
 from PIL import Image, ImageDraw
@@ -896,6 +898,87 @@ def clear_history():
     state["history"] = []
     _save_history()
     return jsonify({"ok": True})
+
+
+@app.route("/history/pin", methods=["POST"])
+def pin_history():
+    data   = request.get_json() or {}
+    ts     = data.get("ts")
+    pinned = bool(data.get("pinned", False))
+    for entry in state["history"]:
+        if entry["ts"] == ts:
+            entry["pinned"] = pinned
+            _save_history()
+            return jsonify({"ok": True})
+    return jsonify({"error": "not found"}), 404
+
+
+@app.route("/history/export")
+def history_export():
+    fmt   = request.args.get("format", "json")
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if fmt == "csv":
+        buf    = io.StringIO()
+        fields = ["ts", "text", "size", "status", "font_style", "font_weight",
+                  "border", "text_case", "style_preset", "icons", "text_align"]
+        writer = _csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(state["history"])
+        raw = buf.getvalue().encode("utf-8-sig")   # BOM for Excel compat
+        return send_file(io.BytesIO(raw), mimetype="text/csv",
+                         as_attachment=True,
+                         download_name=f"labelprinter_history_{stamp}.csv")
+    data = json.dumps(state["history"], indent=2, ensure_ascii=False).encode("utf-8")
+    return send_file(io.BytesIO(data), mimetype="application/json",
+                     as_attachment=True,
+                     download_name=f"labelprinter_history_{stamp}.json")
+
+
+@app.route("/backup/export")
+def backup_export():
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for fname in ("settings.json", "config.json", "printers.json",
+                      "custom_emojis.json", "custom_sizes.json", "addresses.json"):
+            path = os.path.join(_DATA_DIR, fname)
+            if os.path.isfile(path):
+                zf.write(path, fname)
+    buf.seek(0)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return send_file(buf, mimetype="application/zip",
+                     as_attachment=True,
+                     download_name=f"labelprinter_backup_{stamp}.zip")
+
+
+@app.route("/backup/import", methods=["POST"])
+def backup_import():
+    f = request.files.get("backup")
+    if not f:
+        return jsonify({"error": "No file uploaded"}), 400
+    try:
+        with zipfile.ZipFile(io.BytesIO(f.read())) as zf:
+            allowed   = {"settings.json", "config.json", "printers.json",
+                         "custom_emojis.json", "custom_sizes.json", "addresses.json"}
+            restored  = []
+            for name in zf.namelist():
+                if name not in allowed:
+                    continue
+                content = zf.read(name)
+                json.loads(content)   # validate JSON before writing
+                with open(os.path.join(_DATA_DIR, name), "wb") as out:
+                    out.write(content)
+                restored.append(name)
+        _load_config()
+        _load_settings()
+        _load_addresses()
+        _load_custom_emojis()
+        _load_custom_sizes()
+        _load_printer_prefs()
+        return jsonify({"ok": True, "restored": restored})
+    except zipfile.BadZipFile:
+        return jsonify({"error": "Not a valid zip file"}), 400
+    except json.JSONDecodeError as e:
+        return jsonify({"error": f"Invalid JSON in backup: {e}"}), 400
 
 
 @app.route("/status")

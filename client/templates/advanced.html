@@ -276,6 +276,7 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
         <button class="nav-btn" data-target="sec-emojis">Custom Emojis</button>
         <button class="nav-btn" data-target="sec-sizes">Label Sizes</button>
         <button class="nav-btn" data-target="sec-appearance">Appearance</button>
+        <button class="nav-btn" data-target="sec-data">Data</button>
       </nav>
     </div>
 
@@ -445,6 +446,29 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
               <span style="font-size:.88rem; font-weight:500; color:var(--text);">Particle background</span>
             </div>
             <p class="hint" style="margin-top:.4rem;">Floating animated dots on the main and settings pages.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-data" class="settings-section">
+        <div class="card">
+          <h2>Backup &amp; Restore</h2>
+          <p class="hint">Export all settings (printers, custom emojis, sizes, addresses, connection config) as a zip file. Use Import to restore on this or another machine. Print history is not included — use the separate export below.</p>
+          <div style="display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.75rem">
+            <button class="btn" onclick="exportBackup()">⬇ Export Settings</button>
+            <label class="btn" style="cursor:pointer" title="Import a previously exported backup zip">
+              ⬆ Import Settings
+              <input type="file" id="backup-file-input" accept=".zip" style="display:none" onchange="importBackup(this)">
+            </label>
+          </div>
+          <p id="backup-status" class="hint" style="margin-top:.6rem; min-height:1.2em"></p>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <h2>Export Print History</h2>
+          <p class="hint">Download a copy of your print history log.</p>
+          <div style="display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.75rem">
+            <button class="btn" onclick="exportHistory('json')">⬇ JSON</button>
+            <button class="btn" onclick="exportHistory('csv')">⬇ CSV (Excel)</button>
           </div>
         </div>
       </section>
@@ -1101,6 +1125,37 @@ loadDarkness();
 loadOutline();
 loadEmojis();
 loadSizes();
+
+function exportBackup() {
+  window.location.href = '/backup/export';
+}
+
+function importBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('backup-status');
+  status.style.color = 'var(--text2)';
+  status.textContent = 'Importing…';
+  const fd = new FormData();
+  fd.append('backup', file);
+  fetch('/backup/import', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        status.style.color = '#22c55e';
+        status.textContent = `Restored: ${d.restored.join(', ')}`;
+      } else {
+        status.style.color = '#ef4444';
+        status.textContent = `Error: ${d.error}`;
+      }
+    })
+    .catch(() => { status.style.color = '#ef4444'; status.textContent = 'Import failed.'; });
+  input.value = '';
+}
+
+function exportHistory(fmt) {
+  window.location.href = `/history/export?format=${fmt}`;
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
