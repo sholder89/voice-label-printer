@@ -39,6 +39,7 @@ You (voice) → Alexa Skill → AWS Lambda → Relay Server (VPS) → Windows Cl
 - **Inline emoji** — type or paste emoji directly into the label text and they render inline with the words (works regardless of the auto-icons setting)
 - Rendered via **Noto Color Emoji** (fonttools PNG extraction) with HarfBuzz + FreeType as fallback — correctly handles ZWJ sequences (🧑‍✈️ pilot, 🧑‍🔬 scientist) and country flags (🇺🇸 🇬🇧 🇯🇵 and all others)
 - Icons can be toggled on/off per label or globally
+- **Emoji outline** — a subtle shape-following ring is drawn around each emoji so it pops against any label color or background
 - **Longest-match detection** — "polar bear" correctly picks 🐻‍❄️ over just 🐻
 - **Custom emojis** — map your own keywords to any emoji on the Advanced page (🔧 icon, PC-only). Custom mappings **override** the built-in ones, pick from a searchable grid of all 1,870 emojis, and apply live to voice prints. Stored in `custom_emojis.json`.
 
@@ -89,7 +90,8 @@ Transform label text automatically: **None, UPPERCASE, lowercase, Title Case, Se
 - **Hover** over a history row to preview the label image
 - **Reprint** any past label with its original settings
 - **Load** a past label back into the form to edit it
-- **Delete** individual entries or **Clear All**
+- **Delete** individual entries or **Clear All** (starred entries are preserved on Clear All)
+- **Star/pin** any entry (★) to keep it permanently — pinned entries float to the top and survive Clear All
 
 ### 📬 Address Labels
 - Dedicated address form with Name, Line 1, Line 2, City/State/ZIP fields
@@ -120,6 +122,7 @@ Click the **🔧** icon in the header — visible **only on the PC running the c
 | **Custom Emojis** | Map your own keywords to any emoji (searchable picker of all 1,870), with a per-row toggle to enable/disable each mapping without deleting it |
 | **Custom Label Sizes** | Define named sizes in inches, mm, or cm — they appear in the Print Settings size list |
 | **Appearance** | Light / Dark / Follow System theme selector |
+| **Data** | Export all settings as a zip backup; import/restore a backup zip; export print history as JSON or CSV |
 
 ---
 
