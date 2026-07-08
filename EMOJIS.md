@@ -4,7 +4,7 @@ All keywords that auto-detect an emoji icon when typed in the label text.
 Detection is **case-insensitive** and uses whole-word matching —
 the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 
-**3850 keywords → 976 emoji types** (258 country flags listed separately)
+**4243 keywords → 978 emoji types** (258 country flags listed separately)
 
 ---
 
@@ -16,14 +16,16 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 - [Professions](#professions)
 - [People / Gestures](#people-gestures)
 - [Gestures](#gestures)
+- [Greetings](#greetings)
+- [Questions](#questions)
 - [Hazard / Safety](#hazard-safety)
 - [Emotions / Faces](#emotions-faces)
-- [Animals — Pets](#animals-—-pets)
-- [Animals — Birds](#animals-—-birds)
-- [Animals — Sea](#animals-—-sea)
-- [Animals — Reptiles / Amphibians](#animals-—-reptiles-amphibians)
-- [Animals — Insects](#animals-—-insects)
-- [Animals — Farm / Wild](#animals-—-farm-wild)
+- [Animals — Pets](#animals-pets)
+- [Animals — Birds](#animals-birds)
+- [Animals — Sea](#animals-sea)
+- [Animals — Reptiles / Amphibians](#animals-reptiles-amphibians)
+- [Animals — Insects](#animals-insects)
+- [Animals — Farm / Wild](#animals-farm-wild)
 - [Seasons / Weather](#seasons-weather)
 - [Nature / Plants](#nature-plants)
 - [Space](#space)
@@ -34,10 +36,10 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 - [Brand names](#brand-names)
 - [Computer / Tech](#computer-tech)
 - [Kitchen / Cooking](#kitchen-cooking)
-- [Food — Fruit](#food-—-fruit)
-- [Food — Vegetables](#food-—-vegetables)
-- [Food — Meals / Savoury](#food-—-meals-savoury)
-- [Food — Sweet](#food-—-sweet)
+- [Food — Fruit](#food-fruit)
+- [Food — Vegetables](#food-vegetables)
+- [Food — Meals / Savoury](#food-meals-savoury)
+- [Food — Sweet](#food-sweet)
 - [Drinks](#drinks)
 - [Music](#music)
 - [Sports](#sports)
@@ -69,29 +71,29 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 - [Buildings / Places](#buildings-places)
 - [Blog / notes](#blog-notes)
 - [Burp / exhale](#burp-exhale)
-- [Fail / wrong → ❌](#fail-wrong-→-❌)
-- [Pass / correct → ✅](#pass-correct-→-✅)
+- [Fail / wrong → ❌](#fail-wrong)
+- [Pass / correct → ✅](#pass-correct)
 - [Geometric shapes](#geometric-shapes)
-- [Gun / firearms → 🔫](#gun-firearms-→-🔫)
-- [Factory / industrial → 🏭](#factory-industrial-→-🏭)
-- [Label / sticker / tag → 🏷](#label-sticker-tag-→-🏷)
-- [Map / geography → 🗺](#map-geography-→-🗺)
-- [English / alphabet → 🔤](#english-alphabet-→-🔤)
-- [Math / arithmetic → 🧮](#math-arithmetic-→-🧮)
-- [Numbers → 🔢](#numbers-→-🔢)
-- [Deck of cards → 🃏](#deck-of-cards-→-🃏)
-- [Soldier / military → 🪖](#soldier-military-→-🪖)
-- [Underwear → 🩲](#underwear-→-🩲)
-- [Cigarette / smoking → 🚬](#cigarette-smoking-→-🚬)
-- [Skier → ⛷](#skier-→-⛷)
-- [OK / okay → 👌](#ok-okay-→-👌)
-- [Computer mouse → 🖱](#computer-mouse-→-🖱)
+- [Gun / firearms → 🔫](#gun-firearms)
+- [Factory / industrial → 🏭](#factory-industrial)
+- [Label / sticker / tag → 🏷](#label-sticker-tag)
+- [Map / geography → 🗺](#map-geography)
+- [English / alphabet → 🔤](#english-alphabet)
+- [Math / arithmetic → 🧮](#math-arithmetic)
+- [Numbers → 🔢](#numbers)
+- [Deck of cards → 🃏](#deck-of-cards)
+- [Soldier / military → 🪖](#soldier-military)
+- [Underwear → 🩲](#underwear)
+- [Cigarette / smoking → 🚬](#cigarette-smoking)
+- [Skier → ⛷](#skier)
+- [OK / okay → 👌](#ok-okay)
+- [Computer mouse → 🖱](#computer-mouse)
 - [Animal keyword expansion](#animal-keyword-expansion)
 - [Generic / catch-all labels](#generic-catch-all-labels)
-- [Fire extinguisher → 🧯](#fire-extinguisher-→-🧯)
-- [Sign / placard → 🪧](#sign-placard-→-🪧)
-- [Coffin → ⚰](#coffin-→-⚰)
-- [Funeral urn → ⚱](#funeral-urn-→-⚱)
+- [Fire extinguisher → 🧯](#fire-extinguisher)
+- [Sign / placard → 🪧](#sign-placard)
+- [Coffin → ⚰](#coffin)
+- [Funeral urn → ⚱](#funeral-urn)
 - [Moon phases](#moon-phases)
 - [Zodiac signs](#zodiac-signs)
 - [Colored hearts](#colored-hearts)
@@ -105,7 +107,6 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 - [Pointing fingers](#pointing-fingers)
 - [Info / question / exclamation](#info-question-exclamation)
 - [Clock faces](#clock-faces)
-- [Uncategorized](#uncategorized)
 - [Country Flags](#country-flags)
 
 ---
@@ -115,7 +116,7 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 | Emoji | Keywords |
 |---|---|
 | 📡 | antenna, antennas, balun, beam, choke, coax, coaxial, counterpoise, dipole, feedline, feedthrough, ferrite, mast, moxon, pl-259, quad, radials, rotator, rotor, so-239, swr, tower, vertical, yagi, dummy load, feed line, lightning arrestor, magnetic loop, telephone pole, wire antenna |
-| 📻 | amplifier, aprs, callsign, contest, dxing, emcomm, ft4, ft8, grounding, ham, handheld, hf, keyer, logbook, morse, paddle, propagation, qsl, qso, radio, receiver, repeater, rig, scanner, sdr, transceiver, transmitter, uhf, vhf, wspr, antenna tuner, field day, ham shack, log book, morse key, walkie talkie |
+| 📻 | amplifier, aprs, baofeng, callsign, contest, dxing, emcomm, ft4, ft8, grounding, ham, handheld, hf, icom, kenwood, keyer, logbook, morse, paddle, propagation, qsl, qso, quansheng, raddy, radio, radioditty, receiver, repeater, rig, scanner, sdr, tecsun, tidradio, transceiver, transmitter, tyt, uhf, uv5r, uvk5, vgc, vhf, wspr, yaesu, antenna tuner, field day, ham shack, handie talkie, log book, morse key, walkie talkie |
 
 ## Warning / Hazard
 
@@ -152,7 +153,8 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 | 🦸 | hero, superhero, supervillain |
 | 🤵 | tuxedo |
 | 👷 | builder, construction, worker, hard hat |
-| 💀 | dead, death, died, poison, skull, toxic, pirate skull |
+| 💀 | dead, death, died, skull, toxic, pirate skull |
+| ☠ | alcohol, chemical, chemicals, crossbones, drug, drugs, hazardous, pesticide, poison, solvent, skull crossbones |
 | 👻 | boo, ghost, haunted, spirit |
 | 👹 | beast, creature, demon, goblin, monster, ogre |
 | 🧌 | troll |
@@ -225,6 +227,18 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 | 🤙 | call me, hang loose |
 | 🤘 | headbanger, horns, metalhead, mosh, rocknroll, heavy metal, mosh pit, rock on, rock 'n' roll, rock and roll, rock n roll |
 | 🤛 | fist bump, raised fist |
+
+## Greetings
+
+| Emoji | Keywords |
+|---|---|
+| 👋 | bye, farewell, goodbye, greet, greeting, greetings, hello, hey, hi, howdy, waving, welcome, wave hand |
+
+## Questions
+
+| Emoji | Keywords |
+|---|---|
+| ❓ | faq, how, huh, query, question, questions, unknown, unsure, what, when, who, why |
 
 ## Hazard / Safety
 
@@ -476,7 +490,7 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 |---|---|
 | 🍔 | baconator, burger, cheeseburger, hamburger, mcdonald's, mcdonalds, wendy's, wendys, whopper, big mac, burger king, double double, five guys, quarter pounder, in n out |
 | 🍦 | blizzard, frosty, gelato, mcflurry, popsicle, sorbet, dilly bar, ice cream |
-| 🍽 | applebees, baking, cheerios, cheetos, chipotle, dessert, dinner, doritos, food, fritos, lay's, lays, leftovers, lunch, mcrib, meal, panera, pantry, recipe, ruffles, snack, snacks, treat, frosted flakes, fruit loops, lucky charms, meal prep, olive garden, pop tarts, taco bell |
+| 🍽 | applebees, baking, bowl, cheerios, cheetos, chipotle, dessert, dinner, dinnerware, dish, dishes, doritos, food, fritos, lay's, lays, leftovers, lunch, mcrib, meal, panera, pantry, plate, recipe, ruffles, snack, snacks, tableware, treat, frosted flakes, fruit loops, lucky charms, meal prep, olive garden, pop tarts, taco bell |
 | 🥪 | footlong, sandwich, sub, subway, jersey mikes, jimmy johns |
 | ☕ | beverages, cafe, cappuccino, coffee, drinks, dunkin, espresso, frappuccino, gatorade, hydroflask, latte, mugs, nalgene, peet's, powerade, starbucks, thermos, pumpkin spice, stanley cup, tim hortons, yeti cooler, yeti cup |
 | 🧆 | can, canned, pringles, tin, canned food, monster energy, red bull, tin can |
@@ -500,7 +514,7 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 | 🧹 | bleach, broom, chores, clean, cleaned, cleaning, detergent, disinfect, disinfecting, laundry, mop, mopping, organize, organizing, roomba, sanitize, sanitizing, scrubbing, sweeping, tidying, vacuum, vacuuming |
 | 🔔 | bell, doorbell, alarm bell, notification bell, ring doorbell |
 | 🌡 | fever, temperature, thermometer, nest thermostat |
-| 👟 | adidas, boots, converse, crocs, footwear, heels, jordan, nike, shoe, shoes, sneakers, timberland, uggs, yeezy, new balance, vans shoes |
+| 👟 | adidas, boots, converse, crocs, footwear, heels, nike, shoe, shoes, sneakers, timberland, uggs, yeezy, new balance, vans shoes |
 | 👖 | jeans, leggings, levi's, levis, pants, shorts, trousers, wranglers |
 | ⛺ | backpacking, camping, coleman, exterior, outdoor, outdoors, outside, rei, open air |
 | 👕 | accessories, blouse, carhartt, clothes, clothing, patagonia, shirt, shirts, tops, tshirt, uniforms, wardrobe, north face |
@@ -525,7 +539,7 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 
 | Emoji | Keywords |
 |---|---|
-| 🍴 | bakeware, cooking, cookware, cutlery, kitchen, pans, pots, spices, utensils |
+| 🍴 | bakeware, cooking, cookware, cutlery, fork, kitchen, knife, pans, pots, silverware, spices, spoon, utensil, utensils |
 | 🍖 | barbecue, bbq, grill, grilling |
 
 ## Food — Fruit
@@ -741,6 +755,7 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 | 🖍 | crayon, crayons, wax crayon |
 | 📎 | clip, paperclip, binder clip, paper clip |
 | 🪡 | needle, needles, sewing needle |
+| 🩢 | knot, knots, lasso, rope, tied |
 | 📈 | chart, data, graph, report, spreadsheet |
 | 📋 | checklist, clipboard |
 | 📰 | article, news, newspaper |
@@ -1270,7 +1285,6 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 | Emoji | Keywords |
 |---|---|
 | ℹ | details, help, info, information, more info, see inside |
-| ❓ | faq, query, question, questions, unknown, unsure |
 | ❗ | exclamation, attention required, heads up, important notice |
 
 ## Clock faces
@@ -1301,12 +1315,6 @@ the **longest matching keyword wins** (e.g. "polar bear" beats "bear").
 | 🕥 | 10:30, half ten, ten thirty |
 | 🕦 | 11:30, eleven thirty, half eleven |
 | 🕧 | 12:30, half twelve, twelve thirty |
-
-## Uncategorized
-
-| Emoji | Keywords |
-|---|---|
-| 🨢 | *(no direct keywords)* |
 
 ## Country Flags
 
@@ -1577,4 +1585,4 @@ Flags require **Noto Color Emoji** installed to render.
 
 ---
 
-*Generated from `client/emoji_data.py` — edit that file to add new keywords.*
+*Auto-generated from `client/emoji_data.py` — do not edit manually.*
