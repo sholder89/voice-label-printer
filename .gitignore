@@ -9,7 +9,7 @@ server/.env
 client/.env
 
 # ── Claude Code local settings ────────────────────────────────────────────────
-.claude/settings.local.json
+.claude/
 
 # ── Runtime data (stored in %APPDATA%\LabelPrinter, not here) ─────────────────
 client/settings.json
