@@ -1172,6 +1172,27 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
     font_path    = _find_font_path("enhanced", font_weight)
     cap_y0 = 0 if text_y_center else text_y0
     cap_h  = h_px if text_y_center else text_area_h
+
+    # A caption with explicit line breaks keeps them, and its first line is set
+    # bold — a title/detail split reads far better on a shelf than letting the
+    # word-splitter below decide ("Bambu Lab" / "PLA - Yellow" rather than
+    # "Bambu" / "Lab" / "PLA" / "Yellow"). Single-line captions and plain voice
+    # prints fall through to the original behaviour untouched.
+    manual_lines = [l.strip() for l in display_text.splitlines() if l.strip()]
+    if caption and len(manual_lines) > 1 and not _has_inline_emoji(display_text):
+        bold_path    = _find_font_path("enhanced", "bold") or font_path
+        regular_path = _find_font_path("enhanced", "normal") or font_path
+        paths = [bold_path] + [regular_path] * (len(manual_lines) - 1)
+
+        fonts, heights, total_h = _fit_mixed_lines(
+            manual_lines, paths, text_area_w, cap_h,
+        )
+        start_y = (h_px - total_h) / 2 if text_y_center else text_y0
+        _draw_mixed_lines(draw, manual_lines, fonts, heights,
+                          text_x0, start_y, text_area_w, align=align)
+        draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
+        return img
+
     if _has_inline_emoji(display_text):
         _render_inline_text(img, draw, display_text, text_x0, cap_y0,
                             text_area_w, cap_h, font_path=font_path,
@@ -1493,6 +1514,52 @@ def _largest_font_for(text, max_w, max_h, font_path, fill=0.85):
             break
         best, best_size = f, size
     return best, best_size
+
+
+def _fit_mixed_lines(lines, font_paths, max_w, max_h, fill=0.94, leading=1.10):
+    """Largest font size at which `lines` fit, each line drawn in its own font.
+
+    Unlike _largest_font_for this keeps the caller's line breaks and lets each
+    line use a different weight, so a caption can read as a bold title with
+    lighter detail underneath. Returns (fonts, line_heights, total_height).
+    """
+    measure = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    best = None
+
+    for size in range(6, 400, 2):
+        try:
+            fonts = [
+                ImageFont.truetype(p, size) if p else ImageFont.load_default()
+                for p in font_paths
+            ]
+        except OSError:
+            break
+
+        widths = [measure.textlength(l or " ", font=f) for l, f in zip(lines, fonts)]
+        # ascent + descent keeps descenders from colliding with the next line.
+        heights = [sum(f.getmetrics()) for f in fonts]
+        total_h = sum(heights) * leading
+
+        if max(widths) > max_w * fill or total_h > max_h * fill:
+            break
+        best = (fonts, heights, total_h)
+
+    if best is None:
+        fonts = [ImageFont.load_default() for _ in lines]
+        heights = [12] * len(lines)
+        best = (fonts, heights, sum(heights) * leading)
+    return best
+
+
+def _draw_mixed_lines(draw, lines, fonts, heights, x0, y0, area_w, align="center",
+                      leading=1.10, fill="black"):
+    """Draws pre-fitted lines, stacking them from y0."""
+    y = y0
+    for line, font, h in zip(lines, fonts, heights):
+        w = draw.textlength(line or " ", font=font)
+        x = x0 + (area_w - w) / 2 if align == "center" else x0
+        draw.text((x, y), line, font=font, fill=fill)
+        y += h * leading
 
 
 def _find_font_path(font_style="standard", font_weight="bold"):

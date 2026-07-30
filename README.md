@@ -180,9 +180,23 @@ leaving the scanned data alone:
 }
 ```
 
-The label scans to the URL but reads *Sunlu PETG Black*. Text is auto-sized and
-wrapped across up to four lines, so plain spaces work better as separators than
-punctuation — a lone "·" gets treated as a word and takes a line of its own.
+The label scans to the URL but reads *Sunlu PETG Black*.
+
+**Line breaks are honoured, and the first line is set bold.** A caption with no
+breaks gets auto-wrapped across up to four lines, which stacks every word on a
+narrow label. Sending the breaks yourself reads far better:
+
+```json
+{ "caption": "Bambu Lab
+PLA - Yellow" }
+```
+
+```
+Bambu Lab        ← bold
+PLA - Yellow
+```
+
+Text is auto-sized to fill the space either way.
 
 `caption` is ignored by every other preset, and by `qr_show_text: "false"`.
 
