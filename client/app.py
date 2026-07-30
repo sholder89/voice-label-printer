@@ -1023,6 +1023,27 @@ def _record(text, size, status, *, font_style=None, font_weight=None, border=Non
     _save_history()
 
 
+_JOB_STYLE_KEYS = ("size", "font_style", "font_weight", "border", "text_case",
+                   "text_align", "style_preset", "icons", "qr_show_text")
+_JOB_STYLE_BOOLS = ("icons", "qr_show_text")
+
+
+def _job_style(style):
+    """Merge a job's per-job style overrides over the current saved settings.
+
+    Returns a plain dict of render options. `state` is never written to, so the
+    overrides last exactly one label. Unknown keys are ignored — the relay has
+    already validated the values it accepts.
+    """
+    opts = {k: state[k] for k in _JOB_STYLE_KEYS}
+    if isinstance(style, dict):
+        for key, value in style.items():
+            if key not in opts:
+                continue
+            opts[key] = (str(value).strip().lower() == "true") if key in _JOB_STYLE_BOOLS else value
+    return opts
+
+
 def poll_loop():
     while state["polling"]:
         # Read connection config fresh each cycle so Advanced-page edits apply
@@ -1057,45 +1078,49 @@ def poll_loop():
                     printer = state["printer"]
                     if not printer:
                         continue
+                    # A job may carry per-job style overrides. They apply to this
+                    # label only and are deliberately never saved, so an app can
+                    # print e.g. a QR label without changing your saved defaults.
+                    opts = _job_style(job.get("style"))
                     set_emoji_darkness(_darkness_for(printer))
                     set_emoji_outline(_emoji_outline_px)
                     try:
                         print_label(
-                            text, printer, state["size"],
-                            font_style=state["font_style"],
-                            font_weight=state["font_weight"],
-                            border=state["border"],
-                            icons=state["icons"],
-                            text_case=state["text_case"],
-                            text_align=state["text_align"],
-                            style_preset=state["style_preset"],
-                            qr_show_text=state["qr_show_text"],
+                            text, printer, opts["size"],
+                            font_style=opts["font_style"],
+                            font_weight=opts["font_weight"],
+                            border=opts["border"],
+                            icons=opts["icons"],
+                            text_case=opts["text_case"],
+                            text_align=opts["text_align"],
+                            style_preset=opts["style_preset"],
+                            qr_show_text=opts["qr_show_text"],
                         )
                         requests.post(f"{relay}/jobs/{job_id}/complete",
                                       headers=headers, timeout=5)
-                        _record(text, state["size"], "ok (voice)",
-                                font_style=state["font_style"], font_weight=state["font_weight"],
-                                border=state["border"],
-                                text_case=state["text_case"], style_preset=state["style_preset"],
-                                icons=state["icons"], text_align=state["text_align"],
+                        _record(text, opts["size"], "ok (voice)",
+                                font_style=opts["font_style"], font_weight=opts["font_weight"],
+                                border=opts["border"],
+                                text_case=opts["text_case"], style_preset=opts["style_preset"],
+                                icons=opts["icons"], text_align=opts["text_align"],
                                 label_color=_printer_prefs.get(state["printer"], {}).get("label_color", "#FFFFFF"))
                         threading.Thread(
                             target=_notify,
-                            args=(text, state["size"], "voice"),
+                            args=(text, opts["size"], "voice"),
                             daemon=True,
                         ).start()
                     except Exception as e:
                         requests.post(f"{relay}/jobs/{job_id}/fail",
                                       headers=headers, timeout=5)
-                        _record(text, state["size"], f"error: {e}",
-                                font_style=state["font_style"], font_weight=state["font_weight"],
-                                border=state["border"],
-                                text_case=state["text_case"], style_preset=state["style_preset"],
-                                icons=state["icons"], text_align=state["text_align"],
+                        _record(text, opts["size"], f"error: {e}",
+                                font_style=opts["font_style"], font_weight=opts["font_weight"],
+                                border=opts["border"],
+                                text_case=opts["text_case"], style_preset=opts["style_preset"],
+                                icons=opts["icons"], text_align=opts["text_align"],
                                 label_color=_printer_prefs.get(state["printer"], {}).get("label_color", "#FFFFFF"))
                         threading.Thread(
                             target=_notify,
-                            args=(text, state["size"], "voice"),
+                            args=(text, opts["size"], "voice"),
                             kwargs={"error": str(e)},
                             daemon=True,
                         ).start()

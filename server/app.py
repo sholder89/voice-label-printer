@@ -1,4 +1,5 @@
 import hmac
+import json
 import sqlite3
 import uuid
 from datetime import datetime
@@ -14,6 +15,24 @@ TOKEN        = os.environ.get("LABEL_TOKEN", "changeme")
 DB_PATH      = os.environ.get("DB_PATH", os.path.join(os.path.dirname(__file__), "jobs.db"))
 MAX_PENDING  = int(os.environ.get("MAX_PENDING_JOBS", "20"))
 MAX_TEXT_LEN = int(os.environ.get("MAX_TEXT_LEN", "200"))
+
+# Allowlist of settings the relay will accept, shared by /settings (which
+# changes them globally) and /webhook (which can override them for one job).
+VALID_SETTINGS = {
+    "font_style":   {"standard", "enhanced", "impact", "serif", "narrow", "mono",
+                      "consolas", "bahnschrift", "burbank", "inkfree"},
+    "border":       {"none", "thin", "thick", "double", "dashed", "dotted", "wave",
+                      "ticket", "inset", "rounded", "corners"},
+    "text_case":    {"none", "uppercase", "lowercase", "title", "sentence"},
+    "text_align":   {"left", "center", "right"},
+    "style_preset": {"none", "bold", "elegant", "retro", "minimal", "warning",
+                      "address", "windows95", "price_tag", "cassette", "blueprint", "qr_code",
+                      "barcode", "name_tag", "receipt", "chalkboard"},
+    "font_weight":  {"normal", "bold", "italic", "bold_italic"},
+    "icons":        {"true", "false"},
+    "qr_show_text": {"true", "false"},
+    "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5", "1.1x3.5", "1.1x2.4"},
+}
 
 limiter = Limiter(
     get_remote_address,
@@ -61,6 +80,11 @@ def init_db():
                 created_at TEXT NOT NULL
             )
         """)
+        # Per-job style overrides (added later — existing databases need the
+        # column bolted on, since CREATE TABLE IF NOT EXISTS won't do it).
+        cols = [r["name"] for r in db.execute("PRAGMA table_info(jobs)").fetchall()]
+        if "style" not in cols:
+            db.execute("ALTER TABLE jobs ADD COLUMN style TEXT")
         db.commit()
 
 
@@ -81,7 +105,13 @@ def require_token(f):
 @require_token
 @limiter.limit("10 per minute")
 def webhook():
-    """IFTTT posts here. Expects JSON with value1 = label text."""
+    """IFTTT posts here. Expects JSON with value1 = label text.
+
+    Optionally accepts `style`: a dict of setting keys to apply to this one job
+    only, e.g. {"style_preset": "qr_code", "qr_show_text": "false"}. Unlike
+    /settings this never changes the printer's saved defaults, so an app can
+    print a QR label without leaving the printer stuck in QR mode.
+    """
     data = request.get_json(silent=True) or {}
     text = (data.get("value1") or "").strip()
 
@@ -90,6 +120,20 @@ def webhook():
 
     if len(text) > MAX_TEXT_LEN:
         return jsonify({"error": f"text too long (max {MAX_TEXT_LEN} characters)"}), 400
+
+    style = data.get("style") or {}
+    if not isinstance(style, dict):
+        return jsonify({"error": "style must be an object"}), 400
+
+    clean_style = {}
+    for key, value in style.items():
+        key = str(key).strip()
+        value = str(value).strip().lower()
+        if key not in VALID_SETTINGS:
+            return jsonify({"error": f"unknown setting '{key}'"}), 400
+        if value not in VALID_SETTINGS[key]:
+            return jsonify({"error": f"invalid value '{value}' for {key}"}), 400
+        clean_style[key] = value
 
     db = get_db()
 
@@ -101,15 +145,16 @@ def webhook():
 
     job_id = str(uuid.uuid4())
     db.execute(
-        "INSERT INTO jobs (id, text, status, created_at) VALUES (?, ?, 'pending', ?)",
-        (job_id, text, datetime.utcnow().isoformat()),
+        "INSERT INTO jobs (id, text, style, status, created_at) VALUES (?, ?, ?, 'pending', ?)",
+        (job_id, text, json.dumps(clean_style) if clean_style else None,
+         datetime.utcnow().isoformat()),
     )
     # Keep the table lean — purge done/failed jobs older than 7 days
     db.execute(
         "DELETE FROM jobs WHERE status != 'pending' AND created_at < datetime('now', '-7 days')"
     )
     db.commit()
-    return jsonify({"id": job_id, "text": text}), 201
+    return jsonify({"id": job_id, "text": text, "style": clean_style}), 201
 
 
 @app.route("/jobs/pending", methods=["GET"])
@@ -119,9 +164,18 @@ def pending_jobs():
     """Local client polls this to get jobs to print."""
     db = get_db()
     rows = db.execute(
-        "SELECT id, text FROM jobs WHERE status = 'pending' ORDER BY created_at"
+        "SELECT id, text, style FROM jobs WHERE status = 'pending' ORDER BY created_at"
     ).fetchall()
-    return jsonify([{"id": r["id"], "text": r["text"]} for r in rows])
+    out = []
+    for r in rows:
+        job = {"id": r["id"], "text": r["text"]}
+        if r["style"]:
+            try:
+                job["style"] = json.loads(r["style"])
+            except (TypeError, ValueError):
+                pass
+        out.append(job)
+    return jsonify(out)
 
 
 # Generous explicit limit so a busy print session is never throttled by the
@@ -152,28 +206,13 @@ def fail_job(job_id):
 @limiter.limit("20 per minute")
 def post_setting():
     """Lambda posts a setting change here: {key, value}."""
-    VALID = {
-        "font_style":   {"standard", "enhanced", "impact", "serif", "narrow", "mono",
-                          "consolas", "bahnschrift", "burbank", "inkfree"},
-        "border":       {"none", "thin", "thick", "double", "dashed", "dotted", "wave",
-                          "ticket", "inset", "rounded", "corners"},
-        "text_case":    {"none", "uppercase", "lowercase", "title", "sentence"},
-        "text_align":   {"left", "center", "right"},
-        "style_preset": {"none", "bold", "elegant", "retro", "minimal", "warning",
-                          "address", "windows95", "price_tag", "cassette", "blueprint", "qr_code",
-                          "barcode", "name_tag", "receipt", "chalkboard"},
-        "font_weight":  {"normal", "bold", "italic", "bold_italic"},
-        "icons":        {"true", "false"},
-        "qr_show_text": {"true", "false"},
-        "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5", "1.1x3.5", "1.1x2.4"},
-    }
     data  = request.get_json(silent=True) or {}
     key   = (data.get("key")   or "").strip()
     value = (data.get("value") or "").strip().lower()
 
-    if key not in VALID:
+    if key not in VALID_SETTINGS:
         return jsonify({"error": f"unknown setting '{key}'"}), 400
-    if value not in VALID[key]:
+    if value not in VALID_SETTINGS[key]:
         return jsonify({"error": f"invalid value '{value}' for {key}"}), 400
 
     db = get_db()

@@ -126,6 +126,67 @@ Click the **🔧** icon in the header — visible **only on the PC running the c
 
 ---
 
+## Printing from Your Own Apps
+
+Any app that can reach the relay server can queue a label — that's how the
+**Filament Library** prints its QR tags.
+
+```
+POST /webhook          X-Token: <your token>
+{ "value1": "http://192.168.1.60:8088/f/A1B2C3D4" }
+```
+
+### Per-job style overrides
+
+`value1` alone prints with whatever settings the printer currently has. Add an
+optional `style` object to override them **for that one label only**:
+
+```json
+{
+  "value1": "http://192.168.1.60:8088/f/A1B2C3D4",
+  "style": { "style_preset": "qr_code", "qr_show_text": "false", "size": "2x1" }
+}
+```
+
+This is the difference between `style` and the `/settings` endpoint:
+
+| | `/settings` | `style` on `/webhook` |
+|---|---|---|
+| Scope | Every label from now on | This one job |
+| Saved to `settings.json` | Yes | **No** |
+| Your pinned default style | Overwritten | Untouched |
+
+Use `style` for app integrations. Without it, an app printing a QR code would
+leave the printer in QR mode, and your next *"Alexa, print kitchen supplies"*
+would come out as a QR code of those words.
+
+Accepted keys are the same as `/settings` — `style_preset`, `size`, `font_style`,
+`font_weight`, `border`, `text_case`, `text_align`, `icons`, `qr_show_text` —
+with the same allowed values. Booleans are the strings `"true"` / `"false"`.
+Anything unrecognised is rejected with a `400`, and keys you omit fall through to
+your saved settings.
+
+### Limits worth knowing
+
+| | |
+|---|---|
+| `value1` length | 200 characters (`MAX_TEXT_LEN`) — keep QR URLs short |
+| Rate limit | 10 posts per minute to `/webhook` |
+| Queue depth | 20 pending jobs (`MAX_PENDING_JOBS`), then `429` |
+| Pickup delay | Up to `POLL_SECS` (default 3s) before the client sees the job |
+
+A successful post returns `201` with `{"id", "text", "style"}`. The job is queued,
+not yet printed — the client reports success or failure back to the relay when it
+actually prints.
+
+### Upgrading
+
+The `style` column is added to an existing `jobs.db` automatically on startup —
+no manual migration. Update the relay first, then the Windows client: older
+clients ignore the field, so nothing breaks in between.
+
+---
+
 ## Voice Commands (Alexa)
 
 | What you say | What happens |
