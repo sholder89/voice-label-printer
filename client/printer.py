@@ -333,7 +333,15 @@ def render_label(
     font_weight: str = "bold",
     qr_show_text: bool = True,
     text_align: str = "center",
+    caption: str | None = None,
 ) -> Image.Image:
+    """Render a label to an image.
+
+    `caption` only affects the QR and barcode presets, where the printed text is
+    normally the same string that gets encoded. Passing a caption prints that
+    instead, so a QR can encode a URL while the label reads something useful to
+    a human. Ignored by every other preset.
+    """
     w_px = int(width_in * dpi)
     h_px = int(height_in * dpi)
 
@@ -352,9 +360,9 @@ def render_label(
         if style_preset == "blueprint":
             return _render_blueprint(text, w_px, h_px, dpi, text_case, icons, font_weight)
         if style_preset == "qr_code":
-            return _render_qr_code(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text)
+            return _render_qr_code(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text, caption)
         if style_preset == "barcode":
-            return _render_barcode(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text)
+            return _render_barcode(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text, caption)
         if style_preset == "name_tag":
             return _render_name_tag(text, w_px, h_px, dpi, text_case, font_weight)
         if style_preset == "receipt":
@@ -460,6 +468,7 @@ def print_label(
     font_weight: str = "bold",
     qr_show_text: bool = True,
     text_align: str = "center",
+    caption: str | None = None,
 ):
     if not WIN32_AVAILABLE:
         raise RuntimeError("pywin32 is not installed — cannot print")
@@ -526,7 +535,7 @@ def print_label(
             img = render_label(text, height_in, width_in, dpi,
                                font_style, border, icons, text_case,
                                style_preset, font_weight, qr_show_text,
-                               text_align)
+                               text_align, caption)
 
             if dc_landscape:
                 # DC is already landscape — draw directly, no rotation needed.
@@ -541,7 +550,7 @@ def print_label(
             img = render_label(text, width_in, height_in, dpi,
                                font_style, border, icons, text_case,
                                style_preset, font_weight, qr_show_text,
-                               text_align)
+                               text_align, caption)
             render_w = calc_w
             render_h = calc_h
 
@@ -1096,8 +1105,14 @@ def _render_blueprint(text: str, w_px: int, h_px: int, dpi: int,
 
 def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
                     text_case: str, font_weight: str = "bold",
-                    show_text: bool = True) -> Image.Image:
-    """QR code label. show_text=False centres the QR and omits the caption."""
+                    show_text: bool = True,
+                    caption: str | None = None) -> Image.Image:
+    """QR code label. show_text=False centres the QR and omits the caption.
+
+    The QR always encodes `text`. `caption` overrides what's printed beside it,
+    which is otherwise `text` itself — useful when the encoded value is a URL
+    that means nothing to a human reading the label.
+    """
     try:
         import qrcode as _qrcode
     except ImportError:
@@ -1153,7 +1168,7 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
 
     draw = ImageDraw.Draw(img)
 
-    display_text = _apply_case(text, text_case)
+    display_text = _apply_case(caption if caption else text, text_case)
     font_path    = _find_font_path("enhanced", font_weight)
     cap_y0 = 0 if text_y_center else text_y0
     cap_h  = h_px if text_y_center else text_area_h
@@ -1186,9 +1201,13 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
 
 def _render_barcode(text: str, w_px: int, h_px: int, dpi: int,
                     text_case: str, font_weight: str = "bold",
-                    show_text: bool = True) -> Image.Image:
+                    show_text: bool = True,
+                    caption: str | None = None) -> Image.Image:
     """Code 128 barcode label. Human-readable caption shown below unless
-    show_text is False. Best on wider labels (4x2) where the bars stay scannable."""
+    show_text is False. Best on wider labels (4x2) where the bars stay scannable.
+
+    The bars always encode `text`; `caption` overrides the printed text.
+    """
     img  = Image.new("RGB", (w_px, h_px), "white")
     draw = ImageDraw.Draw(img)
     pad  = max(4, round(min(w_px, h_px) * 0.06))
@@ -1222,7 +1241,7 @@ def _render_barcode(text: str, w_px: int, h_px: int, dpi: int,
         img.paste(bc_img.resize((bar_w, bar_h), Image.NEAREST).convert("RGB"), (pad, pad))
 
     if show_text:
-        display   = _apply_case(text, text_case) or data
+        display   = _apply_case(caption if caption else text, text_case) or data
         font_path = _find_font_path("consolas", font_weight) or _find_font_path("mono", font_weight)
         f, _ = _largest_font_for(display, w_px - pad * 2, max(1, cap_h - pad // 2), font_path, 0.9)
         bb = draw.textbbox((0, 0), display, font=f)

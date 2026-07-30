@@ -80,11 +80,13 @@ def init_db():
                 created_at TEXT NOT NULL
             )
         """)
-        # Per-job style overrides (added later — existing databases need the
-        # column bolted on, since CREATE TABLE IF NOT EXISTS won't do it).
+        # Columns added after the fact — existing databases need them bolted on,
+        # since CREATE TABLE IF NOT EXISTS won't alter a table that's already there.
         cols = [r["name"] for r in db.execute("PRAGMA table_info(jobs)").fetchall()]
         if "style" not in cols:
             db.execute("ALTER TABLE jobs ADD COLUMN style TEXT")
+        if "caption" not in cols:
+            db.execute("ALTER TABLE jobs ADD COLUMN caption TEXT")
         db.commit()
 
 
@@ -111,6 +113,9 @@ def webhook():
     only, e.g. {"style_preset": "qr_code", "qr_show_text": "false"}. Unlike
     /settings this never changes the printer's saved defaults, so an app can
     print a QR label without leaving the printer stuck in QR mode.
+
+    Also accepts `caption`: text printed beside a QR or barcode instead of the
+    encoded value, so a label can scan to a URL but read as something useful.
     """
     data = request.get_json(silent=True) or {}
     text = (data.get("value1") or "").strip()
@@ -120,6 +125,10 @@ def webhook():
 
     if len(text) > MAX_TEXT_LEN:
         return jsonify({"error": f"text too long (max {MAX_TEXT_LEN} characters)"}), 400
+
+    caption = (data.get("caption") or "").strip()
+    if len(caption) > MAX_TEXT_LEN:
+        return jsonify({"error": f"caption too long (max {MAX_TEXT_LEN} characters)"}), 400
 
     style = data.get("style") or {}
     if not isinstance(style, dict):
@@ -145,16 +154,16 @@ def webhook():
 
     job_id = str(uuid.uuid4())
     db.execute(
-        "INSERT INTO jobs (id, text, style, status, created_at) VALUES (?, ?, ?, 'pending', ?)",
+        "INSERT INTO jobs (id, text, style, caption, status, created_at) VALUES (?, ?, ?, ?, 'pending', ?)",
         (job_id, text, json.dumps(clean_style) if clean_style else None,
-         datetime.utcnow().isoformat()),
+         caption or None, datetime.utcnow().isoformat()),
     )
     # Keep the table lean — purge done/failed jobs older than 7 days
     db.execute(
         "DELETE FROM jobs WHERE status != 'pending' AND created_at < datetime('now', '-7 days')"
     )
     db.commit()
-    return jsonify({"id": job_id, "text": text, "style": clean_style}), 201
+    return jsonify({"id": job_id, "text": text, "style": clean_style, "caption": caption}), 201
 
 
 @app.route("/jobs/pending", methods=["GET"])
@@ -164,7 +173,7 @@ def pending_jobs():
     """Local client polls this to get jobs to print."""
     db = get_db()
     rows = db.execute(
-        "SELECT id, text, style FROM jobs WHERE status = 'pending' ORDER BY created_at"
+        "SELECT id, text, style, caption FROM jobs WHERE status = 'pending' ORDER BY created_at"
     ).fetchall()
     out = []
     for r in rows:
@@ -174,6 +183,8 @@ def pending_jobs():
                 job["style"] = json.loads(r["style"])
             except (TypeError, ValueError):
                 pass
+        if r["caption"]:
+            job["caption"] = r["caption"]
         out.append(job)
     return jsonify(out)
 

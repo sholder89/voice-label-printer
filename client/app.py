@@ -800,6 +800,9 @@ def manual_print():
     style_preset = data.get("style_preset", state["style_preset"])
     icons        = data.get("icons",        state["icons"])
     qr_show_text = data.get("qr_show_text", state["qr_show_text"])
+    # QR/barcode presets normally print the encoded value; a caption overrides
+    # what a human reads without changing what gets scanned.
+    caption      = (data.get("caption") or "").strip() or None
     copies       = max(1, min(10, int(data.get("copies", 1))))
 
     if not text:
@@ -814,7 +817,7 @@ def manual_print():
                 time.sleep(0.5)
             print_label(text, printer, size, font_style=font_style, font_weight=font_weight,
                         border=border, icons=icons, text_case=text_case, style_preset=style_preset,
-                        qr_show_text=qr_show_text, text_align=text_align)
+                        qr_show_text=qr_show_text, text_align=text_align, caption=caption)
         status_label = "ok" if copies == 1 else f"ok ×{copies}"
         _record(text, size, status_label, font_style=font_style, font_weight=font_weight,
                 border=border, text_case=text_case, style_preset=style_preset, icons=icons,
@@ -1082,6 +1085,7 @@ def poll_loop():
                     # label only and are deliberately never saved, so an app can
                     # print e.g. a QR label without changing your saved defaults.
                     opts = _job_style(job.get("style"))
+                    caption = (job.get("caption") or "").strip() or None
                     set_emoji_darkness(_darkness_for(printer))
                     set_emoji_outline(_emoji_outline_px)
                     try:
@@ -1095,6 +1099,7 @@ def poll_loop():
                             text_align=opts["text_align"],
                             style_preset=opts["style_preset"],
                             qr_show_text=opts["qr_show_text"],
+                            caption=caption,
                         )
                         requests.post(f"{relay}/jobs/{job_id}/complete",
                                       headers=headers, timeout=5)

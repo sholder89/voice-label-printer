@@ -166,11 +166,32 @@ with the same allowed values. Booleans are the strings `"true"` / `"false"`.
 Anything unrecognised is rejected with a `400`, and keys you omit fall through to
 your saved settings.
 
+### Captions on QR and barcode labels
+
+The QR and barcode presets normally print the value they encode. That's useless
+when the encoded value is a URL, so `caption` overrides the printed text while
+leaving the scanned data alone:
+
+```json
+{
+  "value1": "https://filament.local.example.com/f/A1B2C3D4",
+  "caption": "Sunlu PETG Black",
+  "style": { "style_preset": "qr_code", "qr_show_text": "true" }
+}
+```
+
+The label scans to the URL but reads *Sunlu PETG Black*. Text is auto-sized and
+wrapped across up to four lines, so plain spaces work better as separators than
+punctuation — a lone "·" gets treated as a word and takes a line of its own.
+
+`caption` is ignored by every other preset, and by `qr_show_text: "false"`.
+
 ### Limits worth knowing
 
 | | |
 |---|---|
 | `value1` length | 200 characters (`MAX_TEXT_LEN`) — keep QR URLs short |
+| `caption` length | 200 characters |
 | Rate limit | 10 posts per minute to `/webhook` |
 | Queue depth | 20 pending jobs (`MAX_PENDING_JOBS`), then `429` |
 | Pickup delay | Up to `POLL_SECS` (default 3s) before the client sees the job |
