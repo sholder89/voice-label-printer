@@ -597,3 +597,15 @@ If any one of these doesn't match, that component stops working — which is a u
 |---|---|
 | `flask` | HTTP API |
 | `gunicorn` | WSGI production server |
+
+All of the above are installed from PyPI rather than bundled here, so they carry
+their own licences and none of them are redistributed by this repository. Worth
+knowing if that ever changes: `pystray` is LGPL-3.0, which is of no consequence
+while pip installs it separately, but would start to apply if the client were
+ever shipped as a frozen executable with it packaged inside.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE). Do what you like with it; no warranty.
