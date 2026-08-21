@@ -16,7 +16,7 @@ from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
     print_label, list_printers, render_label, render_dimensions, is_round, round_diameter_in,
     set_custom_emojis, set_custom_sizes, set_emoji_darkness, set_emoji_outline, _BUILTIN_SIZE_KEYS,
-    LABEL_SIZES, SIZE_LABELS, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
+    LABEL_SIZES, SIZE_LABELS, HIDDEN_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
     _IMAGE_BORDER_ENTRIES,
 )
@@ -352,6 +352,8 @@ def _size_options():
     custom = {s["name"]: s for s in _custom_sizes}
     opts = []
     for key in LABEL_SIZES:
+        if key in HIDDEN_SIZES:
+            continue
         s = custom.get(key)
         if s:
             opts.append((key, f"{key} ({s['width']:g} × {s['height']:g} {s['unit']})"))

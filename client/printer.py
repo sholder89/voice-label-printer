@@ -36,21 +36,21 @@ LABEL_SIZES = {
     # Round die-cut labels.  The size is the SQUARE the label is cut from —
     # that's the pitch the printer feeds — while the artwork stays inside the
     # smaller circular cut.  See _ROUND_DIAMETER_IN.
-    #
-    # Both entries carry the same 50 mm cut and differ only in the page they
-    # ask the printer for, so a roll can be matched to whichever the driver and
-    # gap sensor actually agree with.
-    "50mm-round": (1.969, 1.969),   # 50 mm page
-    "53mm-round": (2.087, 2.087),   # 53 mm page (the square the 50 mm cut sits in)
-    "55mm-round": (2.185, 2.185),   # 55.5 mm page
+    "50mm-round": (2.087, 2.087),   # 50 mm cut on the 53 mm square it comes on
+    # Retired page-size trials.  Kept resolvable because print history records
+    # the size key and reprints from it, but hidden from the size list — both
+    # now render exactly as "50mm-round".
+    "53mm-round": (2.087, 2.087),
+    "55mm-round": (2.087, 2.087),
 }
 
 # Sizes whose key doesn't read as plain inches in the size dropdown.
 SIZE_LABELS = {
-    "50mm-round": "50 mm Round (50 mm page)",
-    "53mm-round": "50 mm Round (53 mm page)",
-    "55mm-round": "50 mm Round (55.5 mm page)",
+    "50mm-round": "50 mm Round",
 }
+
+# Sizes that still resolve but are no longer offered in the size list.
+HIDDEN_SIZES = {"53mm-round", "55mm-round"}
 
 # Brother QL prints on continuous tape that feeds skinny-side-first.  The
 # natural reading orientation for these labels is LANDSCAPE (text along the long
@@ -78,7 +78,7 @@ _ROUND_SIZES = {"50mm-round", "53mm-round", "55mm-round"}
 # round labels come on 53 mm squares.  The page must be the full square so the
 # printer feeds one label, but nothing may stray outside the circle.
 _ROUND_DIAMETER_IN = {"50mm-round": 1.969, "53mm-round": 1.969,
-                      "55mm-round": 1.969}
+                      "55mm-round": 1.969}   # last two: retired, see LABEL_SIZES
 
 
 def is_round(size_key: str) -> bool:
