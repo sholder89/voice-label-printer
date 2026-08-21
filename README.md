@@ -27,10 +27,16 @@ You (voice) → Alexa Skill → AWS Lambda → Relay Server (VPS) → Windows Cl
 ### 🖨️ Printing
 - Prints to any Windows printer — tested with **NULLTONEX** Bluetooth thermal label printer and **Brother QL-710W**
 - 203 DPI rendering via Pillow — what you see in the preview is exactly what prints
-- Multiple label sizes: **2×1**, **4×2**, **4×6**, **3×2**, **2×0.5** (inches), **1.1×3.5**, **1.1×2.4** (Brother QL 29mm tape)
+- Multiple label sizes: **2×1**, **4×2**, **4×6**, **3×2**, **2×0.5** (inches), **1.1×3.5**, **1.1×2.4** (Brother QL 29mm tape), **50 mm Round**
 - Print multiple copies (up to 10) from the web UI
 - **Multi-line text** — type your label across multiple lines (Enter for a new line, Ctrl+Enter to print); line breaks are preserved on the label
 - **Text alignment** — Left / Center / Right for multi-line labels
+
+### ⭕ Round Labels
+- **50 mm Round** renders on the 53 mm square the die cut comes on, with all artwork kept inside the 50 mm circle — text, icons, borders and QR codes all respect the curve
+- Borders are drawn as rings that run out to the die edge
+- The preview shows the round crop, so you see what survives the cut
+- **Requires a matching paper size in your printer driver** — see [Round label setup](#round-label-setup)
 
 ### 😀 Automatic Emoji Icons
 - Type (or say) any label text and the app automatically detects a matching emoji icon
@@ -301,6 +307,44 @@ You can name the shortcut anything — whatever you name it is what you say to S
 - `BurbankBigCondensed-Bold.otf` — enables the Burbank font style
 - `W95F.otf` (W95FA) — enables the authentic pixel font for Windows 95 style
 - `NotoColorEmoji_WindowsCompatible.ttf` — enables country flags and Unicode 15 emoji (🪼 🫎 🪿 etc.). Download from [github.com/googlefonts/noto-emoji/releases](https://github.com/googlefonts/noto-emoji/releases) — get the `WindowsCompatible` variant
+
+### Round label setup
+
+Round labels need a **custom paper size registered in the printer driver**, matching the
+square the circle is cut from — not the circle's diameter. Thermal drivers only think in
+rectangles; the round shape comes from the die cut in the stock.
+
+50 mm round labels are typically cut from **53 mm squares**, so the driver needs a
+**53 × 53 mm** paper size. Measure your own stock rather than assuming — the square is
+always slightly larger than the circle, and getting it wrong makes the printer feed the
+wrong distance.
+
+1. **Printer Properties → Printing Preferences** → create a custom paper size of 53 × 53 mm
+2. Restart the client
+3. Pick **50 mm Round** in the size dropdown
+
+The app matches the label against the paper sizes the driver reports and selects the one
+that fits, so no further configuration is needed once the size exists.
+
+**If the page doesn't match the label**, the app refuses the job rather than printing part
+of the design and binning the rest:
+
+```
+'My Printer' reports a 408x200 page, but the '50mm-round' label needs 424x424 —
+about 50% of the design would be cut off. This queue is ignoring the requested
+paper size. Pick a printer queue set up for this stock, or set the paper size in
+its Windows printing preferences.
+```
+
+That means the driver has no paper size close enough. Add one as above.
+
+> **Why the driver needs this at all:** Windows drivers publish a fixed list of paper
+> sizes, and many label drivers ignore requests for arbitrary custom dimensions — a
+> leftover custom size can even pin a queue to one size for every job. Vendor label
+> software sidesteps this by talking to the printer directly over its own port, which is
+> why it can print any size without a driver paper size existing.
+
+---
 
 ### Server
 
