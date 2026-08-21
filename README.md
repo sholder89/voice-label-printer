@@ -328,16 +328,11 @@ that fits, so no further configuration is needed once the size exists. Repeat th
 **every printer** you want to print round labels from — the paper size lives in the
 driver, not the app.
 
-Two round entries are offered, differing only in the page they ask the driver for:
-
-| Size | Asks for | Use when |
-|---|---|---|
-| **50 mm Round** | 53 × 53 mm | the driver has a form matching the square your stock is cut from |
-| **50 mm Round (2 in page)** | 2 × 2 in (50.8 mm) | the driver offers a 2×2 in form but nothing at 53 mm |
-
-Both print the same 50 mm artwork. Pick whichever your driver can actually express —
-a page that exists beats one the driver has to substitute for. If neither matches, the
-job is refused rather than printed wrong.
+The app picks the paper size per printer: it prefers one matching the 53 mm square, and
+otherwise takes whichever page still covers the 50 mm cut and sits closest to the label
+— a 2 × 2 in form, say. The layout adapts to whatever page it gets, so the circle prints
+at the same size either way. If nothing covers the cut, the job is refused rather than
+printed wrong.
 
 Apps posting to `/webhook` can request round labels per job with
 `{"style": {"size": "50mm-round", "style_preset": "qr_code"}}`.

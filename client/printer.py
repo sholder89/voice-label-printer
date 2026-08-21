@@ -37,10 +37,7 @@ LABEL_SIZES = {
     # that's the pitch the printer feeds — while the artwork stays inside the
     # smaller circular cut.  See _ROUND_DIAMETER_IN.
     "50mm-round": (2.087, 2.087),   # 50 mm cut on the 53 mm square it comes on
-    # Same stock, asking for a 2 in page instead.  Some drivers offer a 2x2 in
-    # form but nothing at 53 mm; 2 in (50.8 mm) still clears the 50 mm cut, and
-    # a page that exists beats one the driver has to substitute for.
-    "50mm-round-2in": (2.0, 2.0),
+    "50mm-round-2in": (2.0, 2.0),   # retired, see HIDDEN_SIZES
     # Retired page-size trials.  Kept resolvable because print history records
     # the size key and reprints from it, but hidden from the size list — both
     # now render exactly as "50mm-round".
@@ -50,12 +47,13 @@ LABEL_SIZES = {
 
 # Sizes whose key doesn't read as plain inches in the size dropdown.
 SIZE_LABELS = {
-    "50mm-round":     "50 mm Round",
-    "50mm-round-2in": "50 mm Round (2 in page)",
+    "50mm-round": "50 mm Round",
 }
 
-# Sizes that still resolve but are no longer offered in the size list.
-HIDDEN_SIZES = {"53mm-round", "55mm-round"}
+# Sizes that still resolve but are no longer offered in the size list. All are
+# retired page-size experiments from working out what round stock needed; the
+# driver's own page is chosen per printer now, so one entry covers every case.
+HIDDEN_SIZES = {"50mm-round-2in", "53mm-round", "55mm-round"}
 
 # Brother QL prints on continuous tape that feeds skinny-side-first.  The
 # natural reading orientation for these labels is LANDSCAPE (text along the long
@@ -638,7 +636,11 @@ def print_label(
     # Brother QL drivers auto-detect the installed DK roll — forcing a custom
     # DEVMODE causes the printer to blink red and reject the job.
     _skip_devmode = "brother" in printer_name.lower()
-    dm_buf = None if _skip_devmode else _get_devmode_buf(printer_name, width_in, height_in)
+    # A round label only needs a page covering its die cut; the square it's cut
+    # from is the ideal, not the requirement.
+    _cut = round_diameter_in(size_key)
+    dm_buf = None if _skip_devmode else _get_devmode_buf(
+        printer_name, width_in, height_in, _cut, _cut)
 
     hdc_raw = None
     if dm_buf is not None:
@@ -697,6 +699,19 @@ def print_label(
             # Refuse instead of feeding a label through to print a slice of it.
             dc_phys_w = hDC.GetDeviceCaps(110)   # PHYSICALWIDTH  (device px)
             dc_phys_h = hDC.GetDeviceCaps(111)   # PHYSICALHEIGHT (device px)
+
+            # Round stock: drivers rarely offer the exact square the cut comes
+            # on, so lay the design out on whatever near-enough page we got —
+            # the cut stays the same size, only the margin around it changes.
+            # Guarded, because a driver that substituted a 4x6 would otherwise
+            # stretch the design across three labels.
+            if _cut and dc_phys_w > 0 and dc_phys_h > 0:
+                page_w_in = dc_phys_w / (dpi_x or dpi)
+                page_h_in = dc_phys_h / (dpi_y or dpi)
+                if _cut <= min(page_w_in, page_h_in) <= _cut * 1.25:
+                    width_in, height_in = page_w_in, page_h_in
+                    calc_w, calc_h = dc_phys_w, dc_phys_h
+
             if dc_phys_w > 0 and dc_phys_h > 0 and calc_w > 0 and calc_h > 0:
                 lost = max(1.0 - min(1.0, dc_phys_w / calc_w),
                            1.0 - min(1.0, dc_phys_h / calc_h))
@@ -712,7 +727,11 @@ def print_label(
                         f"paper size in its Windows printing preferences."
                     )
 
-            img = render_label(text, width_in, height_in, dpi,
+            # Render at the printer's own resolution so the bitmap lands on the
+            # page 1:1.  Rendering at a fixed 203 dpi and leaving the driver to
+            # stretch it works on a 203 dpi printer by accident, and on a 600 dpi
+            # one leaves the design a third of its intended size.
+            img = render_label(text, width_in, height_in, render_dpi,
                                font_style, border, icons, text_case,
                                style_preset, font_weight, qr_show_text,
                                text_align, caption, is_round(size_key),
@@ -2589,7 +2608,7 @@ def _driver_forms(printer_name):
         return []
 
 
-def _form_candidates(printer_name, width_in, height_in):
+def _form_candidates(printer_name, width_in, height_in, min_w_in=None, min_h_in=None):
     """Driver form indices worth trying, best first.
 
     First any form matching the requested size — named stock is rarely its
@@ -2609,9 +2628,17 @@ def _form_candidates(printer_name, width_in, height_in):
         if idx not in seen:
             out.append(idx); seen.add(idx)
 
-    fits = sorted((fw * fh, idx) for idx, fw, fh in forms
-                  if fw + 0.02 >= width_in and fh + 0.02 >= height_in)
-    for _, idx in fits:
+    # Nothing matches the label itself. Anything that still covers the artwork
+    # will do — for a round label that's the die cut, which is smaller than the
+    # square it sits on — so take whichever such page is closest to the label
+    # rather than the smallest. A page much larger than the label makes the
+    # printer feed several of them.
+    need_w = min_w_in if min_w_in else width_in
+    need_h = min_h_in if min_h_in else height_in
+    covers = sorted((abs(fw - width_in) + abs(fh - height_in), idx)
+                    for idx, fw, fh in forms
+                    if fw + 0.02 >= need_w and fh + 0.02 >= need_h)
+    for _, idx in covers:
         if idx not in seen:
             out.append(idx); seen.add(idx)
             break
@@ -2673,7 +2700,7 @@ def _page_for(printer_name, dm_buf):
     finally:
         dc.DeleteDC()
 
-def _get_devmode_buf(printer_name, width_in, height_in):
+def _get_devmode_buf(printer_name, width_in, height_in, min_w_in=None, min_h_in=None):
     """Pick the DEVMODE that actually yields a page big enough for this label.
 
     Drivers disagree about which paper mechanism they honour: some accept a
@@ -2684,7 +2711,8 @@ def _get_devmode_buf(printer_name, width_in, height_in):
     """
     try:
         best = None
-        for form_idx in [None] + _form_candidates(printer_name, width_in, height_in):
+        for form_idx in [None] + _form_candidates(printer_name, width_in, height_in,
+                                                  min_w_in, min_h_in):
             buf = _devmode_for(printer_name, width_in, height_in, form_idx)
             if buf is None:
                 continue
@@ -2692,8 +2720,8 @@ def _get_devmode_buf(printer_name, width_in, height_in):
             if not page:
                 continue
             pw, ph, dx, dy = page
-            need_w = width_in  * (dx or DEFAULT_DPI)
-            need_h = height_in * (dy or DEFAULT_DPI)
+            need_w = (min_w_in or width_in)  * (dx or DEFAULT_DPI)
+            need_h = (min_h_in or height_in) * (dy or DEFAULT_DPI)
             # 2% of slack.  Drivers round their page dimensions and named
             # stock is rarely its nominal size — a 2x1 label reports 408x200
             # against a calculated 406x203, and has always printed fine.  A
