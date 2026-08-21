@@ -1292,9 +1292,10 @@ def _qr_frame(draw, w_px, h_px, bw, round_label, dia_px=0):
     """Edge frame for the QR/scan presets — a ring on round stock, where a
     rectangle at the canvas edge would be entirely inside the die cut waste."""
     if round_label:
-        # Keep the whole stroke clear of the cut edge — a ring drawn exactly on
-        # it loses its outer half to the die.
-        d = (dia_px or min(w_px, h_px)) - bw * 2 - 4
+        # Same ~1 mm standoff as the drawn borders, for the same reason: a ring
+        # any tighter gets sections cut away as registration drifts.
+        cut = dia_px or min(w_px, h_px)
+        d   = cut - bw * 2 - max(3, round(cut * 0.018)) * 2
         draw.ellipse([w_px / 2.0 - d / 2, h_px / 2.0 - d / 2,
                       w_px / 2.0 + d / 2, h_px / 2.0 + d / 2],
                      outline="black", width=bw)
@@ -2420,9 +2421,11 @@ def _draw_round_border(draw, w, h, pad, style, dia_px=0):
     d      = dia_px or min(w, h)
     cx, cy = w / 2.0, h / 2.0
     lw     = 5 if style == "thick" else 2
-    # ~0.8% of the diameter, so the ring survives normal die registration slop
-    # without visibly standing off the edge.
-    margin = max(2, round(d * 0.008))
+    # Roughly 1 mm in from the cut. Die registration on roll stock drifts by
+    # several tenths of a millimetre, and a ring any closer than this loses
+    # sections of itself to the cut on some labels — proportional so it holds at
+    # any resolution.
+    margin = max(3, round(d * 0.018))
     r      = d / 2.0 - lw / 2.0 - margin
     box    = [cx - r, cy - r, cx + r, cy + r]
 
