@@ -2500,67 +2500,121 @@ def _driver_forms(printer_name):
         return []
 
 
-def _match_paper_form(printer_name, width_in, height_in):
-    """Closest driver form to the requested size, or None if nothing is near.
+def _form_candidates(printer_name, width_in, height_in):
+    """Driver form indices worth trying, best first.
 
-    Named stock is rarely its nominal size — a "2x1" roll is really 51x25 mm
-    (2.008 x 0.984 in) — so match within a small tolerance rather than exactly.
+    First any form matching the requested size — named stock is rarely its
+    nominal size, a "2x1" roll is really 51x25 mm, so allow a small tolerance.
+    Then the smallest form the design still fits inside: a page bigger than the
+    design just leaves blank space, and roll printers feed to the next gap
+    anyway, whereas a page smaller than the design silently prints part of it.
     """
-    best = None
-    for form_idx, fw, fh in _driver_forms(printer_name):
-        tol_w = max(0.08, width_in  * 0.03)
-        tol_h = max(0.08, height_in * 0.03)
-        if abs(fw - width_in) <= tol_w and abs(fh - height_in) <= tol_h:
-            err = abs(fw - width_in) + abs(fh - height_in)
-            if best is None or err < best[0]:
-                best = (err, form_idx)
-    return best[1] if best else None
+    forms = _driver_forms(printer_name)
+    out, seen = [], set()
 
+    near = sorted((abs(fw - width_in) + abs(fh - height_in), idx)
+                  for idx, fw, fh in forms
+                  if abs(fw - width_in) <= max(0.08, width_in * 0.03)
+                  and abs(fh - height_in) <= max(0.08, height_in * 0.03))
+    for _, idx in near:
+        if idx not in seen:
+            out.append(idx); seen.add(idx)
+
+    fits = sorted((fw * fh, idx) for idx, fw, fh in forms
+                  if fw + 0.02 >= width_in and fh + 0.02 >= height_in)
+    for _, idx in fits:
+        if idx not in seen:
+            out.append(idx); seen.add(idx)
+            break
+    return out
+
+
+def _devmode_for(printer_name, width_in, height_in, form_idx):
+    """DEVMODE selecting `form_idx`, or a custom size when form_idx is None.
+
+    The edited buffer goes back through DocumentProperties so the driver
+    validates and merges it — without that round-trip a driver is entitled to
+    ignore the fields, and some do.
+    """
+    hPrinter = ctypes.c_void_p()
+    if not _winspool.OpenPrinterW(printer_name, ctypes.byref(hPrinter), None):
+        return None
+    try:
+        dm_size = _winspool.DocumentPropertiesW(None, hPrinter, printer_name, None, None, 0)
+        if dm_size <= 0:
+            return None
+        buf = ctypes.create_string_buffer(dm_size)
+        if _winspool.DocumentPropertiesW(None, hPrinter, printer_name, buf,
+                                         None, _DM_OUT_BUFFER) < 0:
+            return None
+        fields = struct.unpack_from("<I", buf, _OFF_FIELDS)[0]
+        if form_idx is not None:
+            # Say nothing about dimensions — the driver knows the form's size,
+            # and sending PAPERLENGTH/WIDTH alongside makes some drivers drop
+            # the request entirely.
+            struct.pack_into("<I", buf, _OFF_FIELDS,
+                             (fields | _DM_PAPERSIZE) & ~_DM_PAPERLENGTH & ~_DM_PAPERWIDTH)
+            struct.pack_into("<h", buf, _OFF_PAPERSIZE, form_idx)
+        else:
+            struct.pack_into("<I", buf, _OFF_FIELDS,
+                             fields | _DM_PAPERSIZE | _DM_PAPERLENGTH | _DM_PAPERWIDTH)
+            struct.pack_into("<h", buf, _OFF_PAPERSIZE,   _DMPAPER_USER)
+            struct.pack_into("<h", buf, _OFF_PAPERLENGTH, int(height_in * 254))
+            struct.pack_into("<h", buf, _OFF_PAPERWIDTH,  int(width_in  * 254))
+        merged = ctypes.create_string_buffer(dm_size)
+        if _winspool.DocumentPropertiesW(None, hPrinter, printer_name, merged, buf,
+                                         _DM_IN_BUFFER | _DM_OUT_BUFFER) >= 0:
+            return merged
+        return buf
+    except Exception:
+        return None
+    finally:
+        _winspool.ClosePrinter(hPrinter)
+
+
+def _page_for(printer_name, dm_buf):
+    """(page_w_px, page_h_px, dpi_x, dpi_y) the driver reports for this DEVMODE."""
+    raw = _gdi32.CreateDCW("WINSPOOL", printer_name, None, dm_buf)
+    if not raw:
+        return None
+    dc = win32ui.CreateDCFromHandle(raw)
+    try:
+        return (dc.GetDeviceCaps(110), dc.GetDeviceCaps(111),
+                dc.GetDeviceCaps(88),  dc.GetDeviceCaps(90))
+    finally:
+        dc.DeleteDC()
 
 def _get_devmode_buf(printer_name, width_in, height_in):
-    try:
-        hPrinter = ctypes.c_void_p()
-        if not _winspool.OpenPrinterW(printer_name, ctypes.byref(hPrinter), None):
-            return None
-        try:
-            dm_size = _winspool.DocumentPropertiesW(
-                None, hPrinter, printer_name, None, None, 0)
-            if dm_size <= 0:
-                return None
-            buf = ctypes.create_string_buffer(dm_size)
-            ret = _winspool.DocumentPropertiesW(
-                None, hPrinter, printer_name, buf, None, _DM_OUT_BUFFER)
-            if ret < 0:
-                return None
-            fields   = struct.unpack_from("<I", buf, _OFF_FIELDS)[0]
-            form_idx = _match_paper_form(printer_name, width_in, height_in)
-            if form_idx is not None:
-                # Select the driver's own form and say nothing about the
-                # dimensions — it knows them, and sending PAPERLENGTH/WIDTH
-                # alongside makes some drivers discard the whole request.
-                struct.pack_into("<I", buf, _OFF_FIELDS,
-                                 (fields | _DM_PAPERSIZE)
-                                 & ~_DM_PAPERLENGTH & ~_DM_PAPERWIDTH)
-                struct.pack_into("<h", buf, _OFF_PAPERSIZE, form_idx)
-            else:
-                # No matching form — ask for a custom size and hope the driver
-                # supports one.  Plenty don't, which is what the page-size
-                # check in print_label catches.
-                struct.pack_into("<I", buf, _OFF_FIELDS,
-                                 fields | _DM_PAPERSIZE | _DM_PAPERLENGTH | _DM_PAPERWIDTH)
-                struct.pack_into("<h", buf, _OFF_PAPERSIZE,   _DMPAPER_USER)
-                struct.pack_into("<h", buf, _OFF_PAPERLENGTH, int(height_in * 254))
-                struct.pack_into("<h", buf, _OFF_PAPERWIDTH,  int(width_in  * 254))
+    """Pick the DEVMODE that actually yields a page big enough for this label.
 
-            # Hand the edited DEVMODE back to the driver to validate and merge.
-            # Without this round-trip a driver is entitled to ignore the fields
-            # we just set, which is exactly what some of them do.
-            merged = ctypes.create_string_buffer(dm_size)
-            if _winspool.DocumentPropertiesW(None, hPrinter, printer_name, merged, buf,
-                                             _DM_IN_BUFFER | _DM_OUT_BUFFER) >= 0:
-                return merged
-            return buf
-        finally:
-            _winspool.ClosePrinter(hPrinter)
+    Drivers disagree about which paper mechanism they honour: some accept a
+    custom size, some only their own form indices, some ignore both and pin the
+    queue default. Guessing gets it wrong on somebody's printer, so try each
+    candidate and measure the page the driver reports back, keeping the first
+    that fits.
+    """
+    try:
+        best = None
+        for form_idx in [None] + _form_candidates(printer_name, width_in, height_in):
+            buf = _devmode_for(printer_name, width_in, height_in, form_idx)
+            if buf is None:
+                continue
+            page = _page_for(printer_name, buf)
+            if not page:
+                continue
+            pw, ph, dx, dy = page
+            need_w = width_in  * (dx or DEFAULT_DPI)
+            need_h = height_in * (dy or DEFAULT_DPI)
+            # 2% of slack.  Drivers round their page dimensions and named
+            # stock is rarely its nominal size — a 2x1 label reports 408x200
+            # against a calculated 406x203, and has always printed fine.  A
+            # genuine mismatch is off by tens of percent, not one.
+            if pw >= need_w * 0.98 and ph >= need_h * 0.98:
+                return buf
+            if best is None or pw * ph > best[0]:
+                best = (pw * ph, buf)
+        # Nothing fits; hand back the roomiest so the page check in print_label
+        # reports the real shortfall.
+        return best[1] if best else None
     except Exception:
         return None
