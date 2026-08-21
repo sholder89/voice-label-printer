@@ -33,6 +33,13 @@ LABEL_SIZES = {
     # Brother QL 29 mm continuous tape (DK-22210 / RL-B-D22210)
     "1.1x3.5": (1.142, 3.543),   # 29 mm × 90 mm — address label
     "1.1x2.4": (1.142, 2.441),   # 29 mm × 62 mm — short label
+    # Round die-cut labels — square canvas, content kept inside the circle
+    "50mm-round": (1.969, 1.969),   # 50 mm diameter
+}
+
+# Sizes whose key doesn't read as plain inches in the size dropdown.
+SIZE_LABELS = {
+    "50mm-round": "50 mm Round",
 }
 
 # Brother QL prints on continuous tape that feeds skinny-side-first.  The
@@ -49,6 +56,39 @@ _BROTHER_ROTATE = -90
 
 def is_brother_tape(size_key: str) -> bool:
     return size_key in _BROTHER_TAPE_SIZES
+
+
+# Round die-cut sizes.  The printer is still handed a SQUARE bitmap — the round
+# shape comes from the die cut in the stock — so the only thing that changes is
+# the layout: everything has to stay inside the inscribed circle or the corners
+# get sliced off at the edge.
+_ROUND_SIZES = {"50mm-round"}
+
+
+def is_round(size_key: str) -> bool:
+    return size_key in _ROUND_SIZES
+
+
+def _circle_safe_rect(w_px: int, h_px: int, height_frac: float) -> tuple:
+    """Widest centred rectangle that fits inside the inscribed circle.
+
+    For a circle of radius r, a centred rect with half-width a and half-height b
+    fits when a² + b² ≤ r².  Fixing b (as `height_frac` of the radius) and
+    solving for a buys the widest possible box for that height — the inscribed
+    *square* would be an easy choice but throws away nearly 30% of the diameter.
+
+    Returns (x, y, w, h) in pixels.
+    """
+    r = min(w_px, h_px) / 2.0
+    b = r * height_frac
+    a = math.sqrt(max(0.0, r * r - b * b))
+    # Round inwards on every edge — truncating would nudge the corners a pixel
+    # outside the circle, which is exactly where the die cut lands.
+    x0 = math.ceil(w_px / 2.0 - a)
+    y0 = math.ceil(h_px / 2.0 - b)
+    x1 = math.floor(w_px / 2.0 + a)
+    y1 = math.floor(h_px / 2.0 + b)
+    return (x0, y0, x1 - x0, y1 - y0)
 
 
 def render_dimensions(size_key: str) -> tuple:
@@ -334,6 +374,7 @@ def render_label(
     qr_show_text: bool = True,
     text_align: str = "center",
     caption: str | None = None,
+    round_label: bool = False,
 ) -> Image.Image:
     """Render a label to an image.
 
@@ -341,6 +382,10 @@ def render_label(
     normally the same string that gets encoded. Passing a caption prints that
     instead, so a QR can encode a URL while the label reads something useful to
     a human. Ignored by every other preset.
+
+    `round_label` lays the content out inside the inscribed circle for round
+    die-cut stock. The image itself stays square — the printer always receives a
+    rectangle; the circle is cut into the stock.
     """
     w_px = int(width_in * dpi)
     h_px = int(height_in * dpi)
@@ -360,7 +405,7 @@ def render_label(
         if style_preset == "blueprint":
             return _render_blueprint(text, w_px, h_px, dpi, text_case, icons, font_weight)
         if style_preset == "qr_code":
-            return _render_qr_code(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text, caption)
+            return _render_qr_code(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text, caption, round_label)
         if style_preset == "barcode":
             return _render_barcode(text, w_px, h_px, dpi, text_case, font_weight, qr_show_text, caption)
         if style_preset == "name_tag":
@@ -400,7 +445,16 @@ def render_label(
     text = _apply_case(text, text_case)
 
     if icon:
-        if h_px > w_px:
+        if round_label:
+            # Round label: icon above the text with the pair centred, measured
+            # against the circle-safe box so neither runs into the curved edge.
+            _bx, _by, _bw, _bh = _circle_safe_rect(w_px, h_px, 0.62)
+            icon_size = int(min(_bw * 0.45, _bh * 0.45))
+            icon_x    = (w_px - icon_size) // 2
+            icon_y    = _by
+            text_x0   = _bx
+            text_y0   = icon_y + icon_size + max(2, pad // 2)
+        elif h_px > w_px:
             # Portrait label (e.g. 4x6): stack icon on top, text below — sizing
             # the icon to the WIDTH so it doesn't balloon on a tall label.
             icon_size = int(min(w_px * 0.42, h_px * 0.28))
@@ -415,12 +469,21 @@ def render_label(
             icon_y    = (h_px - icon_size) // 2
             text_x0   = icon_x + icon_size + pad
             text_y0   = pad
+    elif round_label:
+        # Text only — a shorter box buys more width out of the same circle.
+        _bx, _by, _bw, _bh = _circle_safe_rect(w_px, h_px, 0.42)
+        text_x0 = _bx
+        text_y0 = _by
     else:
         text_x0 = pad
         text_y0 = pad
 
-    text_area_w = w_px - text_x0 - pad
-    text_area_h = h_px - text_y0 - pad
+    if round_label:
+        text_area_w = _bw
+        text_area_h = max(1, _by + _bh - text_y0)
+    else:
+        text_area_w = w_px - text_x0 - pad
+        text_area_h = h_px - text_y0 - pad
 
     fill    = _FILL.get(font_style, 0.85)
     align   = text_align if text_align in ("left", "center", "right") else "center"
@@ -448,9 +511,14 @@ def render_label(
     if icon:
         _draw_icon(img, icon, icon_x, icon_y, icon_size)
 
-    _draw_border(draw, w_px, h_px, pad, border, dpi)
-    if border in _IMAGE_BORDERS:
-        img = _overlay_image_border(img, border, w_px, h_px)
+    if round_label:
+        # Image borders are rectangular artwork — the die cut would slice their
+        # corners off, so round labels get the drawn ring instead.
+        _draw_round_border(draw, w_px, h_px, pad, border)
+    else:
+        _draw_border(draw, w_px, h_px, pad, border, dpi)
+        if border in _IMAGE_BORDERS:
+            img = _overlay_image_border(img, border, w_px, h_px)
 
     return img
 
@@ -550,7 +618,7 @@ def print_label(
             img = render_label(text, width_in, height_in, dpi,
                                font_style, border, icons, text_case,
                                style_preset, font_weight, qr_show_text,
-                               text_align, caption)
+                               text_align, caption, is_round(size_key))
             render_w = calc_w
             render_h = calc_h
 
@@ -1103,10 +1171,22 @@ def _render_blueprint(text: str, w_px: int, h_px: int, dpi: int,
 
 # ── QR Code renderer ──────────────────────────────────────────────────────────
 
+def _qr_frame(draw, w_px, h_px, bw, round_label):
+    """Edge frame for the QR/scan presets — a ring on round stock, where a
+    rectangle at the canvas edge would be entirely inside the die cut waste."""
+    if round_label:
+        inset = max(1, bw // 2)
+        draw.ellipse([inset, inset, w_px - inset - 1, h_px - inset - 1],
+                     outline="black", width=bw)
+    else:
+        draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
+
+
 def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
                     text_case: str, font_weight: str = "bold",
                     show_text: bool = True,
-                    caption: str | None = None) -> Image.Image:
+                    caption: str | None = None,
+                    round_label: bool = False) -> Image.Image:
     """QR code label. show_text=False centres the QR and omits the caption.
 
     The QR always encodes `text`. `caption` overrides what's printed beside it,
@@ -1136,14 +1216,53 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
     qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
 
     if not show_text:
-        # QR centred, no caption
-        qr_size = min(w_px - pad * 2, h_px - pad * 2)
+        # QR centred, no caption.  On round stock the biggest square that
+        # survives the die cut is the one inscribed in the circle — side r·√2,
+        # about 71% of the diameter — not the full padded canvas.
+        if round_label:
+            qr_size = int((min(w_px, h_px) - pad * 2) / math.sqrt(2))
+        else:
+            qr_size = min(w_px - pad * 2, h_px - pad * 2)
         qr_img  = qr_img.resize((qr_size, qr_size), Image.NEAREST)
         img.paste(qr_img, ((w_px - qr_size) // 2, (h_px - qr_size) // 2))
-        draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
+        _qr_frame(draw, w_px, h_px, bw, round_label)
         return img
 
-    if w_px > h_px * 1.5:
+    if round_label:
+        # QR above the caption, the pair centred in the circle.  Sizing the QR
+        # matters more here than anywhere else — a QR that shrinks to fit stops
+        # scanning — so solve for the largest one that still fits rather than
+        # taking a fixed fraction.
+        #
+        # With the stack centred, the QR's top corners sit at
+        # (s/2, stack_h/2) from the centre, so s² + (s + g)² ≤ D² where
+        # g is the caption band plus its gap.  Solving for s:
+        #     s = (√(2D² − g²) − g) / 2
+        D         = min(w_px, h_px) - bw * 2
+        r         = D / 2.0
+        caption_h = max(round(D * 0.20), round(0.16 * dpi))
+        gap       = max(2, pad // 2)
+        g         = caption_h + gap
+        qr_size   = int((math.sqrt(max(0.0, 2 * D * D - g * g)) - g) / 2)
+        qr_size   = max(1, min(qr_size, D))
+
+        stack_h = qr_size + gap + caption_h
+        qr_y    = (h_px - stack_h) // 2
+        qr_img  = qr_img.resize((qr_size, qr_size), Image.NEAREST)
+        img.paste(qr_img, ((w_px - qr_size) // 2, qr_y))
+
+        # Caption is bounded by the chord at the BOTTOM of its band — the
+        # narrowest point it has to live within.
+        text_y0   = qr_y + qr_size + gap
+        y_bot     = text_y0 + caption_h
+        dy        = abs(y_bot - h_px / 2.0)
+        half_w    = math.sqrt(max(0.0, r * r - dy * dy))
+        text_area_w = max(1, int(half_w * 2))
+        text_x0     = int(w_px / 2.0 - text_area_w / 2.0)
+        text_area_h = caption_h
+        text_y_center = False
+        align       = "center"
+    elif w_px > h_px * 1.5:
         # Landscape — QR on left, caption on right
         qr_size     = min(h_px - pad * 2, round(w_px * 0.45))
         qr_img      = qr_img.resize((qr_size, qr_size), Image.NEAREST)
@@ -1190,7 +1309,7 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
         start_y = (h_px - total_h) / 2 if text_y_center else text_y0
         _draw_mixed_lines(draw, manual_lines, fonts, heights,
                           text_x0, start_y, text_area_w, align=align)
-        draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
+        _qr_frame(draw, w_px, h_px, bw, round_label)
         return img
 
     if _has_inline_emoji(display_text):
@@ -1214,7 +1333,7 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
         y = (h_px - th) / 2 - bb[1] if text_y_center else text_y0
         draw.multiline_text((x, y), joined, fill="black", font=best_font, align=align)
 
-    draw.rectangle([0, 0, w_px - 1, h_px - 1], outline="black", width=bw)
+    _qr_frame(draw, w_px, h_px, bw, round_label)
     return img
 
 
@@ -2161,6 +2280,38 @@ def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int,
     base = img.convert("RGBA")
     base.alpha_composite(black_border, dest=(margin, margin))
     return base.convert("RGB")
+
+
+def _draw_round_border(draw, w, h, pad, style):
+    """Circular equivalents of the rectangular border styles, for round stock.
+
+    Styles with no meaningful circular form (ticket, inset, corners, wave, and
+    the image borders) fall back to a plain ring rather than being dropped, so
+    picking one still gives you a visible border.
+    """
+    if style == "none":
+        return
+    p   = max(2, pad // 2)
+    box = [p, p, w - p - 1, h - p - 1]
+
+    if style == "thick":
+        draw.ellipse(box, outline="black", width=5)
+
+    elif style == "double":
+        draw.ellipse(box, outline="black", width=2)
+        draw.ellipse([p + 6, p + 6, w - p - 7, h - p - 7], outline="black", width=1)
+
+    elif style in ("dashed", "dotted"):
+        # Step round the circumference drawing alternate arcs.  Dots are short
+        # arcs with a wide gap; dashes are longer arcs with a tighter gap.
+        seg, gap = (14, 8) if style == "dashed" else (3, 7)
+        ang = 0
+        while ang < 360:
+            draw.arc(box, ang, min(360, ang + seg), fill="black", width=2)
+            ang += seg + gap
+
+    else:
+        draw.ellipse(box, outline="black", width=2)
 
 
 def _draw_border(draw, w, h, pad, style, dpi=203):

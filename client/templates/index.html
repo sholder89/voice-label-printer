@@ -325,6 +325,11 @@ button:active { transform: scale(.97); }
   box-shadow: 0 2px 8px rgba(0,0,0,.12);
   image-rendering: pixelated;
 }
+/* Round stock: show the preview as the die cut actually lands, so you can see
+   what survives the cut rather than a square with hidden corners. */
+#preview-tint.round, #preview-img.round, #hist-preview-tint.round, #hist-preview-img.round {
+  border-radius: 50%;
+}
 
 /* ── Misc text helpers ────────────────────────────────────────────────── */
 .hint {
@@ -1058,9 +1063,20 @@ function getPrintText() {
   return document.getElementById('print-text').value.trim() || 'Label Printer';
 }
 
+// Size keys whose stock is round die-cut, injected from the server so the
+// preview crop always matches what printer.py considers round.
+const ROUND_SIZES = {{ round_sizes|tojson }};
+
+function applyRoundShape(size) {
+  const round = ROUND_SIZES.includes(size);
+  document.getElementById('preview-tint').classList.toggle('round', round);
+  document.getElementById('preview-img').classList.toggle('round', round);
+}
+
 function refreshPreview() {
   const s    = getSettings();
   const text = getPrintText();
+  applyRoundShape(s.size);
   document.getElementById('preview-img').src =
     `/preview?text=${encodeURIComponent(text)}&size=${s.size}&font_style=${s.font_style}&font_weight=${s.font_weight}&border=${s.border}&text_case=${s.text_case}&text_align=${s.text_align}&style_preset=${s.style_preset}&icons=${s.icons}&qr_show_text=${s.qr_show_text}&t=${Date.now()}`;
 }
@@ -1231,6 +1247,9 @@ function showHistoryPreview(i, rowEl) {
 
     img.src = buildHistPreviewUrl(r) + '&t=' + Date.now();
     const tint = document.getElementById('hist-preview-tint');
+    const histRound = ROUND_SIZES.includes(r.size || '2x1');
+    tint.classList.toggle('round', histRound);
+    img.classList.toggle('round', histRound);
     const color = r.label_color || '#FFFFFF';
     if (color.toUpperCase() === '#FFFFFF') {
       tint.style.removeProperty('background');

@@ -14,9 +14,9 @@ import requests
 from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
-    print_label, list_printers, render_label, render_dimensions,
+    print_label, list_printers, render_label, render_dimensions, is_round,
     set_custom_emojis, set_custom_sizes, set_emoji_darkness, set_emoji_outline, _BUILTIN_SIZE_KEYS,
-    LABEL_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
+    LABEL_SIZES, SIZE_LABELS, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
     _IMAGE_BORDER_ENTRIES,
 )
@@ -355,6 +355,8 @@ def _size_options():
         s = custom.get(key)
         if s:
             opts.append((key, f"{key} ({s['width']:g} × {s['height']:g} {s['unit']})"))
+        elif key in SIZE_LABELS:
+            opts.append((key, SIZE_LABELS[key]))
         else:
             opts.append((key, f"{key} inches"))
     return opts
@@ -469,6 +471,7 @@ def index():
         printer_options=printer_options,
         sizes=list(LABEL_SIZES.keys()),
         size_options=_size_options(),
+        round_sizes=[k for k in LABEL_SIZES if is_round(k)],
         font_styles=FONT_STYLES,
         font_weights=FONT_WEIGHTS,
         border_styles=BORDER_STYLES,
@@ -779,7 +782,7 @@ def preview():
     img  = render_label(text, w, h, dpi=203, font_style=font_style, border=border,
                         icons=icons, text_case=text_case, style_preset=style_preset,
                         font_weight=font_weight, qr_show_text=qr_show_text,
-                        text_align=text_align)
+                        text_align=text_align, round_label=is_round(size))
     buf  = io.BytesIO()
     img.save(buf, format="PNG")
     buf.seek(0)
