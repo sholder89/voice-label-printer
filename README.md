@@ -324,7 +324,12 @@ wrong distance.
 3. Pick **50 mm Round** in the size dropdown
 
 The app matches the label against the paper sizes the driver reports and selects the one
-that fits, so no further configuration is needed once the size exists.
+that fits, so no further configuration is needed once the size exists. Repeat this on
+**every printer** you want to print round labels from — the paper size lives in the
+driver, not the app.
+
+Apps posting to `/webhook` can request round labels per job with
+`{"style": {"size": "50mm-round", "style_preset": "qr_code"}}`.
 
 **If the page doesn't match the label**, the app refuses the job rather than printing part
 of the design and binning the rest:

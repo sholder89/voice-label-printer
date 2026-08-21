@@ -31,7 +31,8 @@ VALID_SETTINGS = {
     "font_weight":  {"normal", "bold", "italic", "bold_italic"},
     "icons":        {"true", "false"},
     "qr_show_text": {"true", "false"},
-    "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5", "1.1x3.5", "1.1x2.4"},
+    "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5", "1.1x3.5", "1.1x2.4",
+                      "50mm-round"},
 }
 
 limiter = Limiter(
