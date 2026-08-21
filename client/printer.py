@@ -328,6 +328,9 @@ _DM_PAPERLENGTH  = 0x0004
 _DM_PAPERWIDTH   = 0x0008
 _DMPAPER_USER    = 256
 _DM_OUT_BUFFER   = 2
+_DM_IN_BUFFER    = 8
+_DC_PAPERS       = 2
+_DC_PAPERSIZE    = 3
 
 _gdi32    = ctypes.WinDLL("gdi32")
 _winspool = ctypes.WinDLL("winspool.drv")
@@ -2472,6 +2475,48 @@ def _draw_border(draw, w, h, pad, style, dpi=203):
 
 # ── DEVMODE / DC helpers ──────────────────────────────────────────────────────
 
+def _driver_forms(printer_name):
+    """[(form_index, width_in, height_in)] for every paper form the driver offers.
+
+    Label drivers publish their stock as numbered forms.  Most of them quietly
+    ignore a DMPAPER_USER size with explicit dimensions and fall back to the
+    queue default — and DMPAPER_USER (256) is itself where driver-defined form
+    indices start, so asking for it can even select an unrelated form.  Picking
+    the driver's own index for the size we want avoids the whole problem.
+    """
+    try:
+        n = _winspool.DeviceCapabilitiesW(printer_name, None, _DC_PAPERS, None, None)
+        m = _winspool.DeviceCapabilitiesW(printer_name, None, _DC_PAPERSIZE, None, None)
+        if n <= 0 or m <= 0:
+            return []
+        idx = (ctypes.c_uint16 * n)()
+        _winspool.DeviceCapabilitiesW(printer_name, None, _DC_PAPERS, ctypes.byref(idx), None)
+        dims = (ctypes.c_int32 * (m * 2))()
+        _winspool.DeviceCapabilitiesW(printer_name, None, _DC_PAPERSIZE, ctypes.byref(dims), None)
+        # DC_PAPERSIZE reports tenths of a millimetre; 254 tenths per inch.
+        return [(idx[i], dims[i * 2] / 254.0, dims[i * 2 + 1] / 254.0)
+                for i in range(min(n, m))]
+    except Exception:
+        return []
+
+
+def _match_paper_form(printer_name, width_in, height_in):
+    """Closest driver form to the requested size, or None if nothing is near.
+
+    Named stock is rarely its nominal size — a "2x1" roll is really 51x25 mm
+    (2.008 x 0.984 in) — so match within a small tolerance rather than exactly.
+    """
+    best = None
+    for form_idx, fw, fh in _driver_forms(printer_name):
+        tol_w = max(0.08, width_in  * 0.03)
+        tol_h = max(0.08, height_in * 0.03)
+        if abs(fw - width_in) <= tol_w and abs(fh - height_in) <= tol_h:
+            err = abs(fw - width_in) + abs(fh - height_in)
+            if best is None or err < best[0]:
+                best = (err, form_idx)
+    return best[1] if best else None
+
+
 def _get_devmode_buf(printer_name, width_in, height_in):
     try:
         hPrinter = ctypes.c_void_p()
@@ -2487,12 +2532,33 @@ def _get_devmode_buf(printer_name, width_in, height_in):
                 None, hPrinter, printer_name, buf, None, _DM_OUT_BUFFER)
             if ret < 0:
                 return None
-            fields = struct.unpack_from("<I", buf, _OFF_FIELDS)[0]
-            struct.pack_into("<I", buf, _OFF_FIELDS,
-                             fields | _DM_PAPERSIZE | _DM_PAPERLENGTH | _DM_PAPERWIDTH)
-            struct.pack_into("<h", buf, _OFF_PAPERSIZE,   _DMPAPER_USER)
-            struct.pack_into("<h", buf, _OFF_PAPERLENGTH, int(height_in * 254))
-            struct.pack_into("<h", buf, _OFF_PAPERWIDTH,  int(width_in  * 254))
+            fields   = struct.unpack_from("<I", buf, _OFF_FIELDS)[0]
+            form_idx = _match_paper_form(printer_name, width_in, height_in)
+            if form_idx is not None:
+                # Select the driver's own form and say nothing about the
+                # dimensions — it knows them, and sending PAPERLENGTH/WIDTH
+                # alongside makes some drivers discard the whole request.
+                struct.pack_into("<I", buf, _OFF_FIELDS,
+                                 (fields | _DM_PAPERSIZE)
+                                 & ~_DM_PAPERLENGTH & ~_DM_PAPERWIDTH)
+                struct.pack_into("<h", buf, _OFF_PAPERSIZE, form_idx)
+            else:
+                # No matching form — ask for a custom size and hope the driver
+                # supports one.  Plenty don't, which is what the page-size
+                # check in print_label catches.
+                struct.pack_into("<I", buf, _OFF_FIELDS,
+                                 fields | _DM_PAPERSIZE | _DM_PAPERLENGTH | _DM_PAPERWIDTH)
+                struct.pack_into("<h", buf, _OFF_PAPERSIZE,   _DMPAPER_USER)
+                struct.pack_into("<h", buf, _OFF_PAPERLENGTH, int(height_in * 254))
+                struct.pack_into("<h", buf, _OFF_PAPERWIDTH,  int(width_in  * 254))
+
+            # Hand the edited DEVMODE back to the driver to validate and merge.
+            # Without this round-trip a driver is entitled to ignore the fields
+            # we just set, which is exactly what some of them do.
+            merged = ctypes.create_string_buffer(dm_size)
+            if _winspool.DocumentPropertiesW(None, hPrinter, printer_name, merged, buf,
+                                             _DM_IN_BUFFER | _DM_OUT_BUFFER) >= 0:
+                return merged
             return buf
         finally:
             _winspool.ClosePrinter(hPrinter)
