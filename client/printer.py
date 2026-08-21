@@ -37,6 +37,10 @@ LABEL_SIZES = {
     # that's the pitch the printer feeds — while the artwork stays inside the
     # smaller circular cut.  See _ROUND_DIAMETER_IN.
     "50mm-round": (2.087, 2.087),   # 50 mm cut on the 53 mm square it comes on
+    # Same stock, asking for a 2 in page instead.  Some drivers offer a 2x2 in
+    # form but nothing at 53 mm; 2 in (50.8 mm) still clears the 50 mm cut, and
+    # a page that exists beats one the driver has to substitute for.
+    "50mm-round-2in": (2.0, 2.0),
     # Retired page-size trials.  Kept resolvable because print history records
     # the size key and reprints from it, but hidden from the size list — both
     # now render exactly as "50mm-round".
@@ -46,7 +50,8 @@ LABEL_SIZES = {
 
 # Sizes whose key doesn't read as plain inches in the size dropdown.
 SIZE_LABELS = {
-    "50mm-round": "50 mm Round",
+    "50mm-round":     "50 mm Round",
+    "50mm-round-2in": "50 mm Round (2 in page)",
 }
 
 # Sizes that still resolve but are no longer offered in the size list.
@@ -72,12 +77,13 @@ def is_brother_tape(size_key: str) -> bool:
 # shape comes from the die cut in the stock — so the only thing that changes is
 # the layout: everything has to stay inside the inscribed circle or the corners
 # get sliced off at the edge.
-_ROUND_SIZES = {"50mm-round", "53mm-round", "55mm-round"}
+_ROUND_SIZES = {"50mm-round", "50mm-round-2in", "53mm-round", "55mm-round"}
 
 # Diameter of the die cut, which is smaller than the label it sits in — 50 mm
 # round labels come on 53 mm squares.  The page must be the full square so the
 # printer feeds one label, but nothing may stray outside the circle.
-_ROUND_DIAMETER_IN = {"50mm-round": 1.969, "53mm-round": 1.969,
+_ROUND_DIAMETER_IN = {"50mm-round": 1.969, "50mm-round-2in": 1.969,
+                      "53mm-round": 1.969,
                       "55mm-round": 1.969}   # last two: retired, see LABEL_SIZES
 
 

@@ -32,7 +32,7 @@ VALID_SETTINGS = {
     "icons":        {"true", "false"},
     "qr_show_text": {"true", "false"},
     "size":         {"2x1", "4x2", "4x6", "3x2", "2x0.5", "1.1x3.5", "1.1x2.4",
-                      "50mm-round"},
+                      "50mm-round", "50mm-round-2in"},
 }
 
 limiter = Limiter(
