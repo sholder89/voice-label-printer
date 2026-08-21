@@ -14,7 +14,7 @@ import requests
 from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
-    print_label, list_printers, render_label, render_dimensions, is_round,
+    print_label, list_printers, render_label, render_dimensions, is_round, round_diameter_in,
     set_custom_emojis, set_custom_sizes, set_emoji_darkness, set_emoji_outline, _BUILTIN_SIZE_KEYS,
     LABEL_SIZES, SIZE_LABELS, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
@@ -782,7 +782,8 @@ def preview():
     img  = render_label(text, w, h, dpi=203, font_style=font_style, border=border,
                         icons=icons, text_case=text_case, style_preset=style_preset,
                         font_weight=font_weight, qr_show_text=qr_show_text,
-                        text_align=text_align, round_label=is_round(size))
+                        text_align=text_align, round_label=is_round(size),
+                        round_dia_in=round_diameter_in(size))
     buf  = io.BytesIO()
     img.save(buf, format="PNG")
     buf.seek(0)
