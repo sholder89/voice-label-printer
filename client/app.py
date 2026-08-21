@@ -487,6 +487,17 @@ def index():
 
 # ── Advanced settings ────────────────────────────────────────────────────────
 
+@app.route("/static/manifest.webmanifest")
+def manifest():
+    """Serve the manifest with its proper media type.
+
+    Flask's static handler guesses from the extension and doesn't know this one,
+    and some browsers ignore a manifest served as octet-stream.
+    """
+    return send_file(os.path.join(_APP_DIR, "static", "manifest.webmanifest"),
+                     mimetype="application/manifest+json")
+
+
 @app.route("/advanced")
 def advanced_page():
     return render_template("advanced.html")

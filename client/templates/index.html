@@ -6,6 +6,18 @@
 <title>Label Printer</title>
 <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.png">
+
+<!-- Home screen / PWA.  The app is served over plain HTTP on the LAN, which is
+     not a secure context, so there's no service worker — iOS still allows Add
+     to Home Screen without one, and that's what these cover. -->
+<link rel="manifest" href="/static/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Labels">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fdfdfd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000617" media="(prefers-color-scheme: dark)">
 <style>
 /* ── Theme variables ───────────────────────────────────────────────────── */
 :root {
