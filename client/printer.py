@@ -587,7 +587,7 @@ def render_label(
     if round_label:
         # Image borders are rectangular artwork — the die cut would slice their
         # corners off, so round labels get the drawn ring instead.
-        _draw_round_border(draw, w_px, h_px, pad, border, dia_px)
+        _draw_round_border(draw, w_px, h_px, pad, border, dia_px, dpi)
     else:
         _draw_border(draw, w_px, h_px, pad, border, dpi)
         if border in _IMAGE_BORDERS:
@@ -1327,7 +1327,7 @@ def _render_qr_code(text: str, w_px: int, h_px: int, dpi: int,
     img  = Image.new("RGB", (w_px, h_px), "white")
     draw = ImageDraw.Draw(img)
     pad  = max(4, round(min(w_px, h_px) * 0.04))
-    bw   = max(1, round(dpi / 150))
+    bw   = max(1, round(dpi / 150))   # already resolution-aware
 
     # Generate QR (always uses raw text as data, regardless of text_case)
     qr = _qrcode.QRCode(version=None,
@@ -2404,7 +2404,18 @@ def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int,
     return base.convert("RGB")
 
 
-def _draw_round_border(draw, w, h, pad, style, dia_px=0):
+def _lw(base_px, dpi):
+    """Scale a stroke width so it stays the same physical thickness.
+
+    Widths were written as pixel counts back when everything rendered at 203
+    dpi. Rendering at the printer's own resolution made them proportionally
+    finer — a 2 px hairline is 0.25 mm at 203 dpi but 0.085 mm at 600, below
+    what a thermal head lays down cleanly, so borders came out broken up.
+    """
+    return max(1, round(base_px * dpi / DEFAULT_DPI))
+
+
+def _draw_round_border(draw, w, h, pad, style, dia_px=0, dpi=DEFAULT_DPI):
     """Circular equivalents of the rectangular border styles, for round stock.
 
     The ring hugs the die cut rather than sitting inside a rectangular `pad` —
@@ -2420,7 +2431,7 @@ def _draw_round_border(draw, w, h, pad, style, dia_px=0):
 
     d      = dia_px or min(w, h)
     cx, cy = w / 2.0, h / 2.0
-    lw     = 5 if style == "thick" else 2
+    lw     = _lw(5 if style == "thick" else 2, dpi)
     # Roughly 1 mm in from the cut. Die registration on roll stock drifts by
     # several tenths of a millimetre, and a ring any closer than this loses
     # sections of itself to the cut on some labels — proportional so it holds at
@@ -2433,10 +2444,11 @@ def _draw_round_border(draw, w, h, pad, style, dia_px=0):
         draw.ellipse(box, outline="black", width=lw)
 
     elif style == "double":
-        draw.ellipse(box, outline="black", width=2)
+        draw.ellipse(box, outline="black", width=lw)
         inner = max(4, round(d * 0.022))
         draw.ellipse([box[0] + inner, box[1] + inner,
-                      box[2] - inner, box[3] - inner], outline="black", width=1)
+                      box[2] - inner, box[3] - inner],
+                     outline="black", width=_lw(1, dpi))
 
     elif style in ("dashed", "dotted"):
         # Step round the circumference drawing alternate arcs.  Dots are short
@@ -2459,21 +2471,21 @@ def _draw_border(draw, w, h, pad, style, dpi=203):
 
     if style == "thin":
         draw.rounded_rectangle([p, p, w-p-1, h-p-1], radius=r,
-                                outline="black", width=2)
+                                outline="black", width=_lw(2, dpi))
 
     elif style == "thick":
         draw.rounded_rectangle([p, p, w-p-1, h-p-1], radius=r,
-                                outline="black", width=5)
+                                outline="black", width=_lw(5, dpi))
 
     elif style == "double":
         draw.rounded_rectangle([p,   p,   w-p-1, h-p-1], radius=r,
-                                outline="black", width=2)
+                                outline="black", width=_lw(2, dpi))
         draw.rounded_rectangle([p+5, p+5, w-p-6, h-p-6], radius=max(2, r-5),
-                                outline="black", width=1)
+                                outline="black", width=_lw(1, dpi))
 
     elif style == "dashed":
         # Solid rounded arcs at each corner; dashes along the straight edges
-        dash, gap, lw = 12, 6, 2
+        dash, gap, lw = 12, 6, _lw(2, dpi)
         draw.arc([p,         p,         p+2*r,     p+2*r    ], 180, 270, fill="black", width=lw)
         draw.arc([w-p-2*r-1, p,         w-p-1,     p+2*r    ], 270, 360, fill="black", width=lw)
         draw.arc([p,         h-p-2*r-1, p+2*r,     h-p-1    ],  90, 180, fill="black", width=lw)
@@ -2516,7 +2528,7 @@ def _draw_border(draw, w, h, pad, style, dpi=203):
         # Scalloped edge — a run of equal semicircle arcs bulging inward on each
         # side. Only full scallops are drawn (centred per edge) so the last one is
         # never squished; any leftover splits evenly into the end margins.
-        lw = 2
+        lw = _lw(2, dpi)
         span_x = (w - 1) - 2 * p
         span_y = (h - 1) - 2 * p
         d  = max(12, round(min(w, h) / 12))
@@ -2535,7 +2547,7 @@ def _draw_border(draw, w, h, pad, style, dpi=203):
 
     elif style == "ticket":
         # Solid thin frame plus an inner ring of perforation holes (raffle ticket)
-        draw.rounded_rectangle([p, p, w-p-1, h-p-1], radius=r, outline="black", width=2)
+        draw.rounded_rectangle([p, p, w-p-1, h-p-1], radius=r, outline="black", width=_lw(2, dpi))
         gap   = max(6, round(min(w, h) * 0.05))
         dot_r = max(1, round(dpi / 120))
         step  = max(dot_r * 5, 12)
@@ -2554,9 +2566,9 @@ def _draw_border(draw, w, h, pad, style, dpi=203):
         # edge reading as a shadow cast into the recess
         gap = max(5, round(dpi / 40))
         ri  = max(2, r - gap)
-        draw.rounded_rectangle([p, p, w-p-1, h-p-1], radius=r, outline="black", width=2)
+        draw.rounded_rectangle([p, p, w-p-1, h-p-1], radius=r, outline="black", width=_lw(2, dpi))
         draw.rounded_rectangle([p+gap, p+gap, w-p-gap-1, h-p-gap-1], radius=ri,
-                                outline="black", width=2)
+                                outline="black", width=_lw(2, dpi))
         sw = max(2, round(dpi / 90))
         draw.line([(p+gap+ri, p+gap+1), (w-p-gap-1-ri, p+gap+1)], fill="black", width=sw)
         draw.line([(p+gap+1, p+gap+ri), (p+gap+1, h-p-gap-1-ri)], fill="black", width=sw)
@@ -2565,7 +2577,7 @@ def _draw_border(draw, w, h, pad, style, dpi=203):
         # More pronounced decorative radius — intentionally larger than 3 mm
         big_r = min(w, h) // 6
         draw.rounded_rectangle([p, p, w-p-1, h-p-1], radius=big_r,
-                                outline="black", width=2)
+                                outline="black", width=_lw(2, dpi))
 
     elif style == "corners":
         # Tick marks on the straight edges, clear of the curved corners
