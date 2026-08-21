@@ -615,6 +615,28 @@ def print_label(
                 render_w = calc_w
                 render_h = calc_h
         else:
+            # Some queues ignore the DEVMODE page size and report a fixed stock
+            # regardless — a duplicate queue pinned to 2x1, say.  GDI then draws
+            # only the part of the design that lands on that page and silently
+            # bins the rest, which is an expensive way to discover the problem.
+            # Refuse instead of feeding a label through to print a slice of it.
+            dc_phys_w = hDC.GetDeviceCaps(110)   # PHYSICALWIDTH  (device px)
+            dc_phys_h = hDC.GetDeviceCaps(111)   # PHYSICALHEIGHT (device px)
+            if dc_phys_w > 0 and dc_phys_h > 0 and calc_w > 0 and calc_h > 0:
+                lost = max(1.0 - min(1.0, dc_phys_w / calc_w),
+                           1.0 - min(1.0, dc_phys_h / calc_h))
+                # A few pixels of disagreement is normal — drivers round their
+                # page dimensions.  Only a gross mismatch means the size was
+                # ignored outright.
+                if lost > 0.10:
+                    raise RuntimeError(
+                        f"'{printer_name}' reports a {dc_phys_w}x{dc_phys_h} page, but the "
+                        f"'{size_key}' label needs {calc_w}x{calc_h} — about {round(lost * 100)}% "
+                        f"of the design would be cut off. This queue is ignoring the requested "
+                        f"paper size. Pick a printer queue set up for this stock, or set the "
+                        f"paper size in its Windows printing preferences."
+                    )
+
             img = render_label(text, width_in, height_in, dpi,
                                font_style, border, icons, text_case,
                                style_preset, font_weight, qr_show_text,
