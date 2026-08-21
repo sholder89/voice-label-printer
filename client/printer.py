@@ -42,12 +42,14 @@ LABEL_SIZES = {
     # gap sensor actually agree with.
     "50mm-round": (1.969, 1.969),   # 50 mm page
     "53mm-round": (2.087, 2.087),   # 53 mm page (the square the 50 mm cut sits in)
+    "55mm-round": (2.185, 2.185),   # 55.5 mm page
 }
 
 # Sizes whose key doesn't read as plain inches in the size dropdown.
 SIZE_LABELS = {
     "50mm-round": "50 mm Round (50 mm page)",
     "53mm-round": "50 mm Round (53 mm page)",
+    "55mm-round": "50 mm Round (55.5 mm page)",
 }
 
 # Brother QL prints on continuous tape that feeds skinny-side-first.  The
@@ -70,12 +72,13 @@ def is_brother_tape(size_key: str) -> bool:
 # shape comes from the die cut in the stock — so the only thing that changes is
 # the layout: everything has to stay inside the inscribed circle or the corners
 # get sliced off at the edge.
-_ROUND_SIZES = {"50mm-round", "53mm-round"}
+_ROUND_SIZES = {"50mm-round", "53mm-round", "55mm-round"}
 
 # Diameter of the die cut, which is smaller than the label it sits in — 50 mm
 # round labels come on 53 mm squares.  The page must be the full square so the
 # printer feeds one label, but nothing may stray outside the circle.
-_ROUND_DIAMETER_IN = {"50mm-round": 1.969, "53mm-round": 1.969}
+_ROUND_DIAMETER_IN = {"50mm-round": 1.969, "53mm-round": 1.969,
+                      "55mm-round": 1.969}
 
 
 def is_round(size_key: str) -> bool:
@@ -381,6 +384,48 @@ def list_printers() -> list[str]:
     return [p[2] for p in printers]
 
 
+def _best_round_box(text, w_px, h_px, dia_px, pad, icon,
+                    font_style, fill, font_weight):
+    """Circle-safe box that lets this text render largest.
+
+    One fixed inscribed rectangle always wastes the circle — a short caption
+    wants a wide shallow box, several lines want a squarer one, and the
+    inscribed square is the worst of both.  Try a range of shapes and keep
+    whichever fits the text at the biggest font size.  With an icon above the
+    text the box has to stay reasonably tall, so only the taller shapes are
+    considered.
+
+    Returns (icon_size, text_x0, text_y0, text_w, text_h, box_y, box_h).
+    """
+    fracs = (0.50, 0.56, 0.62, 0.68, 0.74) if icon else             (0.26, 0.32, 0.38, 0.44, 0.52, 0.60, 0.68)
+    best = None
+    for frac in fracs:
+        bx, by, bw, bh = _circle_safe_rect(w_px, h_px, frac, dia_px)
+        if icon:
+            icon_size = int(min(bw * 0.45, bh * 0.45))
+            ty0 = by + icon_size + max(2, pad // 2)
+            tw, th = bw, by + bh - ty0
+        else:
+            icon_size, ty0 = 0, by
+            tw, th = bw, bh
+        if tw < 8 or th < 8:
+            continue
+        try:
+            _, font = _fit_text(text, tw, th, font_style, fill, font_weight)
+        except Exception:
+            continue
+        score = getattr(font, "size", 0)
+        if best is None or score > best[0]:
+            best = (score, icon_size, bx, ty0, tw, th, by, bh)
+    if best is None:
+        bx, by, bw, bh = _circle_safe_rect(w_px, h_px, 0.62 if icon else 0.42, dia_px)
+        icon_size = int(min(bw * 0.45, bh * 0.45)) if icon else 0
+        ty0 = by + icon_size + max(2, pad // 2) if icon else by
+        return icon_size, bx, ty0, bw, max(1, by + bh - ty0), by, bh
+    _, icon_size, bx, ty0, tw, th, by, bh = best
+    return icon_size, bx, ty0, tw, th, by, bh
+
+
 def render_label(
     text: str,
     width_in: float,
@@ -468,16 +513,18 @@ def render_label(
     # Apply case transformation to the display text only
     text = _apply_case(text, text_case)
 
+    # Needed before layout: choosing the round text box depends on how large the
+    # text can actually be set.
+    fill = _FILL.get(font_style, 0.85)
+
     if icon:
         if round_label:
             # Round label: icon above the text with the pair centred, measured
             # against the circle-safe box so neither runs into the curved edge.
-            _bx, _by, _bw, _bh = _circle_safe_rect(w_px, h_px, 0.62, dia_px)
-            icon_size = int(min(_bw * 0.45, _bh * 0.45))
-            icon_x    = (w_px - icon_size) // 2
-            icon_y    = _by
-            text_x0   = _bx
-            text_y0   = icon_y + icon_size + max(2, pad // 2)
+            icon_size, text_x0, text_y0, _tw, _th, _by, _bh = _best_round_box(
+                text, w_px, h_px, dia_px, pad, True, font_style, fill, font_weight)
+            icon_x  = (w_px - icon_size) // 2
+            icon_y  = _by
         elif h_px > w_px:
             # Portrait label (e.g. 4x6): stack icon on top, text below — sizing
             # the icon to the WIDTH so it doesn't balloon on a tall label.
@@ -494,22 +541,20 @@ def render_label(
             text_x0   = icon_x + icon_size + pad
             text_y0   = pad
     elif round_label:
-        # Text only — a shorter box buys more width out of the same circle.
-        _bx, _by, _bw, _bh = _circle_safe_rect(w_px, h_px, 0.42, dia_px)
-        text_x0 = _bx
-        text_y0 = _by
+        # Text only — let the box shape follow the text rather than fixing it.
+        _, text_x0, text_y0, _tw, _th, _by, _bh = _best_round_box(
+            text, w_px, h_px, dia_px, pad, False, font_style, fill, font_weight)
     else:
         text_x0 = pad
         text_y0 = pad
 
     if round_label:
-        text_area_w = _bw
-        text_area_h = max(1, _by + _bh - text_y0)
+        text_area_w = _tw
+        text_area_h = _th
     else:
         text_area_w = w_px - text_x0 - pad
         text_area_h = h_px - text_y0 - pad
 
-    fill    = _FILL.get(font_style, 0.85)
     align   = text_align if text_align in ("left", "center", "right") else "center"
 
     if _has_inline_emoji(text):
@@ -2336,27 +2381,34 @@ def _overlay_image_border(img: Image.Image, name: str, w_px: int, h_px: int,
 def _draw_round_border(draw, w, h, pad, style, dia_px=0):
     """Circular equivalents of the rectangular border styles, for round stock.
 
+    The ring hugs the die cut rather than sitting inside a rectangular `pad` —
+    on round stock the cut IS the edge, so a border that respects a square
+    margin reads as floating well short of it.  Only the stroke width plus a
+    hair for cutting tolerance is held back.
+
     Styles with no meaningful circular form (ticket, inset, corners, wave, and
-    the image borders) fall back to a plain ring rather than being dropped, so
-    picking one still gives you a visible border.
+    the image borders) fall back to a plain ring rather than being dropped.
     """
     if style == "none":
         return
-    p = max(2, pad // 2)
-    if dia_px:
-        # Ring sits just inside the die cut, not the label edge.
-        r = dia_px / 2.0 - p
-        box = [w / 2.0 - r, h / 2.0 - r, w / 2.0 + r, h / 2.0 + r]
-    else:
-        box = [p, p, w - p - 1, h - p - 1]
+
+    d      = dia_px or min(w, h)
+    cx, cy = w / 2.0, h / 2.0
+    lw     = 5 if style == "thick" else 2
+    # ~0.8% of the diameter, so the ring survives normal die registration slop
+    # without visibly standing off the edge.
+    margin = max(2, round(d * 0.008))
+    r      = d / 2.0 - lw / 2.0 - margin
+    box    = [cx - r, cy - r, cx + r, cy + r]
 
     if style == "thick":
-        draw.ellipse(box, outline="black", width=5)
+        draw.ellipse(box, outline="black", width=lw)
 
     elif style == "double":
         draw.ellipse(box, outline="black", width=2)
-        draw.ellipse([box[0] + 6, box[1] + 6, box[2] - 6, box[3] - 6],
-                     outline="black", width=1)
+        inner = max(4, round(d * 0.022))
+        draw.ellipse([box[0] + inner, box[1] + inner,
+                      box[2] - inner, box[3] - inner], outline="black", width=1)
 
     elif style in ("dashed", "dotted"):
         # Step round the circumference drawing alternate arcs.  Dots are short
@@ -2364,12 +2416,11 @@ def _draw_round_border(draw, w, h, pad, style, dia_px=0):
         seg, gap = (14, 8) if style == "dashed" else (3, 7)
         ang = 0
         while ang < 360:
-            draw.arc(box, ang, min(360, ang + seg), fill="black", width=2)
+            draw.arc(box, ang, min(360, ang + seg), fill="black", width=lw)
             ang += seg + gap
 
     else:
-        draw.ellipse(box, outline="black", width=2)
-
+        draw.ellipse(box, outline="black", width=lw)
 
 def _draw_border(draw, w, h, pad, style, dpi=203):
     if style == "none":
