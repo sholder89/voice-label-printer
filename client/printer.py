@@ -168,6 +168,23 @@ def set_emoji_outline(px: int):
 def _emoji_outline() -> int:
     return getattr(_emoji_outline_tls, "value", 0)
 
+
+# Per-printer print offset, in millimetres. Thermal printers position the media
+# by its guides, so a roll that sits a fraction off-centre under a fixed head
+# prints every label the same distance off. Nothing in the bitmap can correct
+# that, so nudge where it lands on the page instead.
+_print_offset_tls = threading.local()
+
+
+def set_print_offset(x_mm: float, y_mm: float):
+    """Shift printed output. Positive x moves right, positive y moves down."""
+    _print_offset_tls.value = (max(-10.0, min(10.0, float(x_mm))),
+                               max(-10.0, min(10.0, float(y_mm))))
+
+
+def _print_offset() -> tuple:
+    return getattr(_print_offset_tls, "value", (0.0, 0.0))
+
 # ── Style constants ───────────────────────────────────────────────────────────
 
 FONT_STYLES   = ["standard", "enhanced", "impact", "serif", "narrow", "mono",
@@ -742,8 +759,12 @@ def print_label(
         hDC.StartDoc("Label")
         hDC.StartPage()
         bmp = ImageWin.Dib(img)
+        nudge_x_mm, nudge_y_mm = _print_offset()
+        nudge_x = round(nudge_x_mm / 25.4 * (dpi_x or dpi))
+        nudge_y = round(nudge_y_mm / 25.4 * (dpi_y or dpi))
         bmp.draw(hDC.GetHandleOutput(),
-                 (-off_x, -off_y, render_w - off_x, render_h - off_y))
+                 (-off_x + nudge_x,            -off_y + nudge_y,
+                  render_w - off_x + nudge_x,  render_h - off_y + nudge_y))
         hDC.EndPage()
         hDC.EndDoc()
     finally:

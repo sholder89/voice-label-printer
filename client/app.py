@@ -15,7 +15,8 @@ from PIL import Image, ImageDraw
 from flask import Flask, render_template, request, jsonify, send_file
 from printer import (
     print_label, list_printers, render_label, render_dimensions, is_round, round_diameter_in,
-    set_custom_emojis, set_custom_sizes, set_emoji_darkness, set_emoji_outline, _BUILTIN_SIZE_KEYS,
+    set_custom_emojis, set_custom_sizes, set_emoji_darkness, set_emoji_outline,
+    set_print_offset, _BUILTIN_SIZE_KEYS,
     LABEL_SIZES, SIZE_LABELS, HIDDEN_SIZES, FONT_STYLES, FONT_WEIGHTS, BORDER_STYLES, TEXT_CASES,
     STYLE_PRESETS, STYLE_PRESET_GROUPS, WIN32_AVAILABLE,
     _IMAGE_BORDER_ENTRIES,
@@ -165,6 +166,15 @@ def _save_history():
 _emoji_darkness = {}          # {printer_name: pct (0–100)}, persisted in config.json
 _emoji_darkness_default = 0   # legacy global fallback for printers with no value set
 _emoji_outline_px = 0         # global outline thickness (0 = off, 1–5 px)
+# {printer_name: {"x": mm, "y": mm}} — corrects a printer that lands every label
+# the same distance off, which the guides can't always fix.
+_print_offsets = {}
+
+
+def _offset_for(printer):
+    """(x_mm, y_mm) nudge for a printer; (0, 0) when none is configured."""
+    o = _print_offsets.get(printer or "") or {}
+    return (float(o.get("x", 0.0)), float(o.get("y", 0.0)))
 
 
 def _darkness_for(printer):
@@ -176,7 +186,7 @@ def _darkness_for(printer):
 def _load_config():
     """Load runtime overrides (set via the Advanced page). Saved values win
     over .env defaults; missing keys keep their current value."""
-    global _emoji_darkness, _emoji_darkness_default, _emoji_outline_px, _TG_TOKEN, _TG_CHAT, _TG_ENABLED
+    global _emoji_darkness, _emoji_darkness_default, _emoji_outline_px, _print_offsets, _TG_TOKEN, _TG_CHAT, _TG_ENABLED
     try:
         with open(_CONFIG_PATH) as f:
             cfg = json.load(f)
@@ -191,6 +201,13 @@ def _load_config():
             # Legacy single global value (pre per-printer) — keep it as the
             # fallback for every printer until each one is configured.
             _emoji_darkness_default = max(0, min(100, int(ed)))
+        po = cfg.get("print_offsets")
+        if isinstance(po, dict):
+            _print_offsets = {
+                str(k): {"x": max(-10.0, min(10.0, float(v.get("x", 0)))),
+                         "y": max(-10.0, min(10.0, float(v.get("y", 0))))}
+                for k, v in po.items() if isinstance(v, dict)
+            }
         if "emoji_darkness_default" in cfg:
             _emoji_darkness_default = max(0, min(100, int(cfg["emoji_darkness_default"])))
         if "emoji_outline_px" in cfg:
@@ -212,6 +229,7 @@ def _save_config():
             json.dump({
                 "relay_url":      runtime["relay_url"],
                 "token":          runtime["token"],
+                "print_offsets":          _print_offsets,
                 "emoji_darkness":         _emoji_darkness,
                 "emoji_darkness_default": _emoji_darkness_default,
                 "emoji_outline_px":       _emoji_outline_px,
@@ -670,6 +688,39 @@ def emoji_outline_preview():
     return send_file(buf, mimetype="image/png", max_age=0)
 
 
+@app.route("/config/print-offset", methods=["GET"])
+def get_print_offset():
+    printer = request.args.get("printer") or state["printer"]
+    x, y = _offset_for(printer)
+    return jsonify({"printer": printer, "x": x, "y": y,
+                    "printers": _visible_printers()})
+
+
+@app.route("/config/print-offset", methods=["POST"])
+def post_print_offset():
+    """Nudge where a printer lays the label down, in millimetres.
+
+    Per-printer: it compensates for how one machine positions the media, so it
+    must not follow the design to a different printer.
+    """
+    data    = request.get_json(silent=True) or {}
+    printer = data.get("printer") or state["printer"]
+    if not printer:
+        return jsonify({"error": "no printer"}), 400
+    try:
+        x = max(-10.0, min(10.0, round(float(data.get("x", 0)), 2)))
+        y = max(-10.0, min(10.0, round(float(data.get("y", 0)), 2)))
+    except (TypeError, ValueError):
+        return jsonify({"error": "x and y must be numbers"}), 400
+
+    if x == 0 and y == 0:
+        _print_offsets.pop(printer, None)
+    else:
+        _print_offsets[printer] = {"x": x, "y": y}
+    _save_config()
+    return jsonify({"ok": True, "printer": printer, "x": x, "y": y})
+
+
 @app.route("/config/emoji-darkness", methods=["GET"])
 def get_emoji_darkness():
     # Defaults to the printer selected on the main page, but the Advanced page
@@ -827,6 +878,7 @@ def manual_print():
     if not printer:
         return jsonify({"error": "no printer selected"}), 400
     set_emoji_darkness(_darkness_for(printer))
+    set_print_offset(*_offset_for(printer))
     set_emoji_outline(_emoji_outline_px)
     try:
         for i in range(copies):
@@ -1104,6 +1156,7 @@ def poll_loop():
                     opts = _job_style(job.get("style"))
                     caption = (job.get("caption") or "").strip() or None
                     set_emoji_darkness(_darkness_for(printer))
+                    set_print_offset(*_offset_for(printer))
                     set_emoji_outline(_emoji_outline_px)
                     try:
                         print_label(
