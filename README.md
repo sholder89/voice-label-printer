@@ -128,7 +128,7 @@ Click the **🔧** icon in the header — visible **only on the PC running the c
 | **Custom Emojis** | Map your own keywords to any emoji (searchable picker of all 1,870), with a per-row toggle to enable/disable each mapping without deleting it |
 | **Custom Label Sizes** | Define named sizes in inches, mm, or cm — they appear in the Print Settings size list |
 | **Appearance** | Light / Dark / Follow System theme selector |
-| **Print Alignment** | A **per-printer** horizontal/vertical nudge in millimetres, for a printer that lays every label down slightly off. Thermal printers position the roll by its guides, so a roll sitting a fraction off under a fixed head prints every label the same distance out |
+| **Print Alignment** | A horizontal/vertical nudge in millimetres, **per printer and per label size**, for a printer that lays every label down slightly off. Thermal printers position the roll by its guides, so a roll sitting a fraction off under a fixed head prints every label the same distance out — and each stock sits differently, so the correction is per size too |
 | **Data** | Export all settings as a zip backup; import/restore a backup zip; export print history as JSON or CSV |
 
 ---

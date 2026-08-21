@@ -376,9 +376,11 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
       <section id="sec-offset" class="settings-section">
         <div class="card">
           <h2>Print Alignment</h2>
-          <p class="hint">If a printer lays every label down slightly off — shifted left, or high on the label — nudge it here. Thermal printers position the roll by its guides, so a roll sitting a fraction off under a fixed head prints every label the same distance out, and nothing in the design can correct it. <b>This is a per-printer setting</b>, since it describes the machine rather than the label.</p>
+          <p class="hint">If a printer lays every label down slightly off — shifted left, or high on the label — nudge it here. Thermal printers position the roll by its guides, so a roll sitting a fraction off under a fixed head prints every label the same distance out, and nothing in the design can correct it. <b>Set per printer and per label size</b>: each roll sits differently in the guides, so a correction measured on one stock is wrong for the next.</p>
           <label for="offset-printer">Printer</label>
           <select id="offset-printer" onchange="onOffsetPrinterChange()"></select>
+          <label for="offset-size">Label size</label>
+          <select id="offset-size" onchange="onOffsetPrinterChange()"></select>
           <div class="offset-row">
             <label for="offset-x">Horizontal (mm)</label>
             <input type="number" id="offset-x" step="0.1" min="-10" max="10" value="0" oninput="saveOffset()">
@@ -389,7 +391,7 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
             <input type="number" id="offset-y" step="0.1" min="-10" max="10" value="0" oninput="saveOffset()">
             <span class="hint-inline">positive moves down</span>
           </div>
-          <p class="hint">Print one label, measure how far off it is, and enter that. A label sitting 1&nbsp;mm too far left needs a horizontal value of <b>1</b>.</p>
+          <p class="hint">Print one label, measure how far off it is, and enter that. A label sitting 1&nbsp;mm too far left needs a horizontal value of <b>1</b>. Values apply only to the printer and size selected above; everything else stays where it is.</p>
           <div class="note" id="offset-note"></div>
         </div>
       </section>
@@ -696,14 +698,24 @@ function loadOffset() {
         sel.appendChild(o);
       });
     }
+    const ssel = document.getElementById('offset-size');
+    ssel.innerHTML = '';
+    (d.sizes || []).forEach(([key, label]) => {
+      const o = document.createElement('option');
+      o.value = key; o.textContent = label;
+      if (key === d.size) o.selected = true;
+      ssel.appendChild(o);
+    });
     applyOffsetValues(d);
   }).catch(() => {});
 }
 
 function onOffsetPrinterChange() {
   const p = document.getElementById('offset-printer').value;
+  const z = document.getElementById('offset-size').value;
   offsetNote('', '');
-  fetch('/config/print-offset?printer=' + encodeURIComponent(p))
+  fetch('/config/print-offset?printer=' + encodeURIComponent(p) +
+        '&size=' + encodeURIComponent(z))
     .then(r => r.json()).then(d => { if (!d.error) applyOffsetValues(d); })
     .catch(() => {});
 }
@@ -714,6 +726,7 @@ function saveOffset() {
   clearTimeout(_offsetTimer);
   _offsetTimer = setTimeout(() => {
     const p = document.getElementById('offset-printer').value;
+    const z = document.getElementById('offset-size').value;
     if (!p) { offsetNote('No printer selected.', 'err'); return; }
     const x = parseFloat(document.getElementById('offset-x').value);
     const y = parseFloat(document.getElementById('offset-y').value);
@@ -721,11 +734,11 @@ function saveOffset() {
     fetch('/config/print-offset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ printer: p, x: x, y: y }),
+      body: JSON.stringify({ printer: p, size: z, x: x, y: y }),
     }).then(r => r.json()).then(d => {
       if (d.error) { offsetNote(d.error, 'err'); return; }
-      offsetNote((d.x || d.y) ? `Saved — shifting ${d.x} mm across, ${d.y} mm down.`
-                              : 'Saved — no offset applied.', 'ok');
+      offsetNote((d.x || d.y) ? `Saved — ${d.size}: ${d.x} mm across, ${d.y} mm down.`
+                              : `Saved — no offset for ${d.size}.`, 'ok');
     }).catch(() => offsetNote('Could not save.', 'err'));
   }, 500);
 }

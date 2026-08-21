@@ -166,15 +166,31 @@ def _save_history():
 _emoji_darkness = {}          # {printer_name: pct (0–100)}, persisted in config.json
 _emoji_darkness_default = 0   # legacy global fallback for printers with no value set
 _emoji_outline_px = 0         # global outline thickness (0 = off, 1–5 px)
-# {printer_name: {"x": mm, "y": mm}} — corrects a printer that lands every label
-# the same distance off, which the guides can't always fix.
+# {printer_name: {size_key: {"x": mm, "y": mm}}} — corrects a printer that lands
+# every label the same distance off. Keyed by size as well as printer: each roll
+# sits differently in the guides, so a correction for one stock is wrong for the
+# next.
 _print_offsets = {}
 
 
-def _offset_for(printer):
-    """(x_mm, y_mm) nudge for a printer; (0, 0) when none is configured."""
-    o = _print_offsets.get(printer or "") or {}
+def _offset_for(printer, size=None):
+    """(x_mm, y_mm) nudge for this printer and label size; (0, 0) if unset."""
+    o = ((_print_offsets.get(printer or "") or {}).get(size or "") or {})
     return (float(o.get("x", 0.0)), float(o.get("y", 0.0)))
+
+
+def _legacy_offset_size():
+    """Size a pre-per-size offset was calibrated against.
+
+    Offsets used to be per-printer only. Whichever size was selected when one
+    was saved is still in settings.json, and that's the stock it was measured
+    on — read it from the file rather than `state`, which isn't loaded yet.
+    """
+    try:
+        with open(_SETTINGS_PATH) as f:
+            return json.load(f).get("size") or state["size"]
+    except Exception:
+        return state["size"]
 
 
 def _darkness_for(printer):
@@ -203,11 +219,23 @@ def _load_config():
             _emoji_darkness_default = max(0, min(100, int(ed)))
         po = cfg.get("print_offsets")
         if isinstance(po, dict):
-            _print_offsets = {
-                str(k): {"x": max(-10.0, min(10.0, float(v.get("x", 0)))),
-                         "y": max(-10.0, min(10.0, float(v.get("y", 0))))}
-                for k, v in po.items() if isinstance(v, dict)
-            }
+            clamp = lambda v: max(-10.0, min(10.0, float(v)))
+            _print_offsets = {}
+            for printer, val in po.items():
+                if not isinstance(val, dict):
+                    continue
+                if "x" in val or "y" in val:
+                    # Legacy per-printer entry — file it under the size it was
+                    # actually measured on rather than letting it apply to all.
+                    _print_offsets[str(printer)] = {
+                        _legacy_offset_size(): {"x": clamp(val.get("x", 0)),
+                                                "y": clamp(val.get("y", 0))}
+                    }
+                else:
+                    _print_offsets[str(printer)] = {
+                        str(sz): {"x": clamp(o.get("x", 0)), "y": clamp(o.get("y", 0))}
+                        for sz, o in val.items() if isinstance(o, dict)
+                    }
         if "emoji_darkness_default" in cfg:
             _emoji_darkness_default = max(0, min(100, int(cfg["emoji_darkness_default"])))
         if "emoji_outline_px" in cfg:
@@ -691,9 +719,11 @@ def emoji_outline_preview():
 @app.route("/config/print-offset", methods=["GET"])
 def get_print_offset():
     printer = request.args.get("printer") or state["printer"]
-    x, y = _offset_for(printer)
-    return jsonify({"printer": printer, "x": x, "y": y,
-                    "printers": _visible_printers()})
+    size    = request.args.get("size") or state["size"]
+    x, y = _offset_for(printer, size)
+    return jsonify({"printer": printer, "size": size, "x": x, "y": y,
+                    "printers": _visible_printers(),
+                    "sizes": _size_options()})
 
 
 @app.route("/config/print-offset", methods=["POST"])
@@ -705,20 +735,26 @@ def post_print_offset():
     """
     data    = request.get_json(silent=True) or {}
     printer = data.get("printer") or state["printer"]
+    size    = data.get("size") or state["size"]
     if not printer:
         return jsonify({"error": "no printer"}), 400
+    if size not in LABEL_SIZES:
+        return jsonify({"error": f"unknown size '{size}'"}), 400
     try:
         x = max(-10.0, min(10.0, round(float(data.get("x", 0)), 2)))
         y = max(-10.0, min(10.0, round(float(data.get("y", 0)), 2)))
     except (TypeError, ValueError):
         return jsonify({"error": "x and y must be numbers"}), 400
 
+    per_size = _print_offsets.setdefault(printer, {})
     if x == 0 and y == 0:
-        _print_offsets.pop(printer, None)
+        per_size.pop(size, None)
+        if not per_size:
+            _print_offsets.pop(printer, None)
     else:
-        _print_offsets[printer] = {"x": x, "y": y}
+        per_size[size] = {"x": x, "y": y}
     _save_config()
-    return jsonify({"ok": True, "printer": printer, "x": x, "y": y})
+    return jsonify({"ok": True, "printer": printer, "size": size, "x": x, "y": y})
 
 
 @app.route("/config/emoji-darkness", methods=["GET"])
@@ -878,7 +914,7 @@ def manual_print():
     if not printer:
         return jsonify({"error": "no printer selected"}), 400
     set_emoji_darkness(_darkness_for(printer))
-    set_print_offset(*_offset_for(printer))
+    set_print_offset(*_offset_for(printer, size))
     set_emoji_outline(_emoji_outline_px)
     try:
         for i in range(copies):
@@ -1156,7 +1192,7 @@ def poll_loop():
                     opts = _job_style(job.get("style"))
                     caption = (job.get("caption") or "").strip() or None
                     set_emoji_darkness(_darkness_for(printer))
-                    set_print_offset(*_offset_for(printer))
+                    set_print_offset(*_offset_for(printer, opts["size"]))
                     set_emoji_outline(_emoji_outline_px)
                     try:
                         print_label(
