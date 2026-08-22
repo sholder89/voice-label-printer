@@ -179,20 +179,6 @@ def _offset_for(printer, size=None):
     return (float(o.get("x", 0.0)), float(o.get("y", 0.0)))
 
 
-def _legacy_offset_size():
-    """Size a pre-per-size offset was calibrated against.
-
-    Offsets used to be per-printer only. Whichever size was selected when one
-    was saved is still in settings.json, and that's the stock it was measured
-    on — read it from the file rather than `state`, which isn't loaded yet.
-    """
-    try:
-        with open(_SETTINGS_PATH) as f:
-            return json.load(f).get("size") or state["size"]
-    except Exception:
-        return state["size"]
-
-
 def _darkness_for(printer):
     """Emoji darkness for a given printer, falling back to the legacy global
     value for any printer that hasn't been configured individually yet."""
@@ -225,12 +211,11 @@ def _load_config():
                 if not isinstance(val, dict):
                     continue
                 if "x" in val or "y" in val:
-                    # Legacy per-printer entry — file it under the size it was
-                    # actually measured on rather than letting it apply to all.
-                    _print_offsets[str(printer)] = {
-                        _legacy_offset_size(): {"x": clamp(val.get("x", 0)),
-                                                "y": clamp(val.get("y", 0))}
-                    }
+                    # Legacy entry from when offsets were per-printer only.
+                    # Which stock it was measured on isn't recorded anywhere, and
+                    # filing it under the wrong size actively breaks that size —
+                    # worse than asking for one number again. So drop it.
+                    continue
                 else:
                     _print_offsets[str(printer)] = {
                         str(sz): {"x": clamp(o.get("x", 0)), "y": clamp(o.get("y", 0))}
