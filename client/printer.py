@@ -2669,6 +2669,8 @@ def _form_candidates(printer_name, width_in, height_in, min_w_in=None, min_h_in=
     # printer feed several of them.
     need_w = min_w_in if min_w_in else width_in
     need_h = min_h_in if min_h_in else height_in
+    exact = list(out)
+
     covers = sorted((abs(fw - width_in) + abs(fh - height_in), idx)
                     for idx, fw, fh in forms
                     if fw + 0.02 >= need_w and fh + 0.02 >= need_h)
@@ -2676,7 +2678,8 @@ def _form_candidates(printer_name, width_in, height_in, min_w_in=None, min_h_in=
         if idx not in seen:
             out.append(idx); seen.add(idx)
             break
-    return out
+    # (forms matching the label, forms merely large enough)
+    return exact, [i for i in out if i not in exact]
 
 
 def _devmode_for(printer_name, width_in, height_in, form_idx):
@@ -2745,8 +2748,14 @@ def _get_devmode_buf(printer_name, width_in, height_in, min_w_in=None, min_h_in=
     """
     try:
         best = None
-        for form_idx in [None] + _form_candidates(printer_name, width_in, height_in,
-                                                  min_w_in, min_h_in):
+        exact, fallback = _form_candidates(printer_name, width_in, height_in,
+                                           min_w_in, min_h_in)
+        # A form matching the label comes first, then a custom size, then a
+        # merely-large-enough form. Drivers position their own named forms the
+        # way the printer expects; a custom page of identical dimensions can
+        # land somewhere subtly different, so only reach for one when the
+        # driver has no form for this stock.
+        for form_idx in exact + [None] + fallback:
             buf = _devmode_for(printer_name, width_in, height_in, form_idx)
             if buf is None:
                 continue
