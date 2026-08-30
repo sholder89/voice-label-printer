@@ -742,6 +742,37 @@ def post_print_offset():
     return jsonify({"ok": True, "printer": printer, "size": size, "x": x, "y": y})
 
 
+@app.route("/config/print-offset/test", methods=["POST"])
+def test_print_offset():
+    """Print one label using the saved offset, so alignment can be checked
+    without leaving this page.
+
+    The label prints the offset that produced it, which matters when you're
+    iterating — otherwise a pile of test labels is unidentifiable.
+    """
+    data    = request.get_json(silent=True) or {}
+    printer = data.get("printer") or state["printer"]
+    size    = data.get("size") or state["size"]
+    if not printer:
+        return jsonify({"error": "no printer selected"}), 400
+    if size not in LABEL_SIZES:
+        return jsonify({"error": f"unknown size '{size}'"}), 400
+
+    x, y = _offset_for(printer, size)
+    set_emoji_darkness(_darkness_for(printer))
+    set_print_offset(x, y)
+    set_emoji_outline(_emoji_outline_px)
+    try:
+        label = "X {:+.1f}\nY {:+.1f}".format(x, y)
+        print_label(label, printer, size_key=size,
+                    border="thin", icons=False, style_preset="none",
+                    text_case="none", text_align="center")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    # Deliberately not recorded in history — these are throwaway.
+    return jsonify({"ok": True, "printer": printer, "size": size, "x": x, "y": y})
+
+
 @app.route("/config/emoji-darkness", methods=["GET"])
 def get_emoji_darkness():
     # Defaults to the printer selected on the main page, but the Advanced page

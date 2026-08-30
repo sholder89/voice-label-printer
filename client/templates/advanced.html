@@ -392,6 +392,7 @@ input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:point
             <span class="hint-inline">positive moves down</span>
           </div>
           <p class="hint">Print one label, measure how far off it is, and enter that. A label sitting 1&nbsp;mm too far left needs a horizontal value of <b>1</b>. Values apply only to the printer and size selected above; everything else stays where it is.</p>
+          <button class="btn" id="offset-test" onclick="testOffsetPrint()">Print test label</button>
           <div class="note" id="offset-note"></div>
         </div>
       </section>
@@ -741,6 +742,35 @@ function saveOffset() {
                               : `Saved — no offset for ${d.size}.`, 'ok');
     }).catch(() => offsetNote('Could not save.', 'err'));
   }, 500);
+}
+
+function testOffsetPrint() {
+  const btn = document.getElementById('offset-test');
+  const p = document.getElementById('offset-printer').value;
+  const z = document.getElementById('offset-size').value;
+  if (!p) { offsetNote('No printer selected.', 'err'); return; }
+  // A pending save is debounced; flush it so the test uses what's on screen.
+  clearTimeout(_offsetTimer);
+  const x = parseFloat(document.getElementById('offset-x').value) || 0;
+  const y = parseFloat(document.getElementById('offset-y').value) || 0;
+  btn.disabled = true;
+  offsetNote('Saving and printing…', '');
+  fetch('/config/print-offset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ printer: p, size: z, x: x, y: y }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) throw new Error(d.error);
+    return fetch('/config/print-offset/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ printer: p, size: z }),
+    }).then(r => r.json());
+  }).then(d => {
+    if (d.error) { offsetNote(d.error, 'err'); return; }
+    offsetNote(`Printed on ${d.printer} at ${d.size} with X ${d.x}, Y ${d.y}.`, 'ok');
+  }).catch(e => offsetNote(e.message || 'Could not print.', 'err'))
+    .finally(() => { btn.disabled = false; });
 }
 
 function loadDarkness() {
