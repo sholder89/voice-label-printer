@@ -762,34 +762,9 @@ def print_label(
         nudge_x_mm, nudge_y_mm = _print_offset()
         nudge_x = round(nudge_x_mm / 25.4 * (dpi_x or dpi))
         nudge_y = round(nudge_y_mm / 25.4 * (dpi_y or dpi))
-
-        if nudge_x or nudge_y:
-            # A nudge slides the design toward one edge, and GDI clips whatever
-            # crosses the page boundary — losing the border on that side. The
-            # page can't grow, so make room by scaling the design down by just
-            # the shifted amount. Uniformly, so a round label stays round, and
-            # only when a nudge is actually set: without one the placement is
-            # left exactly as it was.
-            page_w = hDC.GetDeviceCaps(110) or render_w    # PHYSICALWIDTH
-            page_h = hDC.GetDeviceCaps(111) or render_h    # PHYSICALHEIGHT
-            scale  = min(1.0,
-                         (page_w - abs(nudge_x)) / render_w,
-                         (page_h - abs(nudge_y)) / render_h)
-            draw_w = max(1, round(render_w * scale))
-            draw_h = max(1, round(render_h * scale))
-            # Shrinking leaves a margin at least as big as the nudge. Sit in
-            # the middle of it and lean by the nudge, clamped to the margin so
-            # the design can't be pushed back off the edge it just made room
-            # for.
-            slack_w, slack_h = page_w - draw_w, page_h - draw_h
-            x0 = -off_x + max(0, min(slack_w, slack_w // 2 + nudge_x))
-            y0 = -off_y + max(0, min(slack_h, slack_h // 2 + nudge_y))
-            x1, y1 = x0 + draw_w, y0 + draw_h
-        else:
-            x0, y0 = -off_x, -off_y
-            x1, y1 = render_w + x0, render_h + y0
-
-        bmp.draw(hDC.GetHandleOutput(), (x0, y0, x1, y1))
+        bmp.draw(hDC.GetHandleOutput(),
+                 (-off_x + nudge_x,            -off_y + nudge_y,
+                  render_w - off_x + nudge_x,  render_h - off_y + nudge_y))
         hDC.EndPage()
         hDC.EndDoc()
     finally:
