@@ -1278,6 +1278,58 @@ def _make_tray_image():
     return img
 
 
+# Port the web UI actually bound to. Normally 5000, but Windows hands whole
+# ranges to Hyper-V's dynamic pool and then refuses any bind inside them
+# (WinError 10013) — with nothing listening, so it doesn't look taken. Flask
+# runs in a daemon thread under pythonw, where that exception has nowhere to
+# print, so the tray icon sat there looking healthy while the UI was
+# unreachable. Record what we got, and fall back rather than die silently.
+UI_PORT = 5000
+_PORT_CANDIDATES = (5000, 5001, 5002, 5050, 8000)
+
+
+def _log_startup_error(msg):
+    """Append to a log beside the settings — pythonw has no console."""
+    try:
+        with open(os.path.join(_DATA_DIR, "startup-errors.log"), "a", encoding="utf-8") as fh:
+            fh.write("{}  {}\n".format(datetime.now().isoformat(timespec="seconds"), msg))
+    except Exception:
+        pass
+
+
+def _serve():
+    """Bind the web UI, trying fallback ports if the usual one is unavailable."""
+    global UI_PORT
+    import socket
+    last = None
+    for port in _PORT_CANDIDATES:
+        # Probe first: app.run swallows the reason and the thread just dies.
+        probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            probe.bind(("0.0.0.0", port))
+        except OSError as e:
+            last = e
+            hint = (" — Windows has this port in a reserved range; "
+                    "'netsh interface ipv4 show excludedportrange protocol=tcp' lists them"
+                    if getattr(e, "winerror", None) == 10013 else "")
+            _log_startup_error(f"port {port} unavailable: {e}{hint}")
+            continue
+        finally:
+            probe.close()
+
+        UI_PORT = port
+        if port != _PORT_CANDIDATES[0]:
+            _log_startup_error(f"falling back to port {port}; UI is at http://localhost:{port}")
+        try:
+            app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+        except Exception as e:
+            last = e
+            _log_startup_error(f"web server stopped: {e!r}")
+        return
+
+    _log_startup_error(f"could not bind any of {_PORT_CANDIDATES}: {last!r}")
+
+
 def _run_tray():
     """Run the system tray icon (blocks — must be called from the main thread)."""
     import webbrowser
@@ -1287,7 +1339,7 @@ def _run_tray():
         return  # pystray not available; caller handles fallback
 
     def on_open(icon, item):
-        webbrowser.open("http://localhost:5000")
+        webbrowser.open(f"http://localhost:{UI_PORT}")
 
     def on_restart(icon, item):
         # Find pythonw.exe next to the current interpreter so the new
@@ -1342,22 +1394,17 @@ if __name__ == "__main__":
         import webbrowser
 
         # pystray must own the main thread on Windows, so Flask runs in a thread
-        flask_thread = threading.Thread(
-            target=lambda: app.run(
-                host="0.0.0.0", port=5000, debug=False, use_reloader=False
-            ),
-            daemon=True,
-        )
+        flask_thread = threading.Thread(target=_serve, daemon=True)
         flask_thread.start()
         time.sleep(0.8)  # let Flask bind before opening the browser
         if not os.environ.get("LABEL_PRINTER_RESTART"):
-            webbrowser.open("http://localhost:5000")
+            webbrowser.open(f"http://localhost:{UI_PORT}")
         _run_tray()      # blocks here until the user clicks Quit
 
     except ImportError:
         # pystray not installed — fall back to normal terminal mode
-        print(f"Label Printer UI → http://localhost:5000")
         print(f"Polling {runtime['relay_url']} every {POLL_SECS}s")
         if _TG_TOKEN:
             print(f"Telegram notifications → chat {_TG_CHAT}")
-        app.run(host="0.0.0.0", port=5000, debug=False)
+        print(f"Label Printer UI → http://localhost:{UI_PORT}")
+        _serve()
