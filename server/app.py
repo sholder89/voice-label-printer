@@ -11,10 +11,36 @@ import os
 
 app = Flask(__name__)
 
-TOKEN        = os.environ.get("LABEL_TOKEN", "changeme")
+# Refuse to start rather than fall back to a default. This endpoint is
+# internet-reachable, so a missing LABEL_TOKEN -- a typo in the compose file,
+# an .env that did not load -- would otherwise bring the relay up silently
+# accepting a token that is published in this repository.
+TOKEN = os.environ.get("LABEL_TOKEN")
+if not TOKEN or TOKEN in ("changeme", "change-me-to-something-secret"):
+    raise RuntimeError(
+        "LABEL_TOKEN is unset or still the placeholder. Set it to a strong "
+        "secret in server/.env before starting the relay."
+    )
+
 DB_PATH      = os.environ.get("DB_PATH", os.path.join(os.path.dirname(__file__), "jobs.db"))
-MAX_PENDING  = int(os.environ.get("MAX_PENDING_JOBS", "20"))
-MAX_TEXT_LEN = int(os.environ.get("MAX_TEXT_LEN", "200"))
+
+
+def _int_env(name, default):
+    """Read an int setting, tolerating a trailing comment.
+
+    Compose's env_file parser keeps everything after the "=", so a value
+    written as `20  # queue depth` arrives with the comment attached and a
+    bare int() would raise at import — taking the relay down over a note.
+    """
+    raw = os.environ.get(name, default)
+    try:
+        return int(str(raw).split("#", 1)[0].strip())
+    except ValueError:
+        raise RuntimeError(f"{name} must be an integer, got {raw!r}") from None
+
+
+MAX_PENDING  = _int_env("MAX_PENDING_JOBS", "20")
+MAX_TEXT_LEN = _int_env("MAX_TEXT_LEN", "200")
 
 # Allowlist of settings the relay will accept, shared by /settings (which
 # changes them globally) and /webhook (which can override them for one job).

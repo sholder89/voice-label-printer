@@ -8,8 +8,9 @@ server/.env
 # client env — also holds LABEL_TOKEN
 client/.env
 
-# ── Claude Code local settings ────────────────────────────────────────────────
+# ── AI assistant local settings ───────────────────────────────────────────────
 .claude/
+.codex/
 
 # ── Runtime data (stored in %APPDATA%\LabelPrinter, not here) ─────────────────
 client/settings.json
