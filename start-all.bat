@@ -20,4 +20,5 @@ call "%~dp0run-all.bat"
 echo.
 echo Server setup page : http://localhost:5001/
 echo Client web UI     : http://localhost:5000/
+echo MCP endpoint      : http://localhost:5002/mcp
 echo Both run in the system tray. Close this window any time.

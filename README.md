@@ -229,6 +229,85 @@ clients ignore the field, so nothing breaks in between.
 
 ---
 
+## MCP Server (AI assistants)
+
+The Windows client serves an [MCP](https://modelcontextprotocol.io) endpoint so
+AI assistants on your LAN (Claude Code, Claude Desktop, LM Studio and others)
+can preview and print labels:
+
+```
+http://<windows-pc>:5002/mcp
+```
+
+It runs alongside the web UI on its own port, using Streamable HTTP. It's
+stateless and answers in plain JSON. The tools go through the same HTTP API as
+the web UI, so a label printed by an assistant lands in Print History and sends
+the usual Telegram notification. The relay server has no MCP endpoint.
+
+### Tools
+
+| Tool | Kind | Purpose |
+|---|---|---|
+| `label_status` | read | Current printer, size and style settings, saved default style, relay polling |
+| `label_list_printers` | read | Windows printers, with nicknames and which one is current |
+| `label_list_sizes` | read | Label size keys and dimensions in inches, built-in and custom |
+| `label_list_style_presets` | read | Style presets, what each overrides, and how to shape its text |
+| `label_preview` | read | Render a label to PNG without printing |
+| `label_history` | read | Recent prints, newest first |
+| `label_list_addresses` | read | Saved addresses for the Address Label preset |
+| `label_print` | write | Print a label (up to 5 copies). Doesn't change saved settings |
+| `label_save_address` | write | Save an address for the Address Label preset |
+
+Settings pages, deletes, backups and test prints are deliberately not exposed.
+Options left out of a preview or print fall back to the current settings, the
+same as the web UI.
+
+### Settings
+
+| Variable | Default | Description |
+|---|---|---|
+| `MCP_ENABLED` | `true` | `false` turns the endpoint off |
+| `MCP_PORT` | `5002` | Port for `/mcp`. The web UI never falls back onto it |
+| `MCP_TOKEN` | *(empty)* | If set, requests need `Authorization: Bearer <token>`. Empty means open on the LAN |
+| `MCP_ALLOWED_ORIGINS` | *(empty)* | Comma-separated browser origins allowed to call `/mcp` |
+
+A request carrying an `Origin` header that isn't in `MCP_ALLOWED_ORIGINS` gets
+`403`. MCP clients don't send `Origin`, but browsers do, so this stops a web
+page from printing through a visitor's browser. Requests addressed to a
+hostname other than this PC's name, IP or `localhost` get `421`, which blocks
+DNS rebinding. To reach `/mcp` from another device, run
+`setup-windows.ps1 -Firewall`. It opens TCP 5002 on the Private profile.
+
+If the MCP SDK isn't installed yet (`run-all.bat` skips installs), the web UI
+still starts. The reason goes to `startup-errors.log` in the data folder, and
+`start-all.bat` installs it.
+
+### Connecting clients
+
+- **Claude Code:**
+  `claude mcp add --transport http --scope user voice-label-printer http://<windows-pc>:5002/mcp`
+- **Claude Desktop:** custom connectors added in Settings connect from
+  Anthropic's cloud, so they can't reach a LAN address. Bridge through
+  `claude_desktop_config.json` instead:
+  ```json
+  "voice-label-printer": { "command": "npx", "args": ["-y", "mcp-remote", "http://<windows-pc>:5002/mcp", "--allow-http"] }
+  ```
+- **Local assistants** (LM Studio, Open WebUI and others): add
+  `http://<windows-pc>:5002/mcp` as a Streamable HTTP server, or use
+  `mcp-remote` if they only speak stdio.
+- **Codex / ChatGPT desktop:** these share `~/.codex/config.toml` and connect
+  from your machine, so the LAN URL works:
+  `codex mcp add voice-label-printer --url http://<windows-pc>:5002/mcp`.
+  If `MCP_TOKEN` is set, add `bearer_token_env_var = "<ENV_VAR_HOLDING_TOKEN>"`
+  under `[mcp_servers.voice-label-printer]`.
+- **ChatGPT on the web** connects from OpenAI's servers and can't reach a LAN
+  address.
+
+To try the tools by hand: `npx @modelcontextprotocol/inspector`, transport
+**Streamable HTTP**, URL `http://localhost:5002/mcp`.
+
+---
+
 ## Voice Commands (Alexa)
 
 | What you say | What happens |
@@ -528,6 +607,7 @@ Say *"Alexa, open label printer"* — she should respond *"Label printer ready."
 | `DEFAULT_FONT_STYLE` | `enhanced` | Font style to pre-select |
 | `DEFAULT_FONT_WEIGHT` | `bold` | Font weight to pre-select |
 | `SHOUTRRR_URL` | *(empty)* | Telegram URL for print notifications |
+| `MCP_ENABLED`, `MCP_PORT`, `MCP_TOKEN`, `MCP_ALLOWED_ORIGINS` | | MCP endpoint, see [MCP Server](#mcp-server-ai-assistants) |
 
 ### Server (`server/.env`)
 | Variable | Description |
@@ -575,6 +655,8 @@ The app lives in the Windows system tray when running:
 ├── client/
 │   ├── app.py              # Flask web UI + background polling thread + tray icon
 │   ├── printer.py          # Label rendering (Pillow) + Windows GDI printing
+│   ├── mcp_server.py       # MCP endpoint for AI assistants (port 5002)
+│   ├── tests/              # python -m unittest discover -s client/tests
 │   ├── emoji_data.py       # 3,800+ keyword → emoji mappings (see EMOJIS.md)
 │   ├── requirements.txt
 │   ├── images/             # Drop custom border images here (border_<name>.png)
@@ -608,7 +690,7 @@ The app lives in the Windows system tray when running:
 
 ### The client web UI is unauthenticated
 The client UI (port `5000`) has **no password**. By default it binds to `0.0.0.0` so you can open it from your phone, which means anyone on the same network can reach it and print/change settings. This is a deliberate convenience tradeoff for a trusted home LAN. To lock it down:
-- **Don't** port-forward `5000` to the internet (only the token-protected relay on `5001` is safe to expose, and even then prefer the cloud options).
+- **Don't** port-forward `5000` or `5002` (the MCP endpoint, equally unauthenticated unless `MCP_TOKEN` is set) to the internet (only the token-protected relay on `5001` is safe to expose, and even then prefer the cloud options).
 - If you don't need phone access, you can bind the client to localhost only — change its `app.run(host="0.0.0.0", …)` to `host="127.0.0.1"`.
 
 ### Use a strong token
@@ -647,6 +729,7 @@ If any one of these doesn't match, that component stops working — which is a u
 | `uharfbuzz` | HarfBuzz text shaping for ZWJ emoji sequences |
 | `freetype-py` | FreeType rendering of color emoji bitmaps |
 | `fonttools` | PNG bitmap extraction from Noto Color Emoji (country flags + Unicode 15) |
+| `mcp` | MCP endpoint for AI assistants (brings `uvicorn`, `starlette`, `httpx`) |
 
 ### Server
 | Package | Purpose |

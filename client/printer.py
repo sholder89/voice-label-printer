@@ -219,6 +219,7 @@ _IMAGE_BORDERS        = [k for k, _ in _IMAGE_BORDER_ENTRIES]
 BORDER_STYLES = ["none", "thin", "thick", "double", "dashed", "dotted", "wave",
                  "ticket", "inset", "rounded", "corners"] + _IMAGE_BORDERS
 TEXT_CASES    = ["none", "uppercase", "lowercase", "title", "sentence"]
+TEXT_ALIGNS   = ["left", "center", "right"]
 
 # Style presets — each overrides individual settings when active.
 # "windows95" uses a fully custom renderer; others map to existing options.
@@ -576,7 +577,7 @@ def render_label(
         text_area_w = w_px - text_x0 - pad
         text_area_h = h_px - text_y0 - pad
 
-    align   = text_align if text_align in ("left", "center", "right") else "center"
+    align   = text_align if text_align in TEXT_ALIGNS else "center"
 
     if _has_inline_emoji(text):
         # Literal emoji in the text — render segment-by-segment so they print as

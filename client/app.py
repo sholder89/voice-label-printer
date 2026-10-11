@@ -1297,12 +1297,38 @@ def _log_startup_error(msg):
         pass
 
 
+def _start_mcp(ui_port):
+    """Start the MCP endpoint for AI assistants (see mcp_server.py) beside the UI.
+    Optional: if the SDK isn't installed yet, the UI still comes up."""
+    try:
+        import mcp_server
+        return mcp_server.start(ui_port, log=_log_startup_error)
+    except ImportError as e:
+        _log_startup_error(f"MCP server not started: {e} (run start-all.bat to install it)")
+    except Exception as e:
+        _log_startup_error(f"MCP server not started: {e!r}")
+    return None
+
+
+def _mcp_port():
+    """The MCP port, so the UI's fallback list never takes it. None if disabled."""
+    if os.environ.get("MCP_ENABLED", "true").strip().lower() in ("0", "false", "no", "off"):
+        return None
+    try:
+        return int(os.environ.get("MCP_PORT") or 5002)
+    except ValueError:
+        return None
+
+
 def _serve():
     """Bind the web UI, trying fallback ports if the usual one is unavailable."""
     global UI_PORT
     import socket
     last = None
+    mcp_port = _mcp_port()
     for port in _PORT_CANDIDATES:
+        if port == mcp_port:
+            continue
         # Probe first: app.run swallows the reason and the thread just dies.
         probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -1320,6 +1346,7 @@ def _serve():
         UI_PORT = port
         if port != _PORT_CANDIDATES[0]:
             _log_startup_error(f"falling back to port {port}; UI is at http://localhost:{port}")
+        _start_mcp(port)
         try:
             app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
         except Exception as e:

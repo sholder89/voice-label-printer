@@ -1,7 +1,8 @@
 # One-time Windows setup for the all-local Voice Label Printer deployment.
 #
 #   • Always: creates a Startup-folder shortcut so both apps launch at login.
-#   • Optional (-Firewall): opens Windows Firewall for ports 5001/5000.
+#   • Optional (-Firewall): opens Windows Firewall for ports 5001/5000, and 5002
+#     for the MCP endpoint (AI assistants on the LAN).
 #
 # The auto-start shortcut needs no special rights, so the default run does NOT
 # prompt for admin. The firewall step is opt-in because most setups don't need
@@ -28,7 +29,8 @@ if ($Firewall) {
     }
     foreach ($r in @(
         @{ Name = "Voice Label Server (5001)"; Port = 5001 },
-        @{ Name = "Voice Label Client (5000)"; Port = 5000 }
+        @{ Name = "Voice Label Client (5000)"; Port = 5000 },
+        @{ Name = "Voice Label MCP (5002)";    Port = 5002 }
     )) {
         Get-NetFirewallRule -DisplayName $r.Name -ErrorAction SilentlyContinue |
             Remove-NetFirewallRule -ErrorAction SilentlyContinue
@@ -59,4 +61,5 @@ if (-not $Firewall) {
 }
 Write-Host "Done. Reboot (or run start-all.bat now) to launch both apps."
 Write-Host "Server setup page: http://localhost:5001/   Client UI: http://localhost:5000/"
+Write-Host "MCP endpoint for AI assistants: http://localhost:5002/mcp"
 Read-Host "Press Enter to close"
