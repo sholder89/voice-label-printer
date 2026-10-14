@@ -1287,6 +1287,13 @@ def _make_tray_image():
 UI_PORT = 5000
 _PORT_CANDIDATES = (5000, 5001, 5002, 5050, 8000)
 
+# Set by watchdog.py when it launched us. The tray's Restart then exits with
+# EXIT_RESTART and lets the watchdog relaunch, instead of spawning a copy the
+# watchdog doesn't know about.
+SUPERVISED   = os.environ.get("LABEL_PRINTER_SUPERVISED") == "1"
+EXIT_RESTART = 3
+_UI_PORT_FILE = os.path.join(_DATA_DIR, "ui-port")
+
 
 def _log_startup_error(msg):
     """Append to a log beside the settings — pythonw has no console."""
@@ -1344,6 +1351,11 @@ def _serve():
             probe.close()
 
         UI_PORT = port
+        try:                                # tells the watchdog where to health-check
+            with open(_UI_PORT_FILE, "w") as fh:
+                fh.write(str(port))
+        except OSError:
+            pass
         if port != _PORT_CANDIDATES[0]:
             _log_startup_error(f"falling back to port {port}; UI is at http://localhost:{port}")
         _start_mcp(port)
@@ -1355,6 +1367,68 @@ def _serve():
         return
 
     _log_startup_error(f"could not bind any of {_PORT_CANDIDATES}: {last!r}")
+
+
+# ── Hang diagnostics ─────────────────────────────────────────────────────────
+# The app has hung outright (Windows logged pythonw as not responding, then
+# closed it) with nothing to say where. Two ways to find out next time:
+#   • /debug/stacks — every thread's stack, for when Flask still answers but
+#     something else is stuck. The watchdog fetches it before restarting.
+#   • faulthandler — if no Python thread can run for _STALL_SECS (a deadlock or
+#     a call holding the GIL), it writes all stacks from a C thread that doesn't
+#     need the GIL. That covers the case where /debug/stacks can't answer.
+_STALL_SECS = 90
+_HANG_LOG   = os.path.join(_DATA_DIR, "hang-stacks.log")
+
+
+def _thread_stacks():
+    import traceback
+    names = {t.ident: t.name for t in threading.enumerate()}
+    out = []
+    for ident, frame in sys._current_frames().items():
+        out.append(f"--- thread {names.get(ident, ident)}")
+        out.append("".join(traceback.format_stack(frame)))
+    return "\n".join(out)
+
+
+@app.route("/debug/stacks")
+def debug_stacks():
+    if not _is_local_request():
+        return jsonify({"error": "local only"}), 403
+    return _thread_stacks(), 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+def _start_stall_detector():
+    import faulthandler
+    try:
+        fh = open(_HANG_LOG, "a", encoding="utf-8")
+    except OSError:
+        return
+
+    # Re-armed every 10 s; it only fires if this thread can't get back in time.
+    # faulthandler writes "Timeout (0:01:30)!" before the stacks, and the
+    # watchdog log has the wall-clock time of any restart that follows.
+    def beat():
+        while True:
+            faulthandler.dump_traceback_later(_STALL_SECS, repeat=False, file=fh)
+            time.sleep(10)
+            faulthandler.cancel_dump_traceback_later()
+
+    threading.Thread(target=beat, name="stall-detector", daemon=True).start()
+
+
+def _announce_watchdog_restart():
+    """If the watchdog relaunched us, say so on Telegram: you may not be at the PC."""
+    reason = os.environ.get("LABEL_PRINTER_WATCHDOG_REASON")
+    if not (reason and _TG_TOKEN and _TG_CHAT and _TG_ENABLED):
+        return
+    try:
+        requests.post(f"https://api.telegram.org/bot{_TG_TOKEN}/sendMessage",
+                      json={"chat_id": _TG_CHAT,
+                            "text": f"♻️ Label printer restarted by watchdog: {reason}"},
+                      timeout=10)
+    except Exception:
+        pass
 
 
 def _run_tray():
@@ -1369,6 +1443,9 @@ def _run_tray():
         webbrowser.open(f"http://localhost:{UI_PORT}")
 
     def on_restart(icon, item):
+        if SUPERVISED:
+            icon.stop()
+            os._exit(EXIT_RESTART)
         # Find pythonw.exe next to the current interpreter so the new
         # instance stays in the background (no console window).
         py_dir  = os.path.dirname(sys.executable)
@@ -1415,6 +1492,8 @@ if __name__ == "__main__":
         state["printer"] = printers[0]
 
     threading.Thread(target=poll_loop, daemon=True).start()
+    _start_stall_detector()
+    threading.Thread(target=_announce_watchdog_restart, daemon=True).start()
 
     try:
         import pystray  # noqa: F401 — just checking availability

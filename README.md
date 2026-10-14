@@ -628,6 +628,9 @@ All user data is stored in `%APPDATA%\LabelPrinter\` (i.e. `C:\Users\<you>\AppDa
 | `config.json` | Advanced-page overrides: relay URL, token, Telegram credentials, per-printer emoji darkness and print alignment |
 | `custom_emojis.json` | Custom keyword → emoji mappings (with per-entry enabled flag) |
 | `custom_sizes.json` | User-defined label sizes (name + dimensions + unit) |
+| `watchdog.log` | Watchdog starts, failed health checks and restarts |
+| `hang-stacks.log` | What every thread was doing when the app hung |
+| `startup-errors.log` | Port and startup problems (pythonw has no console) |
 
 Settings survive restarts and app updates automatically.
 
@@ -642,7 +645,22 @@ The app lives in the Windows system tray when running:
 | Double-click | Open web UI |
 | Right-click → Open | Open web UI |
 | Right-click → Restart | Restart the app (no new browser tab) |
-| Right-click → Quit | Exit |
+| Right-click → Quit | Exit, and stop the watchdog |
+
+### Watchdog
+
+`start.bat` and `run-all.bat` start `client/watchdog.py`, which launches the app
+and keeps it running. Every 15 seconds it checks that the web UI answers and
+that the app is still processing window messages. After about a minute of
+failed checks, or if the app exits any way other than **Quit**, it restarts the
+app. Repeated quick crashes back off from 5 seconds up to 5 minutes.
+
+Before killing a hung app the watchdog saves every thread's stack to
+`hang-stacks.log`. The app also runs a stall detector that writes stacks if no
+Python thread has run for 90 seconds, which covers hangs where the app can't
+answer at all. A relaunched app posts the reason to Telegram when Telegram is
+configured. If an app was started without the watchdog, the watchdog replaces
+it, so only one copy runs.
 
 ---
 
@@ -656,6 +674,7 @@ The app lives in the Windows system tray when running:
 │   ├── app.py              # Flask web UI + background polling thread + tray icon
 │   ├── printer.py          # Label rendering (Pillow) + Windows GDI printing
 │   ├── mcp_server.py       # MCP endpoint for AI assistants (port 5002)
+│   ├── watchdog.py         # Starts app.py and restarts it if it crashes or hangs
 │   ├── tests/              # python -m unittest discover -s client/tests
 │   ├── emoji_data.py       # 3,800+ keyword → emoji mappings (see EMOJIS.md)
 │   ├── requirements.txt

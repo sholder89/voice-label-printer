@@ -18,5 +18,5 @@ if exist "..\\.env" (
     )
 )
 
-echo Starting Label Printer (system tray)...
-start "" pythonw app.py
+echo Starting Label Printer (system tray, under the watchdog)...
+start "" pythonw watchdog.py
