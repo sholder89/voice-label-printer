@@ -662,6 +662,19 @@ answer at all. A relaunched app posts the reason to Telegram when Telegram is
 configured. If an app was started without the watchdog, the watchdog replaces
 it, so only one copy runs.
 
+Something has to restart the watchdog too. Register a scheduled task for that,
+once per PC (no admin needed):
+
+```
+powershell -ExecutionPolicy Bypass -File client\install-watchdog-task.ps1
+```
+
+It starts the watchdog at sign-in and tries again every 5 minutes. While one is
+running, the extra starts exit at once, so a dead watchdog is back within 5
+minutes. `-Remove` deletes the task. Start the app through the task or the
+launchers, not from a terminal or tool session: a process started there can be
+ended when that session closes.
+
 ---
 
 ## Project Structure
@@ -675,6 +688,7 @@ it, so only one copy runs.
 │   ├── printer.py          # Label rendering (Pillow) + Windows GDI printing
 │   ├── mcp_server.py       # MCP endpoint for AI assistants (port 5002)
 │   ├── watchdog.py         # Starts app.py and restarts it if it crashes or hangs
+│   ├── install-watchdog-task.ps1  # Scheduled task that keeps the watchdog itself running
 │   ├── tests/              # python -m unittest discover -s client/tests
 │   ├── emoji_data.py       # 3,800+ keyword → emoji mappings (see EMOJIS.md)
 │   ├── requirements.txt

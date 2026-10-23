@@ -38,6 +38,10 @@ HTTP_TIMEOUT  = 10
 BACKOFF_MIN, BACKOFF_MAX = 5, 300
 QUICK_CRASH   = 60      # dying sooner than this after launch counts towards backoff
 
+# The scheduled task passes this: it may be bringing the watchdog back hours
+# into the day, when a browser tab popping up out of nowhere would be odd.
+NO_BROWSER = "--no-browser" in sys.argv[1:]
+
 EXIT_QUIT    = 0        # tray Quit: the user meant it, so stop too
 EXIT_RESTART = 3        # tray Restart: relaunch straight away (see app.py)
 
@@ -166,6 +170,8 @@ def _launch(reason=None):
     env = os.environ.copy()
     env["LABEL_PRINTER_SUPERVISED"] = "1"
     env.pop("LABEL_PRINTER_WATCHDOG_REASON", None)
+    if NO_BROWSER:
+        env["LABEL_PRINTER_RESTART"] = "1"
     if reason:
         env["LABEL_PRINTER_RESTART"] = "1"          # no browser tab on a relaunch
         if reason != "restarted from the tray":
